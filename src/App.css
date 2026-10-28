@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-bg: #0d1117;
+    --color-surface: rgba(22, 27, 34, 0.75);
+    --color-surface-hover: rgba(33, 38, 45, 0.85);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-accent: #f59e0b;
+    --color-accent-hover: #d97706;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    background-color: transparent;
+    color: #f0f6fc;
+    overflow: hidden;
+  }
+}
+
+/* Custom modern thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
