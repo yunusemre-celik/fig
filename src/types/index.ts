@@ -43,9 +43,15 @@ export interface WheelProfile {
   items: WheelItem[];
 }
 
+export type SupportedLanguage = "en" | "tr" | "es" | "de" | "fr";
+
+export type AppTheme = "system" | "dark" | "light";
+
 export interface AppSettings {
   wheel_display_mode: "center" | "cursor";
   save_as_separate: boolean;
   output_destination: "source" | "desktop" | "downloads";
   vibrancy_effect: string;
+  language?: SupportedLanguage;
+  theme?: AppTheme;
 }
