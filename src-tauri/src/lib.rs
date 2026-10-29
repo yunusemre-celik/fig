@@ -143,6 +143,7 @@ pub fn run() {
             commands::generate_qr_code,
             commands::create_pdf_from_images,
             commands::convert_document,
+            commands::convert_media,
             commands::get_autostart,
             commands::set_autostart,
             commands::reveal_in_explorer,

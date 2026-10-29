@@ -192,6 +192,9 @@ pub fn convert_image(
         "jpg" | "jpeg" => ("jpg", image::ImageFormat::Jpeg),
         "webp" => ("webp", image::ImageFormat::WebP),
         "bmp" => ("bmp", image::ImageFormat::Bmp),
+        "ico" => ("ico", image::ImageFormat::Ico),
+        "gif" => ("gif", image::ImageFormat::Gif),
+        "tiff" | "tif" => ("tiff", image::ImageFormat::Tiff),
         other => return Err(format!("Unsupported target image format: {}", other)),
     };
 
@@ -239,6 +242,15 @@ pub fn convert_image(
         image::ImageFormat::Png => {
             img.save_with_format(&out_path, image::ImageFormat::Png)
                 .map_err(|e| format!("Failed to encode PNG: {}", e))?;
+        }
+        image::ImageFormat::Ico => {
+            let resized = if img.width() > 256 || img.height() > 256 {
+                img.resize(256, 256, image::imageops::FilterType::Lanczos3)
+            } else {
+                img
+            };
+            resized.save_with_format(&out_path, image::ImageFormat::Ico)
+                .map_err(|e| format!("Failed to encode ICO: {}", e))?;
         }
         _ => {
             img.save_with_format(&out_path, image_format)
@@ -849,7 +861,7 @@ pub fn convert_document(
     let size_before = std::fs::metadata(in_path).map(|m| m.len()).unwrap_or(0);
 
     match ext.as_str() {
-        "docx" | "doc" | "rtf" => {
+        "docx" | "doc" | "rtf" | "odt" => {
             #[cfg(target_os = "windows")]
             {
                 let ps_script = format!(
@@ -857,7 +869,13 @@ pub fn convert_document(
                     in_path.display(),
                     out_file_path.display()
                 );
-                let output = std::process::Command::new("powershell")
+                let mut cmd = std::process::Command::new("powershell");
+                #[cfg(target_os = "windows")]
+                {
+                    use std::os::windows::process::CommandExt;
+                    cmd.creation_flags(0x08000000);
+                }
+                let output = cmd
                     .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
                     .output()
                     .map_err(|e| format!("PowerShell Word conversion failed: {}", e))?;
@@ -866,7 +884,7 @@ pub fn convert_document(
                 }
             }
         }
-        "pptx" | "ppt" => {
+        "pptx" | "ppt" | "odp" => {
             #[cfg(target_os = "windows")]
             {
                 let ps_script = format!(
@@ -874,7 +892,13 @@ pub fn convert_document(
                     in_path.display(),
                     out_file_path.display()
                 );
-                let output = std::process::Command::new("powershell")
+                let mut cmd = std::process::Command::new("powershell");
+                #[cfg(target_os = "windows")]
+                {
+                    use std::os::windows::process::CommandExt;
+                    cmd.creation_flags(0x08000000);
+                }
+                let output = cmd
                     .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
                     .output()
                     .map_err(|e| format!("PowerPoint conversion failed: {}", e))?;
@@ -883,7 +907,7 @@ pub fn convert_document(
                 }
             }
         }
-        "xlsx" | "xls" | "csv" => {
+        "xlsx" | "xls" | "csv" | "ods" => {
             #[cfg(target_os = "windows")]
             {
                 let ps_script = format!(
@@ -891,7 +915,13 @@ pub fn convert_document(
                     in_path.display(),
                     out_file_path.display()
                 );
-                let output = std::process::Command::new("powershell")
+                let mut cmd = std::process::Command::new("powershell");
+                #[cfg(target_os = "windows")]
+                {
+                    use std::os::windows::process::CommandExt;
+                    cmd.creation_flags(0x08000000);
+                }
+                let output = cmd
                     .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
                     .output()
                     .map_err(|e| format!("Excel conversion failed: {}", e))?;
@@ -923,6 +953,134 @@ pub fn convert_document(
     record_library_action(&input_path, &out_path_str, &action, size_before, size_after);
 
     get_file_info(out_path_str)
+}
+
+// 10b. Media conversion (Audio & Video conversion, Audio extraction, GIF creation via FFmpeg)
+#[cfg_attr(not(test), tauri::command)]
+pub fn convert_media(
+    input_path: String,
+    target_format: String,
+    custom_name: Option<String>,
+) -> Result<FileInfo, String> {
+    let in_path = Path::new(&input_path);
+    if !in_path.exists() {
+        return Err(format!("Girdi dosyası bulunamadı: {}", input_path));
+    }
+
+    let size_before = std::fs::metadata(in_path).map(|m| m.len()).unwrap_or(0);
+    let stem = in_path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "media".to_string());
+    let parent = in_path.parent().unwrap_or_else(|| Path::new("."));
+
+    let lower_format = target_format.to_lowercase();
+    let norm_format: &str = match lower_format.as_str() {
+        "extract_audio" | "audio_mp3" | "mp3" => "mp3",
+        "audio_wav" | "wav" => "wav",
+        "audio_flac" | "flac" => "flac",
+        "audio_aac" | "aac" => "aac",
+        "audio_ogg" | "ogg" => "ogg",
+        "video_mp4" | "mp4" => "mp4",
+        "video_webm" | "webm" => "webm",
+        "video_gif" | "gif" => "gif",
+        "video_avi" | "avi" => "avi",
+        "video_mkv" | "mkv" => "mkv",
+        other => other,
+    };
+
+    let original_ext = in_path
+        .extension()
+        .map(|s| s.to_string_lossy().to_lowercase())
+        .unwrap_or_default();
+
+    let out_name = match &custom_name {
+        Some(name) => name.clone(),
+        None => {
+            if original_ext == norm_format {
+                format!("{}_converted.{}", stem, norm_format)
+            } else {
+                format!("{}.{}", stem, norm_format)
+            }
+        }
+    };
+
+    let mut out_path = parent.join(&out_name);
+    if out_path == in_path && custom_name.is_none() {
+        out_path = parent.join(format!("{}_converted.{}", stem, norm_format));
+    }
+
+    let out_str = out_path.to_string_lossy().to_string();
+
+    let mut cmd = std::process::Command::new("ffmpeg");
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+
+    cmd.arg("-y");
+    cmd.arg("-i").arg(&input_path);
+
+    match norm_format {
+        "mp3" => {
+            cmd.args(["-vn", "-c:a", "libmp3lame", "-q:a", "2"]);
+        }
+        "wav" => {
+            cmd.args(["-vn", "-c:a", "pcm_s16le"]);
+        }
+        "flac" => {
+            cmd.args(["-vn", "-c:a", "flac"]);
+        }
+        "aac" => {
+            cmd.args(["-vn", "-c:a", "aac", "-b:a", "192k"]);
+        }
+        "ogg" => {
+            cmd.args(["-vn", "-c:a", "libvorbis", "-q:a", "4"]);
+        }
+        "mp4" => {
+            cmd.args(["-c:v", "libx264", "-preset", "fast", "-crf", "22", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart"]);
+        }
+        "webm" => {
+            cmd.args(["-c:v", "libvpx-vp9", "-crf", "30", "-b:v", "0", "-c:a", "libopus"]);
+        }
+        "gif" => {
+            cmd.args([
+                "-vf",
+                "fps=12,scale='min(480,iw)':-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer",
+                "-loop",
+                "0",
+            ]);
+        }
+        "avi" => {
+            cmd.args(["-c:v", "mpeg4", "-q:v", "3", "-c:a", "mp3"]);
+        }
+        "mkv" => {
+            cmd.args(["-c:v", "libx264", "-crf", "22", "-c:a", "copy"]);
+        }
+        other => {
+            return Err(format!("Desteklenmeyen medya formatı: {}", other));
+        }
+    }
+
+    cmd.arg(&out_str);
+
+    let output = cmd.output().map_err(|e| {
+        format!("FFmpeg çalıştırılamadı (FFmpeg sistemde kurulu mu?): {}", e)
+    })?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let short_err = stderr.lines().rev().take(6).collect::<Vec<_>>().join(" ");
+        return Err(format!("Medya dönüştürme hatası: {}", short_err));
+    }
+
+    let size_after = std::fs::metadata(&out_path).map(|m| m.len()).unwrap_or(0);
+    let action = format!("Media to {}", norm_format.to_uppercase());
+    record_library_action(&input_path, &out_str, &action, size_before, size_after);
+
+    get_file_info(out_str)
 }
 
 #[cfg_attr(not(test), tauri::command)]

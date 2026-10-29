@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Presentation,
   FileSpreadsheet,
+  Music,
+  Film,
 } from "lucide-react";
 
 interface RadialWheelProps {
@@ -95,12 +97,14 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
           onClose();
         }
       } else if (e.key === "1") {
-        onSelectProfile?.("design");
-      } else if (e.key === "2") {
         onSelectProfile?.("office");
+      } else if (e.key === "2") {
+        onSelectProfile?.("design");
       } else if (e.key === "3") {
-        onSelectProfile?.("dev");
+        onSelectProfile?.("media");
       } else if (e.key === "4") {
+        onSelectProfile?.("dev");
+      } else if (e.key === "5") {
         onSelectProfile?.("custom");
       }
     };
@@ -121,6 +125,10 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
     switch (iconName) {
       case "image":
         return <FileImage size={size} />;
+      case "music":
+        return <Music size={size} />;
+      case "film":
+        return <Film size={size} />;
       case "pdf":
       case "doc":
       case "txt":

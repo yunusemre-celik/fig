@@ -65,6 +65,28 @@ export async function convertDocument(
   };
 }
 
+export async function convertMedia(
+  inputPath: string,
+  targetFormat: string,
+  customName?: string
+): Promise<FileInfo> {
+  if (isTauri) {
+    return await invoke<FileInfo>("convert_media", {
+      inputPath,
+      targetFormat,
+      customName,
+    });
+  }
+  return {
+    name: customName || `converted.${targetFormat}`,
+    path: `C:\\Users\\Mock\\${targetFormat}\\${customName || `media.${targetFormat}`}`,
+    size: 1048576,
+    formatted_size: "1.0 MB",
+    extension: targetFormat,
+    modified: "Şimdi",
+  };
+}
+
 export async function cropImage(
   inputPath: string,
   x: number,

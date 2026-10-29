@@ -22,7 +22,7 @@ tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "bmp"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "bmp", "ico", "gif", "tiff"] }
 qrcode = { version = "0.14", default-features = false }
 rqrr = "0.7"
 dirs = "6"

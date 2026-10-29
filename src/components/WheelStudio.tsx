@@ -18,6 +18,8 @@ import {
   Terminal,
   Info,
   Sparkles,
+  Music,
+  Film,
 } from "lucide-react";
 
 interface WheelStudioProps {
@@ -33,8 +35,19 @@ export const ALL_AVAILABLE_ACTIONS: WheelItem[] = [
   { id: "webp", label: "WebP", description: "Hızlı & modern web formatı", icon: "image", color: "#10B981", category: "convert" },
   { id: "png", label: "PNG", description: "Kayıpsız şeffaf görsel", icon: "image", color: "#3B82F6", category: "convert" },
   { id: "jpg", label: "JPG", description: "Optimize web fotoğrafı", icon: "image", color: "#F59E0B", category: "convert" },
+  { id: "ico", label: "ICO İkon", description: "Windows simge formatı (256x256)", icon: "image", color: "#6366F1", category: "convert" },
+  { id: "gif", label: "GIF Görsel", description: "Görselden GIF formatı", icon: "image", color: "#EC4899", category: "convert" },
+  { id: "tiff", label: "TIFF", description: "Yüksek kaliteli baskı/tarama formatı", icon: "image", color: "#06B6D4", category: "convert" },
   { id: "bmp", label: "BMP", description: "Ham Windows bitmap", icon: "image", color: "#8B5CF6", category: "convert" },
   { id: "img_pdf", label: "Görselden PDF", description: "Seçili görselleri PDF yap", icon: "pdf", color: "#EF4444", category: "convert" },
+
+  // Media (Audio & Video via FFmpeg)
+  { id: "extract_audio", label: "Sesi Ayıkla (MP3)", description: "Videodan ses parçasını MP3 çıkar", icon: "music", color: "#F59E0B", category: "convert" },
+  { id: "video_gif", label: "Videodan GIF", description: "Videoyu yüksek kaliteli animasyonlu GIF yap", icon: "film", color: "#EC4899", category: "convert" },
+  { id: "video_mp4", label: "MP4 Video", description: "H.264 evrensel video formatı", icon: "film", color: "#3B82F6", category: "convert" },
+  { id: "video_webm", label: "WebM Video", description: "Web optimize açık kaynak video", icon: "film", color: "#10B981", category: "convert" },
+  { id: "audio_wav", label: "WAV Ses", description: "Sıkıştırmasız stüdyo ses formatı", icon: "music", color: "#8B5CF6", category: "convert" },
+  { id: "audio_flac", label: "FLAC Kayıpsız", description: "Kayıpsız sıkıştırılmış stüdyo ses", icon: "music", color: "#14B8A6", category: "convert" },
 
   // Documents
   { id: "docx_pdf", label: "Word → PDF", description: "DOCX/DOC dosyalarını PDF yap", icon: "doc", color: "#2563EB", category: "documents" },
@@ -55,20 +68,6 @@ export const ALL_AVAILABLE_ACTIONS: WheelItem[] = [
 ];
 
 export const PRESET_PROFILES: Record<WheelProfileId, WheelProfile> = {
-  design: {
-    id: "design",
-    name: "Tasarım & Fotoğraf",
-    description: "WebP, PNG, Kırpma, Sıkıştırma ve görsel araçları.",
-    icon: "palette",
-    items: [
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "webp")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "png")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "jpg")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "crop")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "compress")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "img_pdf")!,
-    ],
-  },
   office: {
     id: "office",
     name: "Ofis & Belgeler",
@@ -81,6 +80,34 @@ export const PRESET_PROFILES: Record<WheelProfileId, WheelProfile> = {
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "xlsx_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "img_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "compress")!,
+    ],
+  },
+  design: {
+    id: "design",
+    name: "Tasarım & Fotoğraf",
+    description: "WebP, PNG, ICO, Kırpma, Sıkıştırma ve görsel araçları.",
+    icon: "palette",
+    items: [
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "webp")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "png")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "jpg")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "ico")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "crop")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "img_pdf")!,
+    ],
+  },
+  media: {
+    id: "media",
+    name: "Medya & Ses",
+    description: "Video, ses dönüştürme, GIF ve ses ayıklama araçları.",
+    icon: "music",
+    items: [
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "extract_audio")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "video_gif")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "video_mp4")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "audio_wav")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "audio_flac")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "video_webm")!,
     ],
   },
   dev: {
@@ -134,6 +161,10 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
     switch (name) {
       case "image":
         return <FileImage size={size} />;
+      case "music":
+        return <Music size={size} />;
+      case "film":
+        return <Film size={size} />;
       case "pdf":
       case "doc":
       case "ppt":
@@ -172,8 +203,8 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
       </div>
 
       {/* Preset Profiles Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        {(["design", "office", "dev", "custom"] as WheelProfileId[]).map((pid) => {
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        {(["office", "design", "media", "dev", "custom"] as WheelProfileId[]).map((pid) => {
           const p = PRESET_PROFILES[pid];
           const isSelected = currentProfile === pid;
 
@@ -181,7 +212,7 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
             <button
               key={pid}
               onClick={() => onSelectProfile(pid)}
-              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between h-32 ${
+              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between h-32 ${
                 isSelected
                   ? "bg-amber-500/20 border-amber-500/50 shadow-lg shadow-amber-500/15 scale-[1.02] backdrop-blur-xl"
                   : "glass-card hover:border-white/[0.18]"
@@ -195,8 +226,9 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
                       : "bg-white/[0.08] text-neutral-300"
                   }`}
                 >
-                  {pid === "design" && <Palette size={16} />}
                   {pid === "office" && <Briefcase size={16} />}
+                  {pid === "design" && <Palette size={16} />}
+                  {pid === "media" && <Music size={16} />}
                   {pid === "dev" && <Code2 size={16} />}
                   {pid === "custom" && <Sliders size={16} />}
                 </div>

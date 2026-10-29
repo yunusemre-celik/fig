@@ -7,6 +7,7 @@ import {
   showMainWindow,
   convertImage,
   convertDocument,
+  convertMedia,
   createPdfFromImages,
   revealInExplorer,
   openInTerminal,
@@ -64,6 +65,26 @@ export const FloatingWheelWindow: React.FC = () => {
           setStatusMessage(`${infoList[0].name} seçili`);
         } else {
           setStatusMessage(`${infoList.length} Dosya Seçili`);
+        }
+
+        // Contextual auto-profile selection based on detected file types
+        const exts = infoList.map((f) => f.extension.toLowerCase());
+        const isMedia = exts.some((e) =>
+          ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv", "mp3", "wav", "flac", "aac", "ogg", "m4a", "3gp", "opus"].includes(e)
+        );
+        const isDoc = exts.some((e) =>
+          ["docx", "doc", "pptx", "ppt", "xlsx", "xls", "txt", "md", "rtf", "odt", "odp", "ods"].includes(e)
+        );
+        const isImg = exts.some((e) =>
+          ["png", "jpg", "jpeg", "webp", "bmp", "ico", "gif", "tif", "tiff", "psd", "svg"].includes(e)
+        );
+
+        if (isMedia) {
+          setActiveProfile("media");
+        } else if (isDoc) {
+          setActiveProfile("office");
+        } else if (isImg) {
+          setActiveProfile("design");
         }
       } else {
         setSelectedFiles([]);
@@ -128,7 +149,7 @@ export const FloatingWheelWindow: React.FC = () => {
   };
 
   const handleCycleProfile = (direction: 1 | -1 = 1) => {
-    const order: WheelProfileId[] = ["office", "design", "dev", "custom"];
+    const order: WheelProfileId[] = ["office", "design", "media", "dev", "custom"];
     const currIdx = order.indexOf(activeProfile);
     const nextIdx = (currIdx + direction + order.length) % order.length;
     const nextProfile = order[nextIdx];
@@ -168,7 +189,8 @@ export const FloatingWheelWindow: React.FC = () => {
     if (id.includes("pptx") || id.includes("ppt")) return "ppt";
     if (id.includes("xlsx") || id.includes("xls")) return "xls";
     if (id.includes("pdf") || id === "img_pdf") return "image";
-    if (id === "webp" || id === "png" || id === "jpg" || id === "bmp" || id === "crop" || id === "compress") return "image";
+    if (["webp", "png", "jpg", "bmp", "ico", "gif", "tiff", "crop", "compress"].includes(id)) return "image";
+    if (["extract_audio", "video_gif", "video_mp4", "video_webm", "audio_wav", "audio_flac"].includes(id)) return "all";
     return "all";
   };
 
@@ -276,8 +298,49 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    // 7. Image Conversions (WebP, PNG, JPG, BMP)
-    if (actionId === "webp" || actionId === "png" || actionId === "jpg" || actionId === "bmp") {
+    // 7. Media Conversions (Audio extraction, Video to GIF, MP4, WAV, FLAC, WebM via FFmpeg)
+    if (
+      actionId === "extract_audio" ||
+      actionId === "video_gif" ||
+      actionId === "video_mp4" ||
+      actionId === "video_webm" ||
+      actionId === "audio_wav" ||
+      actionId === "audio_flac"
+    ) {
+      try {
+        const actionLabel =
+          actionId === "extract_audio"
+            ? "Ses Ayıklanıyor (MP3)"
+            : actionId === "video_gif"
+            ? "Videodan GIF Yapılıyor"
+            : actionId === "video_mp4"
+            ? "MP4 Yapılıyor"
+            : actionId === "video_webm"
+            ? "WebM Yapılıyor"
+            : actionId === "audio_wav"
+            ? "WAV Yapılıyor"
+            : "FLAC Yapılıyor";
+
+        setStatusMessage(files.length > 1 ? `${files.length} Dosya ${actionLabel}...` : `${actionLabel}...`);
+        let lastRes: FileInfo | null = null;
+        for (const file of files) {
+          lastRes = await convertMedia(file.path, actionId);
+        }
+        playSuccessChime();
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+        if (lastRes) {
+          setStatusMessage(files.length > 1 ? `${files.length} Medya Dönüştürüldü!` : `Hazır: ${lastRes.name}`);
+          setLastOutputPath(lastRes.path);
+        }
+        setTimeout(handleClose, 1600);
+      } catch (err) {
+        setStatusMessage(`Hata: ${err}`);
+      }
+      return;
+    }
+
+    // 8. Image Conversions (WebP, PNG, JPG, BMP, ICO, GIF, TIFF)
+    if (["webp", "png", "jpg", "bmp", "ico", "gif", "tiff"].includes(actionId)) {
       try {
         setStatusMessage(files.length > 1 ? `${files.length} Dosya ${actionId.toUpperCase()} Yapılıyor...` : `${actionId.toUpperCase()} Yapılıyor...`);
         let lastRes: FileInfo | null = null;

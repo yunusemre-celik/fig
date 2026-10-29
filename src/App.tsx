@@ -18,6 +18,7 @@ import { playSuccessChime } from "./utils/sound";
 import {
   getFileInfo,
   convertImage,
+  convertMedia,
   cropImage,
   compressImage,
   readQrCode,
@@ -217,7 +218,42 @@ export function App() {
     let lastResult: FileInfo | null = null;
 
     try {
-      if (targetFormat === "pdf") {
+      if (
+        [
+          "extract_audio",
+          "audio_mp3",
+          "audio_wav",
+          "audio_flac",
+          "video_mp4",
+          "video_webm",
+          "video_gif",
+        ].includes(targetFormat)
+      ) {
+        for (let i = 0; i < total; i++) {
+          const f = selectedFiles[i];
+          const stem = f.name.substring(0, f.name.lastIndexOf(".")) || f.name;
+          const extMap: Record<string, string> = {
+            extract_audio: "mp3",
+            audio_mp3: "mp3",
+            audio_wav: "wav",
+            audio_flac: "flac",
+            video_mp4: "mp4",
+            video_webm: "webm",
+            video_gif: "gif",
+          };
+          const targetExt = extMap[targetFormat] || targetFormat;
+          const customName = saveAsSeparate
+            ? `${stem}_(${i + 1} of ${total}).${targetExt}`
+            : undefined;
+          try {
+            const res = await convertMedia(f.path, targetFormat, customName);
+            lastResult = res;
+            successCount++;
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      } else if (targetFormat === "pdf") {
         const allImages = selectedFiles.every((f) =>
           ["png", "jpg", "jpeg", "webp", "bmp", "gif"].includes(f.extension.toLowerCase())
         );
@@ -243,7 +279,7 @@ export function App() {
           }
         }
       } else {
-        // Image conversions: webp, png, jpg, bmp
+        // Image conversions: webp, png, jpg, bmp, ico, gif, tiff
         for (let i = 0; i < total; i++) {
           const f = selectedFiles[i];
           const stem = f.name.substring(0, f.name.lastIndexOf(".")) || f.name;

@@ -33,7 +33,7 @@ export interface WheelItem {
   category: WheelMode;
 }
 
-export type WheelProfileId = "design" | "office" | "dev" | "custom";
+export type WheelProfileId = "office" | "design" | "media" | "dev" | "custom";
 
 export interface WheelProfile {
   id: WheelProfileId;
