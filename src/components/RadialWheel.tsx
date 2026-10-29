@@ -411,7 +411,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
           <ChevronLeft size={24} strokeWidth={2.2} className="group-hover:-translate-x-0.5 transition-transform" />
         </button>
 
-        {/* Center Earth Logo indicator */}
+        {/* Center Fig Logo indicator */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center">
           <FigLogo size={36} />
         </div>

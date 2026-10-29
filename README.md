@@ -38,7 +38,7 @@ Trigger an Apple-inspired radial action menu right around your mouse cursor with
 
 ### 🎨 2. Obsidian Tech Design (Raycast & Linear Polish)
 - Deep obsidian palette (#080A11), frosted glass surfaces, subtle 1px border highlights, and Fig Fruit squircle branding.
-- **Automatic System Theme:** Syncs automatically with Windows light/dark system themes, or choose your preference in Settings.
+- **Obsidian Tech Aesthetics:** Deep space obsidian dark mode with glowing accents and frosted glass.
 
 ### 🖼️ 3. Visual Crop & Regional Censor Studio
 - **Precision Crop:** Fixed aspect presets (`Free`, `1:1`, `16:9`, `4:3`, `9:16`).
