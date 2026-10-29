@@ -30,6 +30,7 @@ import {
   openInTerminal,
   openFile,
   showWheelAtCursor,
+  pickFileDialog,
 } from "./services/api";
 import { Sparkles, FileImage, Crop, QrCode, FileText } from "lucide-react";
 
@@ -50,7 +51,7 @@ export function App() {
 
   // Wheel Studio profiles state
   const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
-    return (localStorage.getItem("fig_active_profile") as WheelProfileId) || "design";
+    return (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
   });
 
   const [customSlices, setCustomSlices] = useState<WheelItem[]>(() => {
@@ -196,13 +197,17 @@ export function App() {
 
   // Direct conversion execution for selected files
   const handleDirectConvert = async (targetFormat: string) => {
-    if (selectedFiles.length === 0) {
-      addToast(
-        "error",
-        "Dosya Seçilmedi",
-        "Lütfen önce dönüştürülecek dosyaları sürükleyin veya 'Dosya Seç' butonunu kullanın."
-      );
-      return;
+    let filesToProcess = selectedFiles;
+    if (filesToProcess.length === 0) {
+      const picked = await pickFileDialog(targetFormat === "pdf" ? "office" : "image");
+      if (!picked) return;
+      try {
+        const info = await getFileInfo(picked);
+        setSelectedFiles([info]);
+        filesToProcess = [info];
+      } catch {
+        return;
+      }
     }
 
     setIsConverting(true);
@@ -566,6 +571,13 @@ export function App() {
         selectedFileNames={selectedFiles.map((f) => f.name)}
         customItems={currentWheelItems}
         profileName={PRESET_PROFILES[activeProfile]?.name}
+        onCycleProfile={(dir = 1) => {
+          const order: WheelProfileId[] = ["office", "design", "dev", "custom"];
+          const currIdx = order.indexOf(activeProfile);
+          const nextIdx = (currIdx + dir + order.length) % order.length;
+          handleProfileChange(order[nextIdx]);
+        }}
+        onSelectProfile={handleProfileChange}
       />
 
       {/* Visual Modals */}

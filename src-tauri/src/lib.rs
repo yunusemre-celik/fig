@@ -122,7 +122,7 @@ pub fn run() {
                 }
             }
             tauri::WindowEvent::Focused(false) => {
-                if window.label() == "wheel" {
+                if window.label() == "wheel" && !commands::is_dialog_active() {
                     let _ = window.hide();
                 }
             }
@@ -133,6 +133,7 @@ pub fn run() {
             commands::hide_wheel,
             commands::show_main_window,
             commands::set_window_vibrancy,
+            commands::pick_file_dialog,
             commands::get_file_info,
             commands::convert_image,
             commands::crop_image,

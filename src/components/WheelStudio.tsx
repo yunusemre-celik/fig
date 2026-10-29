@@ -75,12 +75,12 @@ export const PRESET_PROFILES: Record<WheelProfileId, WheelProfile> = {
     description: "Word, PowerPoint, Excel dönüştürme ve PDF araçları.",
     icon: "briefcase",
     items: [
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "qr")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "docx_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "pptx_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "xlsx_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "img_pdf")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "compress")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "qr")!,
     ],
   },
   dev: {

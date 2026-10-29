@@ -221,3 +221,11 @@ export async function setWindowVibrancy(effect: string): Promise<void> {
     await invoke("set_window_vibrancy", { effect });
   }
 }
+
+export async function pickFileDialog(filterType?: string): Promise<string | null> {
+  if (isTauri) {
+    const res = await invoke<string | null>("pick_file_dialog", { filterType: filterType || null });
+    return res;
+  }
+  return null;
+}

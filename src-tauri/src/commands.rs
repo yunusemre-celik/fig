@@ -1052,6 +1052,64 @@ pub fn set_window_vibrancy(_app: tauri::AppHandle, _effect: String) -> Result<()
     Ok(())
 }
 
+// 12. Native Windows Open File Dialog
+static DIALOG_ACTIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub fn is_dialog_active() -> bool {
+    DIALOG_ACTIVE.load(std::sync::atomic::Ordering::SeqCst)
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn pick_file_dialog(filter_type: Option<String>) -> Result<Option<String>, String> {
+    DIALOG_ACTIVE.store(true, std::sync::atomic::Ordering::SeqCst);
+    let result = (|| {
+        #[cfg(target_os = "windows")]
+        {
+            use std::process::Command;
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+            let filter_str = match filter_type.as_deref() {
+                Some("office") => "Ofis Belgeleri (*.docx;*.pptx;*.xlsx;*.txt)|*.docx;*.doc;*.pptx;*.ppt;*.xlsx;*.xls;*.txt|Tüm Dosyalar (*.*)|*.*",
+                Some("image") => "Görseller (*.png;*.jpg;*.webp;*.bmp)|*.png;*.jpg;*.jpeg;*.webp;*.bmp|Tüm Dosyalar (*.*)|*.*",
+                Some("doc") => "Word Belgeleri (*.docx;*.doc)|*.docx;*.doc|Tüm Dosyalar (*.*)|*.*",
+                Some("ppt") => "PowerPoint Sunumları (*.pptx;*.ppt)|*.pptx;*.ppt|Tüm Dosyalar (*.*)|*.*",
+                Some("xls") => "Excel Tabloları (*.xlsx;*.xls)|*.xlsx;*.xls|Tüm Dosyalar (*.*)|*.*",
+                _ => "Desteklenen Tüm Dosyalar|*.docx;*.doc;*.pptx;*.ppt;*.xlsx;*.xls;*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.pdf;*.txt|Tüm Dosyalar (*.*)|*.*",
+            };
+
+            let script = format!(
+                "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; \
+                 $f = New-Object System.Windows.Forms.OpenFileDialog; \
+                 $f.Title = 'Fig - Dönüştürmek İçin Dosya Seçin'; \
+                 $f.Filter = '{}'; \
+                 $f.Multiselect = $false; \
+                 if ($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {{ [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::Write($f.FileName) }}",
+                filter_str
+            );
+
+            let output = Command::new("powershell")
+                .args(&["-NoProfile", "-NonInteractive", "-Command", &script])
+                .creation_flags(CREATE_NO_WINDOW)
+                .output()
+                .map_err(|e| format!("Dosya seçici açılamadı: {}", e))?;
+
+            let res = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if res.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(res))
+            }
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            Ok(None)
+        }
+    })();
+    DIALOG_ACTIVE.store(false, std::sync::atomic::Ordering::SeqCst);
+    result
+}
+
 // -------------------------------------------------------------
 // Unit Tests
 // -------------------------------------------------------------

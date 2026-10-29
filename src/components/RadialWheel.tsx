@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { WheelItem, WheelMode } from "../types";
+import { WheelItem, WheelMode, WheelProfileId } from "../types";
 import { playSuccessChime } from "../utils/sound";
 import {
   FileImage,
@@ -12,6 +12,10 @@ import {
   Info,
   FileText,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Presentation,
+  FileSpreadsheet,
 } from "lucide-react";
 
 interface RadialWheelProps {
@@ -22,7 +26,8 @@ interface RadialWheelProps {
   customItems?: WheelItem[];
   isStandalone?: boolean;
   profileName?: string;
-  onCycleProfile?: () => void;
+  onCycleProfile?: (direction?: 1 | -1) => void;
+  onSelectProfile?: (profileId: WheelProfileId) => void;
   onFileDrop?: (file: File) => void;
 }
 
@@ -35,6 +40,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
   isStandalone = false,
   profileName,
   onCycleProfile,
+  onSelectProfile,
   onFileDrop,
 }) => {
   const [hoveredItem, setHoveredItem] = useState<WheelItem | null>(null);
@@ -43,12 +49,12 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
   // Wheel Items configuration fallback
   const defaultItems: WheelItem[] = [
-    { id: "webp", label: "WebP", description: "Hızlı & modern web formatı", icon: "image", color: "#10B981", category: "convert" },
-    { id: "png", label: "PNG", description: "Kayıpsız şeffaf görsel", icon: "image", color: "#3B82F6", category: "convert" },
+    { id: "qr", label: "QR Kod", description: "QR oku veya oluştur", icon: "qr", color: "#F59E0B", category: "tools" },
     { id: "docx_pdf", label: "Word → PDF", description: "Word belgesini PDF yap", icon: "doc", color: "#2563EB", category: "documents" },
-    { id: "crop", label: "Kırp", description: "Oranlı görsel kırpma", icon: "crop", color: "#F59E0B", category: "tools" },
-    { id: "compress", label: "Sıkıştır", description: "Boyut optimizasyonu", icon: "compress", color: "#10B981", category: "tools" },
-    { id: "qr", label: "QR Kod", description: "QR oku veya oluştur", icon: "qr", color: "#3B82F6", category: "tools" },
+    { id: "pptx_pdf", label: "PPT → PDF", description: "PowerPoint sunumunu PDF yap", icon: "ppt", color: "#EA580C", category: "documents" },
+    { id: "xlsx_pdf", label: "Excel → PDF", description: "Elektronik tabloyu PDF yap", icon: "xls", color: "#059669", category: "documents" },
+    { id: "img_pdf", label: "Görselden PDF", description: "Seçili görselleri PDF yap", icon: "pdf", color: "#EF4444", category: "convert" },
+    { id: "compress", label: "Sıkıştır", description: "Kalite & boyut optimizasyonu", icon: "compress", color: "#10B981", category: "tools" },
   ];
 
   const currentItems: WheelItem[] =
@@ -62,14 +68,17 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
     }
   }, [isOpen, customItems]);
 
-  // Keyboard navigation
+  // Keyboard navigation & Profile switching
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
-      } else if (e.key === "ArrowRight" || e.key === "Tab") {
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        onCycleProfile?.(e.shiftKey ? -1 : 1);
+      } else if (e.key === "ArrowRight") {
         e.preventDefault();
         const nextIndex = (selectedIndex + 1) % currentItems.length;
         setSelectedIndex(nextIndex);
@@ -79,39 +88,47 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         const prevIndex = (selectedIndex - 1 + currentItems.length) % currentItems.length;
         setSelectedIndex(prevIndex);
         setHoveredItem(currentItems[prevIndex]);
-      } else if (e.key === "Enter") {
+      } else if (e.key === "Enter" || e.key === " ") {
         if (hoveredItem) {
           playSuccessChime();
           onSelectAction(hoveredItem.id, hoveredItem.category);
           onClose();
         }
-      } else if (["1", "2", "3", "4"].includes(e.key)) {
-        onCycleProfile?.();
+      } else if (e.key === "1") {
+        onSelectProfile?.("design");
+      } else if (e.key === "2") {
+        onSelectProfile?.("office");
+      } else if (e.key === "3") {
+        onSelectProfile?.("dev");
+      } else if (e.key === "4") {
+        onSelectProfile?.("custom");
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, selectedIndex, currentItems, hoveredItem, onClose, onSelectAction, onCycleProfile]);
+  }, [isOpen, selectedIndex, currentItems, hoveredItem, onClose, onSelectAction, onCycleProfile, onSelectProfile]);
 
   if (!isOpen) return null;
 
-  // Pie slice calculations
-  const radius = 185;
-  const innerRadius = 76;
+  // Pie slice geometry matching user photo
+  const radius = 190;
+  const innerRadius = 72;
   const total = Math.max(currentItems.length, 1);
   const angleStep = (2 * Math.PI) / total;
 
-  const renderIcon = (iconName: string, size = 18) => {
+  const renderIcon = (iconName: string, size = 20) => {
     switch (iconName) {
       case "image":
         return <FileImage size={size} />;
       case "pdf":
       case "doc":
-      case "ppt":
-      case "xls":
       case "txt":
         return <FileText size={size} />;
+      case "ppt":
+        return <Presentation size={size} />;
+      case "xls":
+        return <FileSpreadsheet size={size} />;
       case "crop":
         return <Crop size={size} />;
       case "compress":
@@ -141,7 +158,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
   const svgWheel = (
     <div
-      className="relative w-[400px] h-[400px] flex items-center justify-center select-none"
+      className="relative w-[420px] h-[420px] flex items-center justify-center select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -155,7 +172,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       onDrop={handleDrop}
     >
       <svg
-        className="w-full h-full transform -rotate-90 filter drop-shadow-[0_16px_50px_rgba(0,0,0,0.85)]"
+        className="w-full h-full transform -rotate-90 filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -163,35 +180,63 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         }}
       >
         <defs>
-          <linearGradient id="sliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1E2838" stopOpacity="0.94" />
-            <stop offset="100%" stopColor="#0D1522" stopOpacity="0.96" />
+          {/* Inactive slice frosted glass background */}
+          <linearGradient id="inactiveSliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#182030" stopOpacity="0.72" />
+            <stop offset="100%" stopColor="#0E1522" stopOpacity="0.78" />
           </linearGradient>
-          <linearGradient id="hoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#D97706" />
+
+          {/* Active hovered slice radiant orange-amber gradient matching photo */}
+          <linearGradient id="activeHoverGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor="#EA580C" stopOpacity="0.95" />
+            <stop offset="55%" stopColor="#F59E0B" stopOpacity="0.88" />
+            <stop offset="100%" stopColor="#D97706" stopOpacity="0.94" />
           </linearGradient>
-          <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(245, 158, 11, 0.25)" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
+
+          {/* Golden glow drop shadow for active slice */}
+          <filter id="activeGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#F59E0B" floodOpacity="0.65" />
+          </filter>
         </defs>
 
+        {/* Outer boundary circle */}
+        <circle
+          cx="210"
+          cy="210"
+          r={radius}
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.32)"
+          strokeWidth="1.5"
+          className="pointer-events-none"
+        />
+
+        {/* Inner boundary circle */}
+        <circle
+          cx="210"
+          cy="210"
+          r={innerRadius}
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.30)"
+          strokeWidth="1.5"
+          className="pointer-events-none"
+        />
+
+        {/* Wheel Slices */}
         {currentItems.map((item, index) => {
           const startAngle = index * angleStep;
           const endAngle = (index + 1) * angleStep;
           const isHovered = hoveredItem?.id === item.id;
 
-          // Coordinates
-          const x1 = 200 + radius * Math.cos(startAngle);
-          const y1 = 200 + radius * Math.sin(startAngle);
-          const x2 = 200 + radius * Math.cos(endAngle);
-          const y2 = 200 + radius * Math.sin(endAngle);
+          // Coordinates around center (210, 210)
+          const x1 = 210 + radius * Math.cos(startAngle);
+          const y1 = 210 + radius * Math.sin(startAngle);
+          const x2 = 210 + radius * Math.cos(endAngle);
+          const y2 = 210 + radius * Math.sin(endAngle);
 
-          const x3 = 200 + innerRadius * Math.cos(endAngle);
-          const y3 = 200 + innerRadius * Math.sin(endAngle);
-          const x4 = 200 + innerRadius * Math.cos(startAngle);
-          const y4 = 200 + innerRadius * Math.sin(startAngle);
+          const x3 = 210 + innerRadius * Math.cos(endAngle);
+          const y3 = 210 + innerRadius * Math.sin(endAngle);
+          const x4 = 210 + innerRadius * Math.cos(startAngle);
+          const y4 = 210 + innerRadius * Math.sin(startAngle);
 
           const largeArcFlag = angleStep > Math.PI ? 1 : 0;
 
@@ -205,8 +250,8 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
           const midAngle = startAngle + angleStep / 2;
           const textRadius = (radius + innerRadius) / 2;
-          const iconX = 200 + textRadius * Math.cos(midAngle);
-          const iconY = 200 + textRadius * Math.sin(midAngle);
+          const iconX = 210 + textRadius * Math.cos(midAngle);
+          const iconY = 210 + textRadius * Math.sin(midAngle);
 
           return (
             <g
@@ -225,9 +270,10 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
             >
               <path
                 d={pathData}
-                fill={isHovered ? "url(#hoverGrad)" : "url(#sliceGrad)"}
-                stroke={isHovered ? "rgba(254, 243, 199, 0.85)" : "rgba(255, 255, 255, 0.14)"}
+                fill={isHovered ? "url(#activeHoverGrad)" : "url(#inactiveSliceGrad)"}
+                stroke={isHovered ? "#FBBF24" : "rgba(255, 255, 255, 0.24)"}
                 strokeWidth={isHovered ? "2.5" : "1.2"}
+                filter={isHovered ? "url(#activeGlow)" : undefined}
                 className="transition-all duration-150"
               />
               <g
@@ -235,18 +281,21 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
                 className="pointer-events-none select-none"
               >
                 <g
-                  transform="translate(-10, -18)"
-                  className={isHovered ? "text-black" : "text-amber-400"}
+                  transform="translate(-11, -20)"
+                  className={
+                    isHovered
+                      ? "text-amber-950 drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)]"
+                      : "text-[#FBBF24] drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                  }
                 >
-                  {renderIcon(item.icon, 20)}
+                  {renderIcon(item.icon, 22)}
                 </g>
                 <text
                   x="0"
-                  y="14"
+                  y="15"
                   textAnchor="middle"
-                  className={`text-[11px] font-bold tracking-wider ${
-                    isHovered ? "fill-black" : "fill-neutral-200"
-                  }`}
+                  className="text-[11.5px] font-bold tracking-tight fill-white select-none pointer-events-none"
+                  style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.95))" }}
                 >
                   {item.label}
                 </text>
@@ -256,55 +305,84 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         })}
       </svg>
 
-      {/* Central Information Hub with Native Drag Handle */}
+      {/* Central Information Hub matching user photo */}
       <div
-        data-tauri-drag-region
-        className={`absolute w-[142px] h-[142px] rounded-full glass-panel flex flex-col items-center justify-center p-3 text-center shadow-2xl transition-all duration-200 pointer-events-auto cursor-grab active:cursor-grabbing ${
+        className={`absolute w-[140px] h-[140px] rounded-full glass-panel flex flex-col items-center justify-center p-3 text-center shadow-[0_20px_50px_rgba(0,0,0,0.85)] border-[1.5px] border-white/25 bg-[#0E1420]/90 backdrop-blur-3xl z-20 pointer-events-auto transition-all duration-200 ${
           isDragOver
-            ? "border-amber-400 scale-105 bg-amber-950/60"
-            : "border-white/[0.16] bg-[#0E1522]/95"
+            ? "border-amber-400 scale-105 bg-amber-950/70"
+            : ""
         }`}
+        onClick={(e) => e.stopPropagation()}
+        onWheel={(e) => {
+          e.stopPropagation();
+          if (e.deltaY > 0) onCycleProfile?.(1);
+          else onCycleProfile?.(-1);
+        }}
       >
         {/* Profile Pill Header */}
         {profileName && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onCycleProfile?.();
-            }}
-            className="pointer-events-auto px-2 py-0.5 rounded-full text-[9px] font-bold text-amber-300 bg-amber-400/15 border border-amber-400/30 mb-1 flex items-center gap-1 hover:bg-amber-400/25 transition-colors cursor-pointer"
-            title="Profili Değiştir (Tıkla veya 1-4 tuşları)"
-          >
-            <Sparkles size={9} />
-            <span className="truncate max-w-[85px]">{profileName}</span>
-          </button>
+          <div className="flex items-center justify-center gap-0.5 mb-1 z-30">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCycleProfile?.(-1);
+              }}
+              className="w-4 h-4 rounded-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 transition-all cursor-pointer"
+              title="Önceki Profil (Shift+Tab)"
+            >
+              <ChevronLeft size={11} />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCycleProfile?.(1);
+              }}
+              className="px-2 py-0.5 rounded-full text-[9.5px] font-bold text-amber-300 bg-amber-400/15 border border-amber-400/40 hover:bg-amber-400/25 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+              title="Profili Değiştir (Tıkla, Tab, Fare Tekerleği veya 1-4 tuşları)"
+            >
+              <Sparkles size={9} className="text-amber-400 shrink-0" />
+              <span className="truncate max-w-[78px]">{profileName}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCycleProfile?.(1);
+              }}
+              className="w-4 h-4 rounded-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 transition-all cursor-pointer"
+              title="Sonraki Profil (Tab)"
+            >
+              <ChevronRight size={11} />
+            </button>
+          </div>
         )}
 
         {/* Selected File Badge if any */}
-        {selectedFileNames.length > 0 ? (
-          <div className="flex flex-col items-center my-0.5 max-w-[120px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mb-0.5" />
-            <span className="text-[10px] font-semibold text-white truncate max-w-[110px]">
-              {selectedFileNames[0]}
-            </span>
+        {selectedFileNames.length > 0 && (
+          <div className="flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[8.5px] font-bold max-w-[110px] truncate mb-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+            <span className="truncate">{selectedFileNames[0]}</span>
           </div>
-        ) : null}
+        )}
 
         {/* Current Hovered Slice Details */}
         {hoveredItem ? (
           <div className="flex flex-col items-center animate-in fade-in zoom-in-95 duration-100">
-            <span className="font-extrabold text-xs text-white leading-tight">
+            <span className="font-black text-[12.5px] text-white leading-tight tracking-tight">
               {hoveredItem.label}
             </span>
-            <span className="text-[9px] text-neutral-300 leading-tight mt-0.5 line-clamp-2 px-1">
+            <span className="text-[9px] text-neutral-300/80 leading-tight mt-0.5 line-clamp-2 px-1 max-w-[115px]">
               {hoveredItem.description}
             </span>
           </div>
         ) : (
           <div className="flex flex-col items-center text-neutral-400">
-            <span className="text-[10px] font-semibold text-neutral-300">
-              {isDragOver ? "Dosyayı Bırakın!" : "İşlem Seçin"}
-            </span>
+            <span className="text-[11px] font-bold text-white">İşlem Seçin</span>
+            <span className="text-[8.5px] text-neutral-400 mt-0.5">veya dosya bırakın</span>
           </div>
         )}
       </div>
