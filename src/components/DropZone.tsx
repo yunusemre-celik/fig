@@ -84,7 +84,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
           Görselleri, Ekran Görüntülerini veya Belgeleri Bırakın
         </h3>
         <p className="text-xs text-neutral-400 max-w-md mb-5 leading-relaxed">
-          PNG, JPG, WebP, Word, PPT veya Excel dosyalarını sürükleyin. Panodaki ekran görüntülerini doğrudan <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-amber-300 font-mono text-[10px] border border-white/[0.1]">Ctrl + V</kbd> ile yapıştırabilirsiniz.
+          PNG, JPG, WebP, Word, PPT veya Excel dosyalarını sürükleyin. Panodaki ekran görüntülerini doğrudan <kbd>Ctrl + V</kbd> ile yapıştırabilirsiniz.
         </p>
 
         {/* Action Buttons */}
@@ -95,7 +95,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
               e.stopPropagation();
               fileInputRef.current?.click();
             }}
-            className="glass-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-neutral-200 hover:text-white transition-all"
+            className="glass-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-neutral-200 hover:text-white transition-all"
           >
             <FolderPlus size={15} className="text-amber-400" />
             <span>Dosya Seç</span>
@@ -108,7 +108,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
                 e.stopPropagation();
                 onOpenWheel();
               }}
-              className="glass-btn-accent flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg hover:scale-105"
+              className="glass-btn-accent flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all shadow-md"
             >
               <Sparkles size={14} />
               <span>İmleçte Çarkı Aç</span>

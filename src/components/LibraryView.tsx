@@ -49,7 +49,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             placeholder="Kütüphanede ara (Ctrl+F)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-xs text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-[var(--fluent-bg-control)] border border-[var(--fluent-stroke-control)] text-xs text-neutral-100 placeholder:text-neutral-500 focus:outline-none focus:border-amber-500 transition-colors"
           />
         </div>
 

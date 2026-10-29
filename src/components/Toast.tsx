@@ -24,22 +24,22 @@ export const Toast: React.FC<ToastProps> = ({ toasts, onDismiss }) => {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`pointer-events-auto p-4 rounded-2xl glass-panel shadow-2xl border animate-in slide-in-from-bottom-4 fade-in duration-200 text-xs ${
+          className={`pointer-events-auto p-4 rounded-xl glass-panel shadow-2xl border animate-in slide-in-from-bottom-4 fade-in duration-200 text-xs backdrop-blur-2xl ${
             toast.type === "success"
-              ? "border-emerald-500/30 bg-[#0E1B15]/90"
+              ? "border-[var(--fluent-success-border)] bg-[rgba(15,28,20,0.85)]"
               : toast.type === "error"
-              ? "border-rose-500/30 bg-[#241114]/90"
-              : "border-blue-500/30 bg-[#101726]/90"
+              ? "border-[var(--fluent-error-border)] bg-[rgba(36,18,22,0.85)]"
+              : "border-[var(--fluent-info-border)] bg-[rgba(18,28,42,0.85)]"
           }`}
         >
           <div className="flex items-start gap-3">
             <div
-              className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                 toast.type === "success"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  ? "bg-[var(--fluent-success-bg)] text-[var(--fluent-success)] border border-[var(--fluent-success-border)]"
                   : toast.type === "error"
-                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                  : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                  ? "bg-[var(--fluent-error-bg)] text-[var(--fluent-error)] border border-[var(--fluent-error-border)]"
+                  : "bg-[var(--fluent-info-bg)] text-[var(--fluent-info)] border border-[var(--fluent-info-border)]"
               }`}
             >
               {toast.type === "success" && <CheckCircle2 size={16} />}

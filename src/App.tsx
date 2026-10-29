@@ -406,10 +406,8 @@ export function App() {
           <span className="text-white/20">•</span>
           <div className="has-tooltip flex items-center gap-1.5 cursor-pointer" onClick={handleTriggerWheel}>
             <span>İmleçte Hızlı Çark:</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.12] text-amber-300 font-mono text-[10px]">
-              Ctrl + Space
-            </kbd>
-            <div className="tooltip top-full mt-2 right-0 px-2.5 py-1 rounded-lg bg-[#141A24]/95 border border-amber-400/30 text-[10px] text-amber-200 shadow-xl backdrop-blur-xl">
+            <kbd>Ctrl + Space</kbd>
+            <div className="tooltip top-full mt-2 right-0 px-2.5 py-1 text-[11px] pointer-events-none">
               Tıkla veya Ctrl+Space bas
             </div>
           </div>

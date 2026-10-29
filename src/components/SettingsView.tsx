@@ -138,39 +138,27 @@ export const SettingsView: React.FC = () => {
         <div className="space-y-2 text-xs divide-y divide-white/[0.06]">
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-300 font-medium">İmleçte Hızlı Çarkı Aç (Global)</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-amber-400/15 border border-amber-400/30 text-amber-300 font-mono text-[11px]">
-              Ctrl + Space
-            </kbd>
+            <kbd>Ctrl + Space</kbd>
           </div>
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-400">Panodan Ekran Görüntüsü / Dosya Yapıştır</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-neutral-300 font-mono text-[11px]">
-              Ctrl + V
-            </kbd>
+            <kbd>Ctrl + V</kbd>
           </div>
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-400">Ana Sayfa (Görsel & SS)</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-neutral-300 font-mono text-[11px]">
-              Ctrl + 1
-            </kbd>
+            <kbd>Ctrl + 1</kbd>
           </div>
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-400">Belgeler (Word, PPT, Excel → PDF)</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-neutral-300 font-mono text-[11px]">
-              Ctrl + 2
-            </kbd>
+            <kbd>Ctrl + 2</kbd>
           </div>
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-400">Çark Stüdyosu (Özelleştirme)</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-neutral-300 font-mono text-[11px]">
-              Ctrl + 3
-            </kbd>
+            <kbd>Ctrl + 3</kbd>
           </div>
           <div className="flex items-center justify-between py-2.5">
             <span className="text-neutral-400">Kütüphane Geçmişi</span>
-            <kbd className="px-2 py-0.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-neutral-300 font-mono text-[11px]">
-              Ctrl + 4
-            </kbd>
+            <kbd>Ctrl + 4</kbd>
           </div>
         </div>
       </div>

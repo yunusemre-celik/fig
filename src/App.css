@@ -1,19 +1,119 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Windows 11 WinUI 3 / Fluent Design System — Token Layer
+   Fig App · Tauri v2 · Mica/Acrylic Native Vibrancy
+   ============================================================ */
+
+:root {
+  /* === ARKA PLAN — Katmanlı Mica/Acrylic Sistemi === */
+  --fluent-bg-base: transparent;
+  --fluent-bg-card: rgba(255, 255, 255, 0.060);
+  --fluent-bg-card-hover: rgba(255, 255, 255, 0.085);
+  --fluent-bg-card-pressed: rgba(255, 255, 255, 0.035);
+  --fluent-bg-secondary: rgba(255, 255, 255, 0.034);
+  --fluent-bg-tertiary: rgba(255, 255, 255, 0.022);
+  --fluent-bg-control: rgba(255, 255, 255, 0.054);
+  --fluent-bg-control-hover: rgba(255, 255, 255, 0.080);
+  --fluent-bg-control-pressed: rgba(255, 255, 255, 0.030);
+
+  /* === YAZI RENKLERİ — Fluent Dark Theme === */
+  --fluent-text-primary: rgba(255, 255, 255, 1.0);
+  --fluent-text-secondary: rgba(255, 255, 255, 0.606);
+  --fluent-text-tertiary: rgba(255, 255, 255, 0.446);
+  --fluent-text-disabled: rgba(255, 255, 255, 0.363);
+  --fluent-text-on-accent: rgba(0, 0, 0, 1.0);
+
+  /* === STROKE — Sınır & Çizgi Sistemi === */
+  --fluent-stroke-surface: rgba(255, 255, 255, 0.070);
+  --fluent-stroke-control: rgba(255, 255, 255, 0.054);
+  --fluent-stroke-divider: rgba(255, 255, 255, 0.084);
+  --fluent-stroke-focus: rgba(255, 255, 255, 1.0);
+  --fluent-stroke-subtle: rgba(255, 255, 255, 0.15);
+  --fluent-stroke-bottom: rgba(0, 0, 0, 0.22);
+
+  /* === ACCENT — Fig Amber Vurgu Rengi === */
+  --fluent-accent: #F5A623;
+  --fluent-accent-hover: #E8961A;
+  --fluent-accent-pressed: #D4881A;
+  --fluent-accent-light: rgba(245, 166, 35, 0.15);
+  --fluent-accent-border: rgba(245, 166, 35, 0.38);
+  --fluent-accent-text: #000000;
+
+  /* === DURUM RENKLERİ === */
+  --fluent-success: rgba(108, 203, 95, 1.0);
+  --fluent-success-bg: rgba(108, 203, 95, 0.10);
+  --fluent-success-border: rgba(108, 203, 95, 0.30);
+  --fluent-error: rgba(255, 153, 164, 1.0);
+  --fluent-error-bg: rgba(255, 153, 164, 0.10);
+  --fluent-error-border: rgba(255, 153, 164, 0.30);
+  --fluent-info: rgba(96, 205, 255, 1.0);
+  --fluent-info-bg: rgba(96, 205, 255, 0.10);
+  --fluent-info-border: rgba(96, 205, 255, 0.30);
+
+  /* === TİPOGRAFİ — Segoe UI Variable (WinUI Type Ramp) === */
+  --fluent-font: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI",
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  --fluent-font-display: "Segoe UI Variable Display", "Segoe UI Variable",
+    "Segoe UI", sans-serif;
+  --fluent-size-caption: 12px;
+  --fluent-size-body: 14px;
+  --fluent-size-body-strong: 14px;
+  --fluent-size-subtitle: 20px;
+  --fluent-size-title: 28px;
+  --fluent-weight-regular: 400;
+  --fluent-weight-semibold: 600;
+  --fluent-weight-bold: 700;
+  --fluent-line-body: 20px;
+
+  /* === KENAR YUVARLAMA — WinUI Corner Radius === */
+  --fluent-radius-sm: 4px;
+  --fluent-radius-md: 8px;
+  --fluent-radius-lg: 12px;
+  --fluent-radius-xl: 16px;
+  --fluent-radius-2xl: 20px;
+  --fluent-radius-full: 9999px;
+
+  /* === ELEVATION — WinUI Shadow System === */
+  --fluent-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.13), 0 0 2px rgba(0, 0, 0, 0.09);
+  --fluent-shadow-4: 0 2px 4px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.10);
+  --fluent-shadow-8: 0 4px 8px rgba(0, 0, 0, 0.14), 0 0 4px rgba(0, 0, 0, 0.10);
+  --fluent-shadow-16: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 4px rgba(0, 0, 0, 0.10);
+  --fluent-shadow-28: 0 14px 28px rgba(0, 0, 0, 0.20), 0 0 8px rgba(0, 0, 0, 0.12);
+  --fluent-shadow-64: 0 32px 64px rgba(0, 0, 0, 0.24), 0 0 16px rgba(0, 0, 0, 0.14);
+
+  /* === BLUR — Malzeme Katmanları === */
+  --fluent-blur-acrylic: blur(60px) saturate(180%);
+  --fluent-blur-mica: blur(30px) saturate(150%);
+  --fluent-blur-card: blur(24px) saturate(140%);
+  --fluent-blur-overlay: blur(16px) saturate(160%);
+  --fluent-blur-subtle: blur(8px) saturate(120%);
+}
+
+/* ============================================================
+   TEMEL SAYFA — Şeffaf Base (Mica/Acrylic wallpaper geçişi)
+   ============================================================ */
+
 html, body, #root {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   background-color: transparent !important;
-  color: #F0F6FC;
-  font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  color: var(--fluent-text-primary);
+  font-family: var(--fluent-font);
+  font-size: var(--fluent-size-body);
+  font-weight: var(--fluent-weight-regular);
+  line-height: 1.4286;
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
 }
 
-/* Standalone wheel window - 100% transparent with zero background */
+/* ============================================================
+   WHEEL WINDOW — Tam şeffaf, dekore edilmemiş
+   ============================================================ */
+
 html.wheel-window,
 body.wheel-window,
 body.wheel-window #root,
@@ -25,80 +125,191 @@ body.wheel-window #root,
   overflow: hidden !important;
 }
 
-/* Glassmorphism Design System with Native Windows 11 Vibrancy */
+/* ============================================================
+   FLUENT PANEL — Navigation, Toolbar, Header çubuğu
+   WinUI: SmokeFill / AcrylicInAppFill malzemesi
+   ============================================================ */
+
 .glass-panel {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(40px) saturate(220%) brightness(1.1);
-  -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-top: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: var(--fluent-bg-card);
+  backdrop-filter: var(--fluent-blur-card);
+  -webkit-backdrop-filter: var(--fluent-blur-card);
+  border: 1px solid var(--fluent-stroke-surface);
+  border-top-color: var(--fluent-stroke-subtle);
+  box-shadow: var(--fluent-shadow-4);
 }
 
+/* ============================================================
+   FLUENT KART — İçerik kartları
+   WinUI: CardBackgroundFillColorDefault
+   ============================================================ */
+
 .glass-card {
-  background: rgba(255, 255, 255, 0.055);
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 8px 28px -4px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.10);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--fluent-bg-secondary);
+  backdrop-filter: var(--fluent-blur-card);
+  -webkit-backdrop-filter: var(--fluent-blur-card);
+  border: 1px solid var(--fluent-stroke-control);
+  border-top-color: var(--fluent-stroke-subtle);
+  box-shadow: var(--fluent-shadow-2);
+  border-radius: var(--fluent-radius-xl);
+  transition: background 0.1s ease, border-color 0.1s ease,
+    box-shadow 0.1s ease, transform 0.1s ease;
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(245, 158, 11, 0.38);
-  border-top-color: rgba(245, 158, 11, 0.60);
-  box-shadow: 0 12px 36px -4px rgba(245, 158, 11, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background: var(--fluent-bg-card-hover);
+  border-color: var(--fluent-accent-border);
+  border-top-color: rgba(245, 166, 35, 0.45);
+  box-shadow: var(--fluent-shadow-8);
   transform: translateY(-1px);
 }
 
+.glass-card:active {
+  background: var(--fluent-bg-card-pressed);
+  transform: translateY(0);
+  box-shadow: var(--fluent-shadow-2);
+}
+
+/* ============================================================
+   FLUENT BUTTON — Standart buton
+   WinUI: ButtonBackgroundFillColor + BottomStroke depth
+   ============================================================ */
+
 .glass-btn {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-top: 1px solid rgba(255, 255, 255, 0.24);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--fluent-bg-control);
+  backdrop-filter: var(--fluent-blur-overlay);
+  -webkit-backdrop-filter: var(--fluent-blur-overlay);
+  border: 1px solid var(--fluent-stroke-control);
+  border-bottom-color: var(--fluent-stroke-bottom);
+  border-radius: var(--fluent-radius-md);
+  color: var(--fluent-text-primary);
+  box-shadow: var(--fluent-shadow-2);
+  transition: background 0.1s ease, border-color 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 .glass-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.20);
-  border-top-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+  background: var(--fluent-bg-control-hover);
+  border-color: var(--fluent-stroke-subtle);
+  box-shadow: var(--fluent-shadow-4);
 }
 
+.glass-btn:active {
+  background: var(--fluent-bg-control-pressed);
+  border-bottom-color: var(--fluent-stroke-control);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+/* ============================================================
+   FLUENT ACCENT BUTTON — Birincil aksiyon
+   WinUI: AccentButtonBackground + gradient depth highlight
+   ============================================================ */
+
 .glass-btn-accent {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.9));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(254, 243, 199, 0.35);
-  border-top: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 6px 20px -2px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  color: #000;
-  font-weight: 600;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 100%
+  ),
+  var(--fluent-accent);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom-color: rgba(0, 0, 0, 0.28);
+  border-radius: var(--fluent-radius-md);
+  color: var(--fluent-accent-text);
+  font-weight: var(--fluent-weight-semibold);
+  box-shadow: var(--fluent-shadow-2);
+  transition: background 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
 }
 
 .glass-btn-accent:hover {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 1), rgba(245, 158, 11, 0.95));
-  box-shadow: 0 8px 25px -2px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px) scale(1.02);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  ),
+  var(--fluent-accent-hover);
+  box-shadow: var(--fluent-shadow-4);
 }
 
-/* Ambient glow — very subtle tint so Mica/Acrylic wallpaper bleeds through */
+.glass-btn-accent:active {
+  background: var(--fluent-accent-pressed);
+  border-bottom-color: rgba(0, 0, 0, 0.14);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+/* ============================================================
+   MICA ANA ARKA PLAN — Çok ince ambient overlay
+   DWM'nin wallpaper blur'u görünür kılmak için max %12 opak
+   ============================================================ */
+
 .bg-mesh-glass {
-  background-color: rgba(8, 10, 18, 0.18);
-  background-image: 
-    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 42%),
-    radial-gradient(circle at 90% 15%, rgba(245, 158, 11, 0.10) 0%, transparent 48%),
-    radial-gradient(circle at 50% 90%, rgba(139, 92, 246, 0.09) 0%, transparent 52%),
-    radial-gradient(circle at 75% 65%, rgba(16, 185, 129, 0.07) 0%, transparent 38%);
+  background-color: rgba(10, 12, 20, 0.12);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -5%,
+      rgba(245, 166, 35, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 5% 85%,
+      rgba(59, 130, 246, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 75%,
+      rgba(139, 92, 246, 0.04) 0%, transparent 55%);
 }
 
-/* Tooltip container and styling */
+/* ============================================================
+   FLUENT FOCUS RING — WinUI FocusVisual
+   ============================================================ */
+
+.fluent-focus:focus-visible {
+  outline: 2px solid var(--fluent-stroke-focus);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* ============================================================
+   FLUENT DIVIDER
+   ============================================================ */
+
+.fluent-divider {
+  height: 1px;
+  background: var(--fluent-stroke-divider);
+  border: none;
+  margin: 0;
+}
+
+/* ============================================================
+   FLUENT INPUT — WinUI TextBox
+   ============================================================ */
+
+input[type="text"],
+input[type="search"],
+textarea {
+  background: var(--fluent-bg-control);
+  border: 1px solid var(--fluent-stroke-control);
+  border-bottom: 2px solid var(--fluent-stroke-subtle);
+  border-radius: var(--fluent-radius-md) var(--fluent-radius-md) 0 0;
+  color: var(--fluent-text-primary);
+  font-family: var(--fluent-font);
+  font-size: var(--fluent-size-body);
+  transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+input[type="text"]:hover,
+input[type="search"]:hover {
+  background: var(--fluent-bg-control-hover);
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+  outline: none;
+  background: var(--fluent-bg-control-hover);
+  border-bottom-color: var(--fluent-accent);
+}
+
+/* ============================================================
+   TOOLTIP — WinUI TeachingTip / ToolTip Flyout stili
+   ============================================================ */
+
 .has-tooltip {
   position: relative;
 }
@@ -109,9 +320,18 @@ body.wheel-window #root,
   position: absolute;
   z-index: 50;
   pointer-events: none;
-  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.12s ease, transform 0.12s ease;
   transform: translateY(4px);
   white-space: nowrap;
+  background: rgba(44, 44, 44, 0.96);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--fluent-stroke-surface);
+  border-radius: var(--fluent-radius-md);
+  box-shadow: var(--fluent-shadow-16);
+  color: var(--fluent-text-primary);
+  font-family: var(--fluent-font);
+  font-size: 12px;
 }
 
 .has-tooltip:hover .tooltip {
@@ -120,10 +340,13 @@ body.wheel-window #root,
   transform: translateY(0);
 }
 
-/* Custom modern thin scrollbar */
+/* ============================================================
+   SCROLLBAR — WinUI ince modern scrollbar
+   ============================================================ */
+
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -131,10 +354,31 @@ body.wheel-window #root,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--fluent-radius-full);
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ============================================================
+   KBD — Kısayol tuşu görünümü (WinUI KeyboardAccelerator)
+   ============================================================ */
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: var(--fluent-radius-sm);
+  background: var(--fluent-bg-control);
+  border: 1px solid var(--fluent-stroke-control);
+  border-bottom-color: var(--fluent-stroke-bottom);
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 10px;
+  color: var(--fluent-text-secondary);
+  box-shadow: var(--fluent-shadow-2);
+  letter-spacing: 0.02em;
 }
