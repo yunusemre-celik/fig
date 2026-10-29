@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { RadialWheel } from "./RadialWheel";
 import { PRESET_PROFILES } from "./WheelStudio";
 import { FileInfo, WheelItem, WheelMode, WheelProfileId } from "../types";
@@ -6,6 +7,7 @@ import {
   hideWheel,
   showMainWindow,
   convertImage,
+  censorImage,
   convertDocument,
   convertMedia,
   convertPdf,
@@ -42,6 +44,7 @@ export const FloatingWheelWindow: React.FC = () => {
   });
 
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
+  const [profileOverride, setProfileOverride] = useState<WheelProfileId | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [lastOutputPath, setLastOutputPath] = useState<string | null>(null);
   const [lastOutputName, setLastOutputName] = useState<string | null>(null);
@@ -76,6 +79,7 @@ export const FloatingWheelWindow: React.FC = () => {
           }
         }
         setSelectedFiles(infoList);
+        setProfileOverride(null);
         if (infoList.length === 1) {
           setStatusMessage(`${infoList[0].name} seçili`);
         } else {
@@ -98,6 +102,11 @@ export const FloatingWheelWindow: React.FC = () => {
     document.body.style.backgroundColor = "transparent";
 
     refreshExplorerSelection();
+
+    // Listen to wheel-shown event emitted directly from native Rust hotkey
+    const unlistenPromise = listen("wheel-shown", () => {
+      refreshExplorerSelection();
+    });
 
     const handleStorage = () => {
       const p = (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
@@ -129,6 +138,7 @@ export const FloatingWheelWindow: React.FC = () => {
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("paste", handlePaste);
       window.removeEventListener("focus", handleFocus);
+      unlistenPromise.then((unlisten) => unlisten());
     };
   }, [refreshExplorerSelection]);
 
@@ -139,22 +149,31 @@ export const FloatingWheelWindow: React.FC = () => {
       setLastOutputPath(null);
       setLastOutputName(null);
       setSelectedFiles([]);
+      setProfileOverride(null);
     } catch (err) {
       console.error("Failed to hide wheel:", err);
     }
   };
 
   const handleCycleProfile = (direction: 1 | -1 = 1) => {
-    const order: WheelProfileId[] = ["office", "design", "media", "dev", "custom"];
-    const currIdx = order.indexOf(activeProfile);
+    const order: string[] = selectedFiles.length > 0
+      ? ["smart", "office", "design", "media", "dev", "custom"]
+      : ["office", "design", "media", "dev", "custom"];
+    const current = profileOverride || (selectedFiles.length > 0 ? "smart" : activeProfile);
+    const currIdx = order.indexOf(current);
     const nextIdx = (currIdx + direction + order.length) % order.length;
-    const nextProfile = order[nextIdx];
-    setActiveProfile(nextProfile);
-    localStorage.setItem("fig_active_profile", nextProfile);
-    window.dispatchEvent(new Event("storage"));
+    const next = order[nextIdx];
+    if (next === "smart") {
+      setProfileOverride(null);
+    } else {
+      setProfileOverride(next as WheelProfileId);
+      setActiveProfile(next as WheelProfileId);
+      localStorage.setItem("fig_active_profile", next);
+    }
   };
 
   const handleSelectProfile = (id: WheelProfileId) => {
+    setProfileOverride(id);
     setActiveProfile(id);
     localStorage.setItem("fig_active_profile", id);
     window.dispatchEvent(new Event("storage"));
@@ -182,10 +201,19 @@ export const FloatingWheelWindow: React.FC = () => {
 
   // Smart Contextual Slices Generator
   const getDynamicSlices = (): { profileTitle: string; items: WheelItem[] } => {
+    // If the user manually cycled profiles via center < or > buttons, respect that selection
+    if (profileOverride) {
+      const preset = PRESET_PROFILES[profileOverride] || PRESET_PROFILES.office;
+      return {
+        profileTitle: preset.name,
+        items: profileOverride === "custom" ? customSlices : preset.items,
+      };
+    }
+
     if (selectedFiles.length === 1) {
       const ext = selectedFiles[0].extension.toLowerCase();
 
-      // 1. PDF File Contextual Slices
+      // 1. PDF File Contextual Slices (Strictly isolated - never shows Video or Office conversions)
       if (ext === "pdf") {
         return {
           profileTitle: "PDF Akıllı Araçları",
@@ -245,7 +273,7 @@ export const FloatingWheelWindow: React.FC = () => {
         };
       }
 
-      // 5. Image Contextual Slices
+      // 5. Image Contextual Slices (WebP, PNG, JPG, Censor/Blur, Crop, Image-PDF, ICO, Compress)
       if (["png", "jpg", "jpeg", "webp", "bmp", "ico", "gif", "tiff"].includes(ext)) {
         return {
           profileTitle: "Görsel & Fotoğraf",
@@ -253,14 +281,16 @@ export const FloatingWheelWindow: React.FC = () => {
             { id: "webp", label: "WebP", description: "Hızlı & modern web formatı", icon: "image", color: "#10B981", category: "convert" },
             { id: "png", label: "PNG", description: "Kayıpsız şeffaf görsel", icon: "image", color: "#3B82F6", category: "convert" },
             { id: "jpg", label: "JPG", description: "Optimize web fotoğrafı", icon: "image", color: "#F59E0B", category: "convert" },
-            { id: "ico", label: "ICO İkon", description: "256x256 Windows simgesi", icon: "image", color: "#6366F1", category: "convert" },
-            { id: "img_pdf", label: "Görselden PDF", description: "PDF belgesine dönüştür", icon: "pdf", color: "#EF4444", category: "convert" },
+            { id: "censor", label: "Sansürle / Blur", description: "Hassas bilgileri bulanıklaştır", icon: "censor", color: "#6366F1", category: "tools" },
             { id: "crop", label: "Kırp & Düzenle", description: "Görseli kırp ve düzenle", icon: "crop", color: "#EC4899", category: "tools" },
+            { id: "img_pdf", label: "Görselden PDF", description: "PDF belgesine dönüştür", icon: "pdf", color: "#EF4444", category: "convert" },
+            { id: "ico", label: "ICO İkon", description: "256x256 Windows simgesi", icon: "image", color: "#8B5CF6", category: "convert" },
+            { id: "compress", label: "Sıkıştır", description: "Kalite & boyut optimizasyonu", icon: "compress", color: "#14B8A6", category: "tools" },
           ],
         };
       }
 
-      // 6. Video Contextual Slices
+      // 6. Video Contextual Slices (Strictly isolated - never shows PDF or Office)
       if (["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"].includes(ext)) {
         return {
           profileTitle: "Video Dönüştürücü",
@@ -275,7 +305,7 @@ export const FloatingWheelWindow: React.FC = () => {
         };
       }
 
-      // 7. Audio Contextual Slices
+      // 7. Audio Contextual Slices (Strictly audio formats)
       if (["mp3", "wav", "flac", "aac", "ogg", "m4a"].includes(ext)) {
         return {
           profileTitle: "Ses Dönüştürücü",
@@ -304,6 +334,7 @@ export const FloatingWheelWindow: React.FC = () => {
             { id: "webp", label: "Toplu WebP Yap", description: "Tümünü WebP formatına dönüştür", icon: "image", color: "#10B981", category: "convert" },
             { id: "png", label: "Toplu PNG Yap", description: "Tümünü PNG formatına dönüştür", icon: "image", color: "#3B82F6", category: "convert" },
             { id: "jpg", label: "Toplu JPG Yap", description: "Tümünü JPG formatına dönüştür", icon: "image", color: "#F59E0B", category: "convert" },
+            { id: "censor", label: "Toplu Sansürle / Blur", description: "Tüm görselleri bulanıklaştır", icon: "censor", color: "#6366F1", category: "tools" },
             { id: "copy_path", label: "Yolları Kopyala", description: "Tüm dosya yollarını panoya aktar", icon: "copy", color: "#06B6D4", category: "actions" },
             { id: "reveal", label: "Explorer'da Aç", description: "Klasörde göster", icon: "folder", color: "#8B5CF6", category: "actions" },
           ],
@@ -336,7 +367,7 @@ export const FloatingWheelWindow: React.FC = () => {
     if (id.includes("pptx") || id.includes("ppt")) return "ppt";
     if (id.includes("xlsx") || id.includes("xls")) return "xls";
     if (id.includes("pdf") || id === "img_pdf") return "image";
-    if (["webp", "png", "jpg", "bmp", "ico", "gif", "tiff", "crop", "compress"].includes(id)) return "image";
+    if (["webp", "png", "jpg", "bmp", "ico", "gif", "tiff", "crop", "compress", "censor"].includes(id)) return "image";
     if (["extract_audio", "video_gif", "video_mp4", "video_webm", "audio_wav", "audio_flac"].includes(id)) return "all";
     return "all";
   };
@@ -395,6 +426,27 @@ export const FloatingWheelWindow: React.FC = () => {
     if (actionId === "crop" || actionId === "compress" || actionId === "qr" || actionId === "info") {
       await showMainWindow();
       await handleClose();
+      return;
+    }
+
+    // 0. Censor / Blur Action
+    if (actionId === "censor") {
+      try {
+        setStatusMessage(files.length > 1 ? `${files.length} Görsel Sansürleniyor...` : "Görsel Sansürleniyor...");
+        let lastRes: FileInfo | null = null;
+        for (const file of files) {
+          lastRes = await censorImage(file.path, 16.0);
+        }
+        playSuccessChime();
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+        if (lastRes) {
+          setStatusMessage(files.length > 1 ? `${files.length} Görsel Sansürlendi!` : `Hazır: ${lastRes.name}`);
+          setLastOutputPath(lastRes.path);
+          setLastOutputName(lastRes.name);
+        }
+      } catch (err) {
+        setStatusMessage(`Hata: ${err}`);
+      }
       return;
     }
 

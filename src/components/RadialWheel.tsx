@@ -18,6 +18,7 @@ import {
   FileSpreadsheet,
   Music,
   Film,
+  EyeOff,
 } from "lucide-react";
 
 interface RadialWheelProps {
@@ -147,6 +148,8 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         return <FileSpreadsheet size={size} />;
       case "crop":
         return <Crop size={size} />;
+      case "censor":
+        return <EyeOff size={size} />;
       case "compress":
         return <Minimize2 size={size} />;
       case "qr":
@@ -337,9 +340,9 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         })}
       </svg>
 
-      {/* Central Information Hub matching user photo */}
+      {/* Central Split Hub: NO TEXT, divided into Left (<) and Right (>) navigation buttons */}
       <div
-        className={`absolute w-[140px] h-[140px] rounded-full glass-panel flex flex-col items-center justify-center p-3 text-center shadow-[0_20px_50px_rgba(0,0,0,0.85)] border-[1.5px] border-white/25 bg-[#0E1420]/90 backdrop-blur-3xl z-20 pointer-events-auto transition-all duration-200 ${
+        className={`absolute w-[140px] h-[140px] rounded-full overflow-hidden flex items-stretch shadow-[0_20px_50px_rgba(0,0,0,0.85)] border-[1.5px] border-white/25 bg-[#0B101B]/85 backdrop-blur-3xl z-20 pointer-events-auto transition-all duration-200 ${
           isDragOver
             ? "border-amber-400 scale-105 bg-amber-950/70"
             : ""
@@ -347,80 +350,65 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         onClick={(e) => e.stopPropagation()}
         onWheel={(e) => {
           e.stopPropagation();
+          playWheelTick();
           if (e.deltaY > 0) onCycleProfile?.(1);
           else onCycleProfile?.(-1);
         }}
       >
-        {/* Profile Pill Header */}
-        {profileName && (
-          <div className="flex items-center justify-center gap-0.5 mb-1 z-30">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCycleProfile?.(-1);
-              }}
-              className="w-4 h-4 rounded-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 transition-all cursor-pointer"
-              title="Önceki Profil (Shift+Tab)"
-            >
-              <ChevronLeft size={11} />
-            </button>
+        {/* Left Half: Previous Profile / Category */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            playWheelTick();
+            onCycleProfile?.(-1);
+          }}
+          className="flex-1 h-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer group pr-0.5"
+          title="Önceki Profil / Kategori (Shift+Tab)"
+        >
+          <ChevronLeft size={32} strokeWidth={2.4} className="group-hover:-translate-x-0.5 transition-transform drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
+        </button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCycleProfile?.(1);
-              }}
-              className="px-2 py-0.5 rounded-full text-[9.5px] font-bold text-amber-300 bg-amber-400/15 border border-amber-400/40 hover:bg-amber-400/25 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
-              title="Profili Değiştir (Tıkla, Tab, Fare Tekerleği veya 1-4 tuşları)"
-            >
-              <Sparkles size={9} className="text-amber-400 shrink-0" />
-              <span className="truncate max-w-[78px]">{profileName}</span>
-            </button>
+        {/* Vertical divider line down the middle */}
+        <div className="w-[1px] h-full bg-white/20 shrink-0" />
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCycleProfile?.(1);
-              }}
-              className="w-4 h-4 rounded-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 transition-all cursor-pointer"
-              title="Sonraki Profil (Tab)"
-            >
-              <ChevronRight size={11} />
-            </button>
-          </div>
-        )}
+        {/* Right Half: Next Profile / Category */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            playWheelTick();
+            onCycleProfile?.(1);
+          }}
+          className="flex-1 h-full flex items-center justify-center text-amber-400/80 hover:text-amber-300 hover:bg-amber-400/20 active:scale-95 transition-all cursor-pointer group pl-0.5"
+          title="Sonraki Profil / Kategori (Tab)"
+        >
+          <ChevronRight size={32} strokeWidth={2.4} className="group-hover:translate-x-0.5 transition-transform drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
+        </button>
+      </div>
 
-        {/* Selected File Badge if any */}
-        {selectedFileNames.length > 0 && (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[8.5px] font-bold max-w-[115px] truncate mb-0.5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
-            <span className="truncate">
-              {selectedFileNames.length === 1
-                ? selectedFileNames[0]
-                : `${selectedFileNames.length} Dosya Seçili`}
-            </span>
-          </div>
-        )}
-
-        {/* Current Hovered Slice Details */}
+      {/* Floating Info Pill below the wheel (outside the center) */}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
         {hoveredItem ? (
-          <div className="flex flex-col items-center animate-in fade-in zoom-in-95 duration-100">
-            <span className="font-black text-[12.5px] text-white leading-tight tracking-tight">
-              {hoveredItem.label}
-            </span>
-            <span className="text-[9px] text-neutral-300/80 leading-tight mt-0.5 line-clamp-2 px-1 max-w-[115px]">
-              {hoveredItem.description}
-            </span>
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0E1422]/90 border border-white/20 backdrop-blur-2xl shadow-2xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
+            <span className="font-bold text-[12px] text-amber-300">{hoveredItem.label}</span>
+            <span className="w-1 h-1 rounded-full bg-white/30" />
+            <span className="text-[11px] text-neutral-300 max-w-[240px] truncate">{hoveredItem.description}</span>
           </div>
-        ) : (
-          <div className="flex flex-col items-center text-neutral-400">
-            <span className="text-[11px] font-bold text-white">İşlem Seçin</span>
-            <span className="text-[8.5px] text-neutral-400 mt-0.5">veya dosya bırakın</span>
+        ) : profileName ? (
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E1422]/80 border border-amber-400/30 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-amber-300 whitespace-nowrap">
+            <Sparkles size={11} className="text-amber-400" />
+            <span>{profileName}</span>
+            {selectedFileNames.length > 0 && (
+              <>
+                <span className="w-1 h-1 rounded-full bg-amber-400/40" />
+                <span className="text-[10px] text-emerald-300 font-normal truncate max-w-[140px]">
+                  {selectedFileNames.length === 1 ? selectedFileNames[0] : `${selectedFileNames.length} dosya`}
+                </span>
+              </>
+            )}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

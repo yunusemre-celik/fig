@@ -470,6 +470,54 @@ pub fn compress_image(
     get_file_info(out_path_str)
 }
 
+// 4b. censor_image (Gaussian blur / censor tool)
+#[cfg_attr(not(test), tauri::command)]
+pub fn censor_image(input_path: String, blur_sigma: Option<f32>) -> Result<FileInfo, String> {
+    let in_path = Path::new(&input_path);
+    if !in_path.exists() {
+        return Err(format!("Girdi görseli bulunamadı: {}", input_path));
+    }
+
+    let size_before = std::fs::metadata(in_path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
+    let img = image::open(in_path)
+        .map_err(|e| format!("Görsel açılamadı {}: {}", input_path, e))?;
+
+    let sigma = blur_sigma.unwrap_or(14.0).clamp(1.0, 50.0);
+    let blurred = img.blur(sigma);
+
+    let parent = in_path.parent().unwrap_or_else(|| Path::new("."));
+    let stem = in_path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "image".to_string());
+    let original_ext = in_path
+        .extension()
+        .map(|s| s.to_string_lossy().to_lowercase())
+        .unwrap_or_else(|| "png".to_string());
+
+    let mut out_path = parent.join(format!("{}_censored.{}", stem, original_ext));
+    if out_path == in_path {
+        out_path = parent.join(format!("{}_censored_1.{}", stem, original_ext));
+    }
+
+    blurred
+        .save(&out_path)
+        .map_err(|e| format!("Sansürlenmiş görsel kaydedilemedi: {}", e))?;
+
+    let out_path_str = out_path.to_string_lossy().to_string();
+    let size_after = std::fs::metadata(&out_path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
+    let action = format!("Censor / Blur (σ={:.0})", sigma);
+    record_library_action(&input_path, &out_path_str, &action, size_before, size_after);
+
+    get_file_info(out_path_str)
+}
+
 // 5. read_qr_code
 #[cfg_attr(not(test), tauri::command)]
 pub fn read_qr_code(input_path: String) -> Result<String, String> {
@@ -1281,14 +1329,32 @@ pub fn set_autostart(enabled: bool) -> Result<(), String> {
     Ok(())
 }
 
+static PREV_FOREGROUND_HWND: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+
+pub fn record_foreground_hwnd(hwnd: isize) {
+    if hwnd != 0 {
+        PREV_FOREGROUND_HWND.store(hwnd, std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
 #[cfg_attr(not(test), tauri::command)]
-pub fn show_wheel_window(_app: tauri::AppHandle, mode: Option<String>) -> Result<(), String> {
+pub fn show_wheel_window(_app: tauri::AppHandle, _mode: Option<String>) -> Result<(), String> {
     #[cfg(not(test))]
     {
         use tauri::Manager;
+        use tauri::Emitter;
+
+        #[cfg(target_os = "windows")]
+        unsafe {
+            let fg = windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow();
+            if !fg.is_null() {
+                record_foreground_hwnd(fg as isize);
+            }
+        }
+
         if let Some(wheel_window) = _app.get_webview_window("wheel") {
             let settings = get_app_settings().unwrap_or_default();
-            let effective_mode = mode.unwrap_or(settings.wheel_display_mode);
+            let effective_mode = _mode.unwrap_or(settings.wheel_display_mode);
 
             if effective_mode == "cursor" {
                 #[cfg(target_os = "windows")]
@@ -1315,6 +1381,7 @@ pub fn show_wheel_window(_app: tauri::AppHandle, mode: Option<String>) -> Result
 
             let _ = wheel_window.show();
             let _ = wheel_window.set_focus();
+            let _ = wheel_window.emit("wheel-shown", ());
         }
     }
     Ok(())
@@ -1434,6 +1501,33 @@ pub fn pick_file_dialog(filter_type: Option<String>) -> Result<Option<String>, S
     result
 }
 
+fn decode_b64(input: &str) -> Option<String> {
+    let mut table = [0xFFu8; 256];
+    for (i, &b) in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".iter().enumerate() {
+        table[b as usize] = i as u8;
+    }
+    let bytes = input.trim().as_bytes();
+    let mut out = Vec::new();
+    let mut buf = 0u32;
+    let mut bits = 0;
+    for &b in bytes {
+        if b == b'=' {
+            break;
+        }
+        let val = table[b as usize];
+        if val == 0xFF {
+            continue;
+        }
+        buf = (buf << 6) | (val as u32);
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((buf >> bits) as u8);
+        }
+    }
+    String::from_utf8(out).ok()
+}
+
 // 13. Auto-detect currently selected files in Windows Explorer & Desktop
 #[cfg_attr(not(test), tauri::command)]
 pub fn get_selected_explorer_files() -> Result<Vec<String>, String> {
@@ -1443,56 +1537,89 @@ pub fn get_selected_explorer_files() -> Result<Vec<String>, String> {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-        let script = r#"
+        let target_hwnd = PREV_FOREGROUND_HWND.load(std::sync::atomic::Ordering::SeqCst);
+
+        let script = format!(
+            r#"
+$targetHwnd = {target_hwnd}
 $shell = New-Object -ComObject Shell.Application
 $paths = [System.Collections.Generic.List[string]]::new()
 
-# 1. Check open Explorer folder windows
-try {
-    foreach ($w in $shell.Windows()) {
-        try {
-            $sel = $w.Document.SelectedItems()
-            if ($sel -and $sel.Count -gt 0) {
-                foreach ($it in $sel) {
-                    if ($it.Path) { $paths.Add($it.Path) }
-                }
-                if ($paths.Count -gt 0) { break }
-            }
-        } catch {}
-    }
-} catch {}
+# 1. If target HWND matches an open Explorer window, check it first
+if ($targetHwnd -ne 0) {{
+    try {{
+        foreach ($w in $shell.Windows()) {{
+            try {{
+                if ($w.HWND -eq $targetHwnd) {{
+                    $sel = $w.Document.SelectedItems()
+                    if ($sel -and $sel.Count -gt 0) {{
+                        foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
+                    }}
+                    break
+                }}
+            }} catch {{}}
+        }}
+    }} catch {{}}
+}}
 
-# 2. Check Desktop selection if no open Explorer window had items
-if ($paths.Count -eq 0) {
-    try {
+# 2. Check Desktop selection if target was desktop or no window matched yet
+if ($paths.Count -eq 0) {{
+    try {{
         $dw = $shell.Windows().FindWindowSW(0, 0, 8, 0, 1)
-        if ($dw -and $dw.Document) {
+        if ($dw -and $dw.Document) {{
             $sel = $dw.Document.SelectedItems()
-            if ($sel -and $sel.Count -gt 0) {
-                foreach ($it in $sel) {
-                    if ($it.Path) { $paths.Add($it.Path) }
-                }
-            }
-        }
-    } catch {}
-}
+            if ($sel -and $sel.Count -gt 0) {{
+                foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
+            }}
+        }}
+    }} catch {{}}
+}}
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$paths | ForEach-Object { [Console]::WriteLine($_) }
-"#;
+# 3. Fallback: Check any open Explorer folder window with selection
+if ($paths.Count -eq 0) {{
+    try {{
+        foreach ($w in $shell.Windows()) {{
+            try {{
+                $sel = $w.Document.SelectedItems()
+                if ($sel -and $sel.Count -gt 0) {{
+                    foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
+                    if ($paths.Count -gt 0) {{ break }}
+                }}
+            }} catch {{}}
+        }}
+    }} catch {{}}
+}}
+
+# 4. Base64 output guarantees UTF-8 and Turkish character integrity across all consoles
+foreach ($p in $paths) {{
+    if ($p) {{
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($p)
+        [Console]::WriteLine([Convert]::ToBase64String($bytes))
+    }}
+}}
+"#
+        );
 
         let output = Command::new("powershell")
-            .args(&["-NoProfile", "-NonInteractive", "-Command", script])
+            .args(&["-NoProfile", "-NonInteractive", "-Command", &script])
             .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map_err(|e| format!("Seçili dosyalar okunamadı: {}", e))?;
 
         let text = String::from_utf8_lossy(&output.stdout);
-        let files: Vec<String> = text
-            .lines()
-            .map(|l| l.trim().to_string())
-            .filter(|l| !l.is_empty() && std::path::Path::new(l).exists())
-            .collect();
+        let mut files = Vec::new();
+        for line in text.lines() {
+            let trimmed = line.trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+            if let Some(decoded) = decode_b64(trimmed) {
+                let trimmed_decoded = decoded.trim().to_string();
+                if !trimmed_decoded.is_empty() && std::path::Path::new(&trimmed_decoded).exists() {
+                    files.push(trimmed_decoded);
+                }
+            }
+        }
 
         Ok(files)
     }

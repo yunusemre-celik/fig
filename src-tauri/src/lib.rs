@@ -92,6 +92,10 @@ pub fn run() {
                                 if msg.message == windows_sys::Win32::UI::WindowsAndMessaging::WM_HOTKEY
                                     && msg.wParam as i32 == HOTKEY_ID
                                 {
+                                    let fg = windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow();
+                                    if !fg.is_null() {
+                                        commands::record_foreground_hwnd(fg as isize);
+                                    }
                                     let _ = commands::show_wheel_at_cursor(app_handle.clone());
                                 }
                             }
@@ -140,6 +144,7 @@ pub fn run() {
             commands::convert_image,
             commands::crop_image,
             commands::compress_image,
+            commands::censor_image,
             commands::read_qr_code,
             commands::generate_qr_code,
             commands::create_pdf_from_images,

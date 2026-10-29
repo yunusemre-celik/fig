@@ -161,6 +161,26 @@ export async function compressImage(
   };
 }
 
+export async function censorImage(
+  inputPath: string,
+  blurSigma?: number
+): Promise<FileInfo> {
+  if (isTauri) {
+    return await invoke<FileInfo>("censor_image", {
+      inputPath,
+      blurSigma,
+    });
+  }
+  return {
+    name: "censored.png",
+    path: "C:\\Users\\Mock\\censored.png",
+    size: 95000,
+    formatted_size: "92 KB",
+    extension: "png",
+    modified: "Şimdi",
+  };
+}
+
 export async function readQrCode(inputPath: string): Promise<string> {
   if (isTauri) {
     return await invoke<string>("read_qr_code", { inputPath });
