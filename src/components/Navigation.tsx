@@ -1,6 +1,6 @@
 import React from "react";
 import { TabType } from "../types";
-import { Home, Library, Settings, Sparkles } from "lucide-react";
+import { Home, FileText, Sliders, Library, Settings, Sparkles } from "lucide-react";
 
 interface NavigationProps {
   activeTab: TabType;
@@ -33,6 +33,32 @@ export const Navigation: React.FC<NavigationProps> = ({
         </button>
 
         <button
+          onClick={() => onTabChange("documents")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            activeTab === "documents"
+              ? "bg-white/[0.08] text-white shadow-sm"
+              : "text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.04]"
+          }`}
+        >
+          <FileText size={15} className={activeTab === "documents" ? "text-amber-400" : ""} />
+          <span>Belgeler</span>
+          <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">Ctrl+2</span>
+        </button>
+
+        <button
+          onClick={() => onTabChange("studio")}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            activeTab === "studio"
+              ? "bg-white/[0.08] text-white shadow-sm"
+              : "text-neutral-400 hover:text-neutral-200 hover:bg-white/[0.04]"
+          }`}
+        >
+          <Sliders size={15} className={activeTab === "studio" ? "text-amber-400" : ""} />
+          <span>Çark Stüdyosu</span>
+          <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">Ctrl+3</span>
+        </button>
+
+        <button
           onClick={() => onTabChange("library")}
           className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "library"
@@ -47,7 +73,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               {libraryCount}
             </span>
           )}
-          <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">Ctrl+2</span>
+          <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">Ctrl+4</span>
         </button>
 
         <button

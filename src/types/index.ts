@@ -20,9 +20,9 @@ export interface LibraryEntry {
   timestamp: string;
 }
 
-export type TabType = "home" | "library" | "settings";
+export type TabType = "home" | "documents" | "studio" | "library" | "settings";
 
-export type WheelMode = "convert" | "tools" | "actions";
+export type WheelMode = "convert" | "documents" | "tools" | "actions";
 
 export interface WheelItem {
   id: string;
@@ -31,4 +31,14 @@ export interface WheelItem {
   icon: string;
   color: string;
   category: WheelMode;
+}
+
+export type WheelProfileId = "design" | "office" | "dev" | "custom";
+
+export interface WheelProfile {
+  id: WheelProfileId;
+  name: string;
+  description: string;
+  icon: string;
+  items: WheelItem[];
 }

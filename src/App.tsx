@@ -6,11 +6,14 @@ import { FileChips } from "./components/FileChips";
 import { RadialWheel } from "./components/RadialWheel";
 import { LibraryView } from "./components/LibraryView";
 import { SettingsView } from "./components/SettingsView";
+import { DocumentsView } from "./components/DocumentsView";
+import { WheelStudio, PRESET_PROFILES } from "./components/WheelStudio";
+import { FloatingWheelWindow } from "./components/FloatingWheelWindow";
 import { CropModal } from "./components/modals/CropModal";
 import { CompressModal } from "./components/modals/CompressModal";
 import { QrModal } from "./components/modals/QrModal";
 import { Toast, ToastMessage } from "./components/Toast";
-import { FileInfo, LibraryEntry, TabType, WheelMode } from "./types";
+import { FileInfo, LibraryEntry, TabType, WheelMode, WheelProfileId, WheelItem } from "./types";
 import { playSuccessChime } from "./utils/sound";
 import {
   getFileInfo,
@@ -20,20 +23,43 @@ import {
   readQrCode,
   generateQrCode,
   createPdfFromImages,
+  convertDocument,
   getLibrary,
   clearLibrary,
   revealInExplorer,
   openInTerminal,
   openFile,
 } from "./services/api";
-import { Sparkles, FileImage, Crop, QrCode, FileText } from "lucide-react";
+import { Sparkles, FileImage, Crop, QrCode, FileText, ArrowRight } from "lucide-react";
+
+const isWheelWindow =
+  typeof window !== "undefined" && window.location.search.includes("window=wheel");
 
 export function App() {
+  if (isWheelWindow) {
+    return <FloatingWheelWindow />;
+  }
+
   const [activeTab, setActiveTab] = useState<TabType>("home");
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [libraryEntries, setLibraryEntries] = useState<LibraryEntry[]>([]);
   const [isWheelOpen, setIsWheelOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Wheel Studio profiles state
+  const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
+    return (localStorage.getItem("fig_active_profile") as WheelProfileId) || "design";
+  });
+
+  const [customSlices, setCustomSlices] = useState<WheelItem[]>(() => {
+    const saved = localStorage.getItem("fig_custom_slices");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return PRESET_PROFILES.design.items;
+  });
 
   // Modals state
   const [isCropOpen, setIsCropOpen] = useState(false);
@@ -54,6 +80,17 @@ export function App() {
     }
   };
 
+  const handleProfileChange = (id: WheelProfileId) => {
+    setActiveProfile(id);
+    localStorage.setItem("fig_active_profile", id);
+    addToast("info", `Aktif Profil: ${PRESET_PROFILES[id].name}`);
+  };
+
+  const handleUpdateCustomSlices = (slices: WheelItem[]) => {
+    setCustomSlices(slices);
+    localStorage.setItem("fig_custom_slices", JSON.stringify(slices));
+  };
+
   const addToast = (type: "success" | "error" | "info", text: string) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, text }]);
@@ -70,7 +107,6 @@ export function App() {
   const handleFilesSelected = async (files: File[]) => {
     const newFiles: FileInfo[] = [];
     for (const f of files) {
-      // In Tauri or web, extract available path
       const filePath = (f as unknown as { path?: string }).path || f.name;
       const ext = f.name.split(".").pop()?.toLowerCase() || "";
       const formattedSize =
@@ -99,7 +135,6 @@ export function App() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept inside input/textarea
       if (
         document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA"
@@ -115,6 +150,12 @@ export function App() {
         setActiveTab("home");
       } else if (e.ctrlKey && e.key === "2") {
         e.preventDefault();
+        setActiveTab("documents");
+      } else if (e.ctrlKey && e.key === "3") {
+        e.preventDefault();
+        setActiveTab("studio");
+      } else if (e.ctrlKey && e.key === "4") {
+        e.preventDefault();
         setActiveTab("library");
       } else if (e.ctrlKey && e.key === ",") {
         e.preventDefault();
@@ -128,14 +169,12 @@ export function App() {
 
   // Action execution from wheel or quick buttons
   const handleAction = async (actionId: string, category: WheelMode) => {
-    if (category === "convert") {
-      if (selectedFiles.length === 0) {
-        addToast("error", "Lütfen önce dönüştürülecek dosyaları seçin.");
-        return;
-      }
-
-      if (actionId === "pdf") {
-        // Multi-image PDF creation
+    if (category === "documents" || actionId.endsWith("_pdf")) {
+      if (actionId === "img_pdf" || actionId === "pdf") {
+        if (selectedFiles.length === 0) {
+          addToast("error", "Lütfen önce dönüştürülecek görselleri seçin.");
+          return;
+        }
         try {
           const res = await createPdfFromImages(selectedFiles.map((f) => f.path));
           playSuccessChime();
@@ -148,7 +187,40 @@ export function App() {
         return;
       }
 
-      // Convert images
+      // Office Document conversion
+      if (selectedFiles.length === 0) {
+        setActiveTab("documents");
+        addToast("info", "Dönüştürmek istediğiniz Word, PPT veya Excel belgesini seçin.");
+        return;
+      }
+
+      let successCount = 0;
+      for (const file of selectedFiles) {
+        try {
+          await convertDocument(file.path, "pdf");
+          successCount++;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      if (successCount > 0) {
+        playSuccessChime();
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
+        addToast("success", `${successCount} belge PDF formatına dönüştürüldü!`);
+        loadLibrary();
+      } else {
+        addToast("error", "Belge dönüştürme sırasında bir hata oluştu.");
+      }
+      return;
+    }
+
+    if (category === "convert") {
+      if (selectedFiles.length === 0) {
+        addToast("error", "Lütfen önce dönüştürülecek görselleri seçin.");
+        return;
+      }
+
       let successCount = 0;
       for (const file of selectedFiles) {
         try {
@@ -196,6 +268,11 @@ export function App() {
       }
     } else if (category === "actions") {
       if (selectedFiles.length === 0) {
+        if (actionId === "terminal") {
+          openInTerminal("");
+          addToast("info", "PowerShell terminali açılıyor...");
+          return;
+        }
         addToast("error", "Lütfen bir dosya seçin.");
         return;
       }
@@ -252,6 +329,11 @@ export function App() {
     }
   };
 
+  const currentWheelItems =
+    activeProfile === "custom"
+      ? customSlices
+      : PRESET_PROFILES[activeProfile]?.items || PRESET_PROFILES.design.items;
+
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0B0F17] text-neutral-100 select-none overflow-hidden font-sans">
       {/* Brand Top Header */}
@@ -265,11 +347,18 @@ export function App() {
             Windows 11 Dosya Araç Kiti
           </span>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-neutral-400">
-          <span>Hızlı Çark:</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-amber-300 font-mono text-[10px]">
-            Ctrl + Space
-          </kbd>
+        <div className="flex items-center gap-3 text-[11px] text-neutral-400">
+          <span className="flex items-center gap-1.5">
+            <span className="text-neutral-400">Profil:</span>
+            <span className="text-amber-400 font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
+          </span>
+          <span className="text-white/20">•</span>
+          <div className="flex items-center gap-1.5">
+            <span>Hızlı Çark:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-amber-300 font-mono text-[10px]">
+              Ctrl + Space
+            </kbd>
+          </div>
         </div>
       </div>
 
@@ -286,7 +375,7 @@ export function App() {
         {activeTab === "home" && (
           <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center max-w-4xl w-full mx-auto">
             {/* Hero Brand Card */}
-            <div className="w-full text-center my-4 animate-in fade-in duration-300">
+            <div className="w-full text-center my-3 animate-in fade-in duration-300">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-semibold mb-2">
                 <Sparkles size={13} />
                 <span>Hızlı, Yerel ve Güvenli Dosya Kiti</span>
@@ -294,13 +383,13 @@ export function App() {
               <h1 className="text-3xl font-extrabold text-white tracking-tight">
                 Dosyaların için <span className="text-amber-400">tatlı bir kolaylık.</span>
               </h1>
-              <p className="text-xs text-neutral-400 mt-1">
-                Görsellerinizi ve PDF'lerinizi anında dönüştürün, kırpın veya çark ile hızlı işlemler yapın.
+              <p className="text-xs text-neutral-400 mt-1 max-w-md mx-auto">
+                Görselleri ve ofis belgelerini anında dönüştürün, kırpın veya fare imlecinizin ucundaki çark ile tek tıkla işleyin.
               </p>
             </div>
 
             {/* Drop Zone */}
-            <div className="w-full max-w-2xl mt-2">
+            <div className="w-full max-w-2xl mt-1">
               <DropZone
                 onFilesSelected={handleFilesSelected}
                 onOpenWheel={() => setIsWheelOpen(true)}
@@ -319,7 +408,7 @@ export function App() {
             </div>
 
             {/* Quick Action Cards */}
-            <div className="w-full max-w-2xl mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 onClick={() => handleAction("webp", "convert")}
                 className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-amber-400/40 transition-all text-left group flex flex-col justify-between h-24"
@@ -334,15 +423,18 @@ export function App() {
               </button>
 
               <button
-                onClick={() => handleAction("pdf", "convert")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-amber-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                onClick={() => setActiveTab("documents")}
+                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-blue-400/40 transition-all text-left group flex flex-col justify-between h-24"
               >
-                <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
                   <FileText size={16} />
                 </div>
-                <div>
-                  <span className="font-semibold text-xs text-white block">PDF Yap</span>
-                  <span className="text-[10px] text-neutral-400">Görselleri birleştir</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-xs text-white block">Belgeler</span>
+                    <span className="text-[10px] text-neutral-400">Word, PPT → PDF</span>
+                  </div>
+                  <ArrowRight size={13} className="text-neutral-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                 </div>
               </button>
 
@@ -361,9 +453,9 @@ export function App() {
 
               <button
                 onClick={() => handleAction("qr", "tools")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-amber-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-purple-400/40 transition-all text-left group flex flex-col justify-between h-24"
               >
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
                   <QrCode size={16} />
                 </div>
                 <div>
@@ -373,6 +465,24 @@ export function App() {
               </button>
             </div>
           </div>
+        )}
+
+        {activeTab === "documents" && (
+          <DocumentsView
+            onSuccess={(_info) => {
+              addToast("success", "Belge dönüştürüldü ve kütüphaneye eklendi!");
+              loadLibrary();
+            }}
+          />
+        )}
+
+        {activeTab === "studio" && (
+          <WheelStudio
+            currentProfile={activeProfile}
+            onSelectProfile={handleProfileChange}
+            customItems={customSlices}
+            onUpdateCustomItems={handleUpdateCustomSlices}
+          />
         )}
 
         {activeTab === "library" && (
@@ -397,6 +507,8 @@ export function App() {
         onClose={() => setIsWheelOpen(false)}
         onSelectAction={handleAction}
         selectedFileNames={selectedFiles.map((f) => f.name)}
+        customItems={currentWheelItems}
+        profileName={PRESET_PROFILES[activeProfile]?.name}
       />
 
       {/* Visual Modals */}

@@ -7,7 +7,6 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
   if (isTauri) {
     return await invoke<FileInfo>("get_file_info", { path });
   }
-  // Mock fallback for browser dev
   return {
     name: path.split("/").pop()?.split("\\").pop() || "sample.png",
     path,
@@ -16,7 +15,7 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
     extension: "png",
     width: 1920,
     height: 1080,
-    modified: "2026-10-28 20:30",
+    modified: "2026-10-29 11:30",
   };
 }
 
@@ -37,6 +36,26 @@ export async function convertImage(
     path: `C:\\Users\\Mock\\${targetFormat}\\converted.${targetFormat}`,
     size: 184320,
     formatted_size: "180 KB",
+    extension: targetFormat,
+    modified: "Şimdi",
+  };
+}
+
+export async function convertDocument(
+  inputPath: string,
+  targetFormat: string
+): Promise<FileInfo> {
+  if (isTauri) {
+    return await invoke<FileInfo>("convert_document", {
+      inputPath,
+      targetFormat,
+    });
+  }
+  return {
+    name: `converted.${targetFormat}`,
+    path: `C:\\Users\\Mock\\${targetFormat}\\document.${targetFormat}`,
+    size: 350000,
+    formatted_size: "341 KB",
     extension: targetFormat,
     modified: "Şimdi",
   };
@@ -135,28 +154,7 @@ export async function getLibrary(): Promise<LibraryEntry[]> {
   if (isTauri) {
     return await invoke<LibraryEntry[]>("get_library");
   }
-  return [
-    {
-      id: "1",
-      original_name: "screenshot_2026.png",
-      original_path: "C:\\Users\\Mock\\Pictures\\screenshot_2026.png",
-      output_path: "C:\\Users\\Mock\\Pictures\\screenshot_2026.webp",
-      action: "WebP Dönüştürme",
-      size_before: 1250000,
-      size_after: 320000,
-      timestamp: "Bugün 20:15",
-    },
-    {
-      id: "2",
-      original_name: "avatar_crop.jpg",
-      original_path: "C:\\Users\\Mock\\Downloads\\avatar.jpg",
-      output_path: "C:\\Users\\Mock\\Downloads\\avatar_cropped.jpg",
-      action: "Kırpma (1:1)",
-      size_before: 850000,
-      size_after: 410000,
-      timestamp: "Dün 18:42",
-    },
-  ];
+  return [];
 }
 
 export async function clearLibrary(): Promise<void> {
@@ -168,23 +166,48 @@ export async function clearLibrary(): Promise<void> {
 export async function revealInExplorer(path: string): Promise<void> {
   if (isTauri) {
     await invoke("reveal_in_explorer", { path });
-  } else {
-    console.log("Reveal in explorer:", path);
   }
 }
 
 export async function openInTerminal(path: string): Promise<void> {
   if (isTauri) {
     await invoke("open_in_terminal", { path });
-  } else {
-    console.log("Open in terminal:", path);
   }
 }
 
 export async function openFile(path: string): Promise<void> {
   if (isTauri) {
     await invoke("open_file", { path });
-  } else {
-    console.log("Open file:", path);
+  }
+}
+
+export async function getAutostart(): Promise<boolean> {
+  if (isTauri) {
+    return await invoke<boolean>("get_autostart");
+  }
+  return false;
+}
+
+export async function setAutostart(enabled: boolean): Promise<void> {
+  if (isTauri) {
+    await invoke("set_autostart", { enabled });
+  }
+}
+
+export async function showWheelAtCursor(): Promise<void> {
+  if (isTauri) {
+    await invoke("show_wheel_at_cursor");
+  }
+}
+
+export async function hideWheel(): Promise<void> {
+  if (isTauri) {
+    await invoke("hide_wheel");
+  }
+}
+
+export async function showMainWindow(): Promise<void> {
+  if (isTauri) {
+    await invoke("show_main_window");
   }
 }

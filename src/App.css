@@ -13,6 +13,13 @@ html, body, #root {
   overflow: hidden;
 }
 
+html.wheel-window,
+body.wheel-window,
+#root.wheel-window {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
 /* Custom modern thin scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

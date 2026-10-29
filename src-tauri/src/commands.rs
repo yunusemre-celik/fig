@@ -806,6 +806,211 @@ pub fn clear_library() -> Result<(), String> {
     write_library_to_path(&[], &path)
 }
 
+// 10. Document conversion (Word, PowerPoint, Excel, Text -> PDF)
+#[cfg_attr(not(test), tauri::command)]
+pub fn convert_document(input_path: String, target_format: String) -> Result<FileInfo, String> {
+    let in_path = Path::new(&input_path);
+    if !in_path.exists() {
+        return Err(format!("Input file does not exist: {}", input_path));
+    }
+
+    let ext = in_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+
+    let target_ext = target_format.to_lowercase();
+    let file_stem = in_path.file_stem().and_then(|s| s.to_str()).unwrap_or("document");
+    let parent = in_path.parent().unwrap_or_else(|| Path::new("."));
+
+    let out_file_path = parent.join(format!("{}.{}", file_stem, target_ext));
+    let out_file_path = if out_file_path.exists() && out_file_path == in_path {
+        parent.join(format!("{}_converted.{}", file_stem, target_ext))
+    } else {
+        out_file_path
+    };
+
+    let size_before = std::fs::metadata(in_path).map(|m| m.len()).unwrap_or(0);
+
+    match ext.as_str() {
+        "docx" | "doc" | "rtf" => {
+            #[cfg(target_os = "windows")]
+            {
+                let ps_script = format!(
+                    "$ErrorActionPreference='Stop'; $word=New-Object -ComObject Word.Application; $word.Visible=$false; try {{ $doc=$word.Documents.Open('{}'); $doc.SaveAs([ref]'{}', [ref]17); $doc.Close() }} finally {{ $word.Quit() }}",
+                    in_path.display(),
+                    out_file_path.display()
+                );
+                let output = std::process::Command::new("powershell")
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+                    .output()
+                    .map_err(|e| format!("PowerShell Word conversion failed: {}", e))?;
+                if !output.status.success() {
+                    return Err(format!("Word conversion error: {}", String::from_utf8_lossy(&output.stderr)));
+                }
+            }
+        }
+        "pptx" | "ppt" => {
+            #[cfg(target_os = "windows")]
+            {
+                let ps_script = format!(
+                    "$ErrorActionPreference='Stop'; $ppt=New-Object -ComObject PowerPoint.Application; try {{ $pres=$ppt.Presentations.Open('{}', [Microsoft.Office.Core.MsoTriState]::msoTrue, [Microsoft.Office.Core.MsoTriState]::msoFalse, [Microsoft.Office.Core.MsoTriState]::msoFalse); $pres.SaveAs('{}', 32); $pres.Close() }} finally {{ $ppt.Quit() }}",
+                    in_path.display(),
+                    out_file_path.display()
+                );
+                let output = std::process::Command::new("powershell")
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+                    .output()
+                    .map_err(|e| format!("PowerPoint conversion failed: {}", e))?;
+                if !output.status.success() {
+                    return Err(format!("PowerPoint conversion error: {}", String::from_utf8_lossy(&output.stderr)));
+                }
+            }
+        }
+        "xlsx" | "xls" | "csv" => {
+            #[cfg(target_os = "windows")]
+            {
+                let ps_script = format!(
+                    "$ErrorActionPreference='Stop'; $excel=New-Object -ComObject Excel.Application; $excel.Visible=$false; try {{ $wb=$excel.Workbooks.Open('{}'); $wb.ExportAsFixedFormat(0, '{}'); $wb.Close($false) }} finally {{ $excel.Quit() }}",
+                    in_path.display(),
+                    out_file_path.display()
+                );
+                let output = std::process::Command::new("powershell")
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+                    .output()
+                    .map_err(|e| format!("Excel conversion failed: {}", e))?;
+                if !output.status.success() {
+                    return Err(format!("Excel conversion error: {}", String::from_utf8_lossy(&output.stderr)));
+                }
+            }
+        }
+        "txt" | "md" => {
+            let content = std::fs::read_to_string(in_path)
+                .map_err(|e| format!("Failed to read text file: {}", e))?;
+            let safe_content = content.replace("(", "\\(").replace(")", "\\)");
+            let pdf_bytes = format!(
+                "%PDF-1.4\r\n1 0 obj\r\n<< /Type /Catalog /Pages 2 0 R >>\r\nendobj\r\n2 0 obj\r\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\r\nendobj\r\n3 0 obj\r\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R >>\r\nendobj\r\n4 0 obj\r\n<< /Length {} >>\r\nstream\r\nBT\r\n/F1 12 Tf\r\n50 800 Td\r\n({}) Tj\r\nET\r\nendstream\r\nendobj\r\nxref\r\n0 5\r\n0000000000 65535 f \r\ntrailer\r\n<< /Size 5 /Root 1 0 R >>\r\nstartxref\r\n400\r\n%%EOF\r\n",
+                safe_content.len() + 30,
+                safe_content
+            );
+            std::fs::write(&out_file_path, pdf_bytes.as_bytes())
+                .map_err(|e| format!("Failed to write PDF: {}", e))?;
+        }
+        _ => {
+            return Err(format!("Unsupported document format: {}", ext));
+        }
+    }
+
+    let out_path_str = out_file_path.to_string_lossy().to_string();
+    let size_after = std::fs::metadata(&out_file_path).map(|m| m.len()).unwrap_or(0);
+    let action = format!("{} to {}", ext.to_uppercase(), target_ext.to_uppercase());
+    record_library_action(&input_path, &out_path_str, &action, size_before, size_after);
+
+    get_file_info(out_path_str)
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn get_autostart() -> Result<bool, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = std::process::Command::new("reg")
+            .args(["query", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Fig"])
+            .output();
+        if let Ok(out) = output {
+            return Ok(out.status.success());
+        }
+    }
+    Ok(false)
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn set_autostart(enabled: bool) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        if enabled {
+            let exe_path = std::env::current_exe()
+                .map_err(|e| format!("Failed to get executable path: {}", e))?;
+            let cmd_val = format!("\"{}\" --minimized", exe_path.display());
+            let status = std::process::Command::new("reg")
+                .args([
+                    "add",
+                    r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+                    "/v",
+                    "Fig",
+                    "/t",
+                    "REG_SZ",
+                    "/d",
+                    &cmd_val,
+                    "/f",
+                ])
+                .status()
+                .map_err(|e| format!("Failed to set autostart in registry: {}", e))?;
+            if !status.success() {
+                return Err("Failed to register autostart in Windows registry".into());
+            }
+        } else {
+            let _ = std::process::Command::new("reg")
+                .args([
+                    "delete",
+                    r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+                    "/v",
+                    "Fig",
+                    "/f",
+                ])
+                .status();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn show_wheel_at_cursor(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(wheel_window) = _app.get_webview_window("wheel") {
+            #[cfg(target_os = "windows")]
+            unsafe {
+                let mut point = windows_sys::Win32::Foundation::POINT { x: 0, y: 0 };
+                if windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut point) != 0 {
+                    let x = point.x - 230;
+                    let y = point.y - 230;
+                    let _ = wheel_window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
+                }
+            }
+            let _ = wheel_window.show();
+            let _ = wheel_window.set_focus();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn hide_wheel(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(wheel_window) = _app.get_webview_window("wheel") {
+            let _ = wheel_window.hide();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn show_main_window(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(main_window) = _app.get_webview_window("main") {
+            let _ = main_window.show();
+            let _ = main_window.set_focus();
+        }
+    }
+    Ok(())
+}
+
 // -------------------------------------------------------------
 // Unit Tests
 // -------------------------------------------------------------

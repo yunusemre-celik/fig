@@ -4,7 +4,7 @@ pub mod commands;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    Emitter, Manager,
+    Manager,
 };
 
 #[cfg(not(test))]
@@ -13,9 +13,17 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
+            // Check if launched with --minimized
+            let is_minimized = std::env::args().any(|arg| arg == "--minimized");
+            if is_minimized {
+                if let Some(main_win) = app.get_webview_window("main") {
+                    let _ = main_win.hide();
+                }
+            }
+
             // Build Tray Menu
             let show_item = MenuItem::with_id(app, "show", "Fig'i Göster", true, None::<&str>)?;
-            let wheel_item = MenuItem::with_id(app, "wheel", "İşlem Çarkını Aç", true, None::<&str>)?;
+            let wheel_item = MenuItem::with_id(app, "wheel", "İşlem Çarkını Aç (Ctrl+Space)", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Çıkış", true, None::<&str>)?;
             let tray_menu = Menu::with_items(app, &[&show_item, &wheel_item, &quit_item])?;
 
@@ -33,11 +41,7 @@ pub fn run() {
                         }
                     }
                     "wheel" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                            let _ = window.emit("open-wheel", ());
-                        }
+                        let _ = commands::show_wheel_at_cursor(app.clone());
                     }
                     _ => {}
                 })
@@ -61,9 +65,47 @@ pub fn run() {
 
             let _tray = builder.build(app)?;
 
+            // Register global shortcut: Ctrl + Space across entire Windows
+            #[cfg(target_os = "windows")]
+            {
+                let app_handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    unsafe {
+                        const MOD_CONTROL: u32 = 0x0002;
+                        const VK_SPACE: u32 = 0x20;
+                        const HOTKEY_ID: i32 = 9001;
+
+                        if windows_sys::Win32::UI::Input::KeyboardAndMouse::RegisterHotKey(
+                            std::ptr::null_mut(),
+                            HOTKEY_ID,
+                            MOD_CONTROL,
+                            VK_SPACE,
+                        ) != 0 {
+                            let mut msg = std::mem::zeroed();
+                            while windows_sys::Win32::UI::WindowsAndMessaging::GetMessageW(
+                                &mut msg,
+                                std::ptr::null_mut(),
+                                0,
+                                0,
+                            ) > 0
+                            {
+                                if msg.message == windows_sys::Win32::UI::WindowsAndMessaging::WM_HOTKEY
+                                    && msg.wParam as i32 == HOTKEY_ID
+                                {
+                                    let _ = commands::show_wheel_at_cursor(app_handle.clone());
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::show_wheel_at_cursor,
+            commands::hide_wheel,
+            commands::show_main_window,
             commands::get_file_info,
             commands::convert_image,
             commands::crop_image,
@@ -71,6 +113,9 @@ pub fn run() {
             commands::read_qr_code,
             commands::generate_qr_code,
             commands::create_pdf_from_images,
+            commands::convert_document,
+            commands::get_autostart,
+            commands::set_autostart,
             commands::reveal_in_explorer,
             commands::open_in_terminal,
             commands::open_file,

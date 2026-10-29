@@ -21,6 +21,20 @@
         "center": true,
         "decorations": true,
         "transparent": false
+      },
+      {
+        "label": "wheel",
+        "title": "Fig Wheel",
+        "url": "index.html?window=wheel",
+        "width": 460,
+        "height": 460,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "skipTaskbar": true,
+        "resizable": false,
+        "shadow": false
       }
     ],
     "security": {
