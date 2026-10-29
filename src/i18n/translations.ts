@@ -13,6 +13,11 @@ export interface TranslationDictionary {
   tabStudio: string;
   tabLibrary: string;
   tabSettings: string;
+  localWorkspace?: string;
+  menuWorkspace?: string;
+  menuPrefs?: string;
+  footerLocalMsg?: string;
+  footerOfflineActive?: string;
 
   // Home Screen
   heroBadge: string;
