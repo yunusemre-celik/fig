@@ -256,19 +256,19 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         <defs>
           {/* Canva Tech Deep Space Inactive slice gradient */}
           <linearGradient id="inactiveSliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#141933" stopOpacity="0.92" />
-            <stop offset="100%" stopColor="#0B0F1C" stopOpacity="0.96" />
+            <stop offset="0%" stopColor="#171C30" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="#0B0D18" stopOpacity="0.96" />
           </linearGradient>
 
           {/* Canva Tech Royal Cobalt to Electric Blue active slice gradient */}
           <linearGradient id="activeHoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.98" />
-            <stop offset="100%" stopColor="#2563EB" stopOpacity="0.98" />
+            <stop offset="0%" stopColor="#5257DC" stopOpacity="0.98" />
+            <stop offset="100%" stopColor="#8493FF" stopOpacity="0.98" />
           </linearGradient>
 
           {/* Electric Cyan glow */}
           <filter id="activeGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#38BDF8" floodOpacity="0.55" />
+            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6366F1" floodOpacity="0.55" />
           </filter>
         </defs>
 
@@ -347,7 +347,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
               <path
                 d={pathData}
                 fill={isHovered ? "url(#activeHoverGrad)" : "url(#inactiveSliceGrad)"}
-                stroke={isHovered ? "#38BDF8" : "rgba(255, 255, 255, 0.08)"}
+                stroke={isHovered ? "#8493FF" : "rgba(255, 255, 255, 0.08)"}
                 strokeWidth={isHovered ? "2" : "1"}
                 filter={isHovered ? "url(#activeGlow)" : undefined}
                 className="transition-all duration-150"
@@ -384,9 +384,9 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
       {/* Central Split Hub: Canva Tech Midnight Glass with Left (<) and Right (>) navigation buttons & Center Earth Logo */}
       <div
-        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-2xl border border-white/20 bg-[#0B0F1C]/92 backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
+        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-2xl border border-white/20 bg-[#0C0F1D]/95 backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
           isDragOver
-            ? "border-[#38BDF8] scale-105 bg-[#1D4ED8]/25"
+            ? "border-[#8493FF] scale-105 bg-[#6366F1]/25"
             : ""
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -434,13 +434,13 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       {/* Floating Info Capsule below the wheel */}
       <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
         {hoveredItem ? (
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B0F1C]/95 border border-[#38BDF8]/30 backdrop-blur-2xl shadow-xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
-            <span className="font-bold text-[12px] text-[#38BDF8]">{getSliceText(hoveredItem).label}</span>
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0E1120]/95 border border-[#8493FF]/30 backdrop-blur-2xl shadow-xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
+            <span className="font-bold text-[12px] text-[#8493FF]">{getSliceText(hoveredItem).label}</span>
             <span className="w-1 h-1 rounded-full bg-white/30" />
             <span className="text-[11px] text-neutral-300 max-w-[240px] truncate">{getSliceText(hoveredItem).desc}</span>
           </div>
         ) : profileName ? (
-          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0B0F1C]/85 border border-[#1D4ED8]/40 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
+          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0E1120]/85 border border-[#6366F1]/40 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
             <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
             <span>{profileName}</span>
             {selectedFileNames.length > 0 && (
