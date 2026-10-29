@@ -26,10 +26,12 @@ import {
   getAppSettings,
 } from "../services/api";
 import { playSuccessChime } from "../utils/sound";
+import { useTranslation } from "../i18n/useTranslation";
 import confetti from "canvas-confetti";
 import { FolderOpen, ExternalLink, Files, Check, X } from "lucide-react";
 
 export const FloatingWheelWindow: React.FC = () => {
+  const { t } = useTranslation();
   const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
     return (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
   });
@@ -91,9 +93,9 @@ export const FloatingWheelWindow: React.FC = () => {
         setSelectedFiles(infoList);
         setProfileOverride(null);
         if (infoList.length === 1) {
-          setStatusMessage(`${infoList[0].name} seçili`);
+          setStatusMessage(`${infoList[0].name} (${t("fileSelected")})`);
         } else {
-          setStatusMessage(`${infoList.length} Dosya Seçili`);
+          setStatusMessage(`${infoList.length} ${t("filesSelected")}`);
         }
       } else {
         setSelectedFiles([]);
@@ -493,7 +495,7 @@ export const FloatingWheelWindow: React.FC = () => {
       const pathsJoined = files.map((f) => f.path).join("\n");
       await navigator.clipboard.writeText(pathsJoined);
       playSuccessChime();
-      setStatusMessage(files.length === 1 ? "Yol Kopyalandı!" : `${files.length} Yol Kopyalandı!`);
+      setStatusMessage(files.length === 1 ? t("pathCopied") : `${files.length} ${t("pathsCopied")}`);
       setTimeout(handleClose, 1200);
       return;
     }
@@ -677,8 +679,8 @@ export const FloatingWheelWindow: React.FC = () => {
     >
       {/* Top Status Notification Pill */}
       {statusMessage && !lastOutputPath && (
-        <div className="absolute top-4 z-50 px-4 py-2 rounded-full glass-panel border border-amber-400/40 text-amber-300 text-xs font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in flex items-center gap-2">
-          {selectedFiles.length > 1 && <Files size={13} className="text-amber-400" />}
+        <div className="absolute top-4 z-50 px-4 py-2 rounded-full apple-card border border-[var(--apple-border)] text-[var(--apple-text-primary)] text-xs font-semibold shadow-2xl backdrop-blur-2xl animate-in fade-in flex items-center gap-2">
+          {selectedFiles.length > 1 && <Files size={13} className="text-[var(--apple-accent)]" />}
           <span>{statusMessage}</span>
         </div>
       )}
@@ -699,16 +701,16 @@ export const FloatingWheelWindow: React.FC = () => {
 
       {/* Prominent Success & Action Bar (Doesn't disappear immediately!) */}
       {lastOutputPath && (
-        <div className="absolute bottom-6 z-50 px-5 py-3 rounded-2xl glass-panel border border-emerald-400/50 text-white shadow-2xl backdrop-blur-2xl animate-in slide-in-from-bottom-4 duration-300 flex items-center gap-4 max-w-lg">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 flex items-center justify-center shrink-0">
+        <div className="absolute bottom-6 z-50 px-5 py-3 rounded-2xl apple-card border border-[var(--apple-border)] text-[var(--apple-text-primary)] shadow-2xl backdrop-blur-2xl animate-in slide-in-from-bottom-4 duration-300 flex items-center gap-4 max-w-lg">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 border border-emerald-500/25 flex items-center justify-center shrink-0">
             <Check size={18} strokeWidth={2.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-              <span>Dönüştürme Tamamlandı!</span>
-              <span className="text-white font-normal truncate">({lastOutputName})</span>
+            <div className="text-xs font-bold text-emerald-500 flex items-center gap-1.5">
+              <span>{t("conversionDone")}</span>
+              <span className="text-[var(--apple-text-secondary)] font-normal truncate">({lastOutputName})</span>
             </div>
-            <div className="text-[10px] text-neutral-400 truncate font-mono mt-0.5" title={lastOutputPath}>
+            <div className="text-[10px] text-[var(--apple-text-tertiary)] truncate font-mono mt-0.5" title={lastOutputPath}>
               {lastOutputPath}
             </div>
           </div>
@@ -716,26 +718,26 @@ export const FloatingWheelWindow: React.FC = () => {
             <button
               type="button"
               onClick={() => revealInExplorer(lastOutputPath)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
-              title="Windows Explorer'da Göster"
+              className="px-3 py-1.5 rounded-xl bg-[var(--apple-bg-control)] hover:bg-[var(--apple-bg-control-hover)] text-[var(--apple-text-primary)] border border-[var(--apple-border)] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+              title={t("showInFolder")}
             >
-              <FolderOpen size={14} />
-              <span>Klasörde Göster</span>
+              <FolderOpen size={14} className="text-[var(--apple-accent)]" />
+              <span>{t("showInFolder")}</span>
             </button>
             <button
               type="button"
               onClick={() => openFile(lastOutputPath)}
-              className="px-3 py-1.5 rounded-xl bg-white/[0.1] hover:bg-white/[0.2] text-white border border-white/[0.2] text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
-              title="Dosyayı Doğrudan Aç"
+              className="px-3 py-1.5 rounded-xl bg-[var(--apple-accent)] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+              title={t("openFile")}
             >
               <ExternalLink size={14} />
-              <span>Aç</span>
+              <span>{t("openFile")}</span>
             </button>
             <button
               type="button"
               onClick={handleClose}
-              className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
-              title="Kapat"
+              className="p-1.5 rounded-lg text-[var(--apple-text-tertiary)] hover:text-[var(--apple-text-primary)] hover:bg-[var(--apple-bg-control)] transition-colors"
+              title={t("close")}
             >
               <X size={16} />
             </button>

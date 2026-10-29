@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { X, Crop, EyeOff, Check, Info } from "lucide-react";
 import { FileInfo } from "../../types";
 import { saveAppSettings, getAppSettings, readImageDataUrl, BlurRegion } from "../../services/api";
+import { useTranslation } from "../../i18n/useTranslation";
 
 export type ImageEditorMode = "crop" | "censor";
 
@@ -24,6 +25,7 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
   onConfirmCrop,
   onConfirmCensor,
 }) => {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<ImageEditorMode>(initialMode);
   const [aspect, setAspect] = useState<AspectPreset>("free");
 
@@ -174,7 +176,6 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
     try {
       const isOverwrite = saveMode === "overwrite";
 
-      // If user checked "Hep bu şekilde kaydet", persist this choice to app settings & storage
       if (alwaysRemember) {
         localStorage.setItem("fig_save_separate", isOverwrite ? "false" : "true");
         try {
@@ -227,49 +228,41 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative w-[820px] max-w-[94vw] h-[640px] max-h-[92vh] bg-[#121824] border border-white/15 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        className="relative w-[820px] max-w-[94vw] h-[640px] max-h-[92vh] bg-[var(--apple-bg-panel)] border border-[var(--apple-border)] rounded-2xl shadow-2xl flex flex-col overflow-hidden text-[var(--apple-text-primary)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header & Mode Switcher */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/[0.08] bg-[#0E131E]">
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[var(--apple-border)] apple-header">
           <div className="flex items-center gap-3">
-            {/* Mode Tabs */}
-            <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10">
+            {/* Apple-style Mode Switcher */}
+            <div className="apple-segmented">
               <button
                 type="button"
                 onClick={() => setMode("crop")}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  mode === "crop"
-                    ? "bg-amber-500 text-neutral-950 shadow-md scale-100"
-                    : "text-neutral-400 hover:text-white"
-                }`}
+                className={`apple-segmented-item ${mode === "crop" ? "active" : ""}`}
               >
-                <Crop size={14} />
-                <span>Kırp</span>
+                <Crop size={13} />
+                <span>{t("cropTab")}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setMode("censor")}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  mode === "censor"
-                    ? "bg-indigo-500 text-white shadow-md scale-100"
-                    : "text-neutral-400 hover:text-white"
-                }`}
+                className={`apple-segmented-item ${mode === "censor" ? "active" : ""}`}
               >
-                <EyeOff size={14} />
-                <span>Sansürle / Blur</span>
+                <EyeOff size={13} />
+                <span>{t("censorTab")}</span>
               </button>
             </div>
 
-            <div className="border-l border-white/10 pl-3">
-              <h3 className="font-semibold text-xs text-neutral-200 truncate max-w-[260px]">{file.name}</h3>
-              <p className="text-[10px] text-neutral-400 font-mono">
+            <div className="border-l border-[var(--apple-border)] pl-3">
+              <h3 className="font-semibold text-xs text-[var(--apple-text-primary)] truncate max-w-[260px]">{file.name}</h3>
+              <p className="text-[10px] text-[var(--apple-text-tertiary)] font-mono">
                 {imageSize.width} × {imageSize.height} px
               </p>
             </div>
@@ -278,18 +271,18 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
-            title="Kapat (Esc)"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[var(--apple-text-tertiary)] hover:text-[var(--apple-text-primary)] hover:bg-[var(--apple-bg-control)] transition-colors cursor-pointer"
+            title="Esc"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Secondary Mode Toolbar */}
-        <div className="flex items-center justify-between px-6 py-2.5 bg-[#0B0F17] border-b border-white/[0.06] text-xs">
+        <div className="flex items-center justify-between px-6 py-2.5 bg-[var(--apple-bg-secondary)] border-b border-[var(--apple-border)] text-xs">
           {mode === "crop" ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-neutral-400 font-medium mr-1 text-[11px]">En/Boy Oranı:</span>
+              <span className="text-[var(--apple-text-secondary)] font-medium mr-1 text-[11px]">{t("aspectRatio")}</span>
               {(["free", "1:1", "16:9", "4:3", "9:16"] as AspectPreset[]).map((preset) => (
                 <button
                   key={preset}
@@ -297,21 +290,21 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                   onClick={() => handleAspectChange(preset)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                     aspect === preset
-                      ? "bg-amber-400 text-neutral-950 shadow-sm"
-                      : "text-neutral-300 hover:bg-white/[0.08]"
+                      ? "bg-[var(--apple-accent)] text-white shadow-sm"
+                      : "text-[var(--apple-text-secondary)] hover:bg-[var(--apple-bg-control)] hover:text-[var(--apple-text-primary)]"
                   }`}
                 >
-                  {preset === "free" ? "Serbest" : preset}
+                  {preset === "free" ? t("freeAspect") : preset}
                 </button>
               ))}
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-neutral-400 font-medium text-[11px]">Bulanıklık:</span>
+              <span className="text-[var(--apple-text-secondary)] font-medium text-[11px]">{t("blurIntensity")}</span>
               {[
-                { label: "Hafif", val: 8 },
-                { label: "Standart", val: 16 },
-                { label: "Güçlü", val: 30 },
+                { label: t("blurLight"), val: 8 },
+                { label: t("blurNormal"), val: 16 },
+                { label: t("blurHeavy"), val: 30 },
               ].map((lvl) => (
                 <button
                   key={lvl.val}
@@ -319,35 +312,35 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                   onClick={() => setBlurSigma(lvl.val)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                     blurSigma === lvl.val
-                      ? "bg-indigo-500 text-white shadow-sm"
-                      : "text-neutral-300 hover:bg-white/[0.08]"
+                      ? "bg-[var(--apple-accent)] text-white shadow-sm"
+                      : "text-[var(--apple-text-secondary)] hover:bg-[var(--apple-bg-control)] hover:text-[var(--apple-text-primary)]"
                   }`}
                 >
                   {lvl.label}
                 </button>
               ))}
 
-              <div className="border-l border-white/10 pl-2 ml-1">
+              <div className="border-l border-[var(--apple-border)] pl-2 ml-1">
                 <button
                   type="button"
                   onClick={() => setIsFullImageCensor(!isFullImageCensor)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                     isFullImageCensor
                       ? "bg-rose-500 text-white shadow-sm"
-                      : "text-neutral-300 hover:bg-white/[0.08]"
+                      : "text-[var(--apple-text-secondary)] hover:bg-[var(--apple-bg-control)] hover:text-[var(--apple-text-primary)]"
                   }`}
                 >
-                  {isFullImageCensor ? "✓ Tüm Görsel Seçili" : "Tüm Görseli Sansürle"}
+                  {isFullImageCensor ? t("allImageSelected") : t("allImageCensor")}
                 </button>
               </div>
             </div>
           )}
 
-          <div className="text-neutral-400 text-[11px] font-mono">
+          <div className="text-[var(--apple-text-tertiary)] text-[11px] font-mono">
             {isFullImageCensor ? (
-              <span className="text-rose-400 font-semibold">Tüm Alan: {imageSize.width} × {imageSize.height} px</span>
+              <span className="text-rose-400 font-semibold">{t("allImageSelected")}</span>
             ) : (
-              <span>Seçilen Bölge: {coords.width} × {coords.height} px</span>
+              <span>{t("selectionArea")} {coords.width} × {coords.height} px</span>
             )}
           </div>
         </div>
@@ -358,15 +351,15 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className="flex-1 relative flex items-center justify-center p-4 bg-[#070A0F] overflow-hidden select-none cursor-crosshair min-h-[300px]"
+          className="flex-1 relative flex items-center justify-center p-4 bg-black/40 overflow-hidden select-none cursor-crosshair min-h-[300px]"
         >
           {isLoadingImage ? (
-            <div className="flex flex-col items-center justify-center gap-2.5 text-neutral-400 text-xs py-16">
-              <div className="w-7 h-7 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
-              <span>Görsel Yükleniyor...</span>
+            <div className="flex flex-col items-center justify-center gap-2.5 text-[var(--apple-text-secondary)] text-xs py-16">
+              <div className="w-7 h-7 rounded-full border-2 border-[var(--apple-accent)] border-t-transparent animate-spin" />
+              <span>{t("imageLoading")}</span>
             </div>
           ) : (
-            <div className="relative max-h-full max-w-full inline-block shadow-2xl rounded-lg overflow-hidden border border-white/[0.1]">
+            <div className="relative max-h-full max-w-full inline-block shadow-2xl rounded-lg overflow-hidden border border-[var(--apple-border)]">
               <img
                 ref={imageRef}
                 src={fileUrl}
@@ -381,8 +374,8 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                 <div
                   className={`absolute pointer-events-none transition-all duration-75 ${
                     mode === "crop"
-                      ? "border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]"
-                      : "border-2 border-indigo-400 bg-indigo-500/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                      ? "border-2 border-[var(--apple-accent)] bg-[var(--apple-accent-light)] shadow-[0_0_0_9999px_rgba(0,0,0,0.60)]"
+                      : "border-2 border-indigo-400 bg-indigo-500/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.4)]"
                   }`}
                   style={{
                     left: `${box.x}%`,
@@ -393,24 +386,24 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                 >
                   {/* Mode Tag on the box */}
                   <span
-                    className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-black text-black uppercase tracking-wider ${
-                      mode === "crop" ? "bg-amber-400" : "bg-indigo-400 text-white"
+                    className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-bold text-white uppercase tracking-wider ${
+                      mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-500"
                     }`}
                   >
-                    {mode === "crop" ? "Kırpma Alanı" : "Sansür Bölgesi"}
+                    {mode === "crop" ? t("cropBoxTag") : t("censorBoxTag")}
                   </span>
 
                   {/* Corner Handles */}
-                  <div className={`absolute -top-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                  <div className={`absolute -top-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                  <div className={`absolute -bottom-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                  <div className={`absolute -bottom-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
+                  <div className={`absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
+                  <div className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
+                  <div className={`absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
+                  <div className={`absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
                 </div>
               ) : (
                 /* Full Image Blur Highlight */
                 <div className="absolute inset-0 border-2 border-rose-500 bg-rose-500/15 backdrop-blur-md flex items-center justify-center pointer-events-none">
                   <span className="px-3 py-1 rounded-full bg-rose-600/90 text-white text-xs font-bold shadow-lg">
-                    Tüm Görsel Sansürlenecek
+                    {t("allImageSelected")}
                   </span>
                 </div>
               )}
@@ -418,101 +411,97 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
           )}
         </div>
 
-        {/* Save Destination & Preference Bar (User Requirement) */}
-        <div className="px-6 py-3 bg-[#0F141F] border-t border-white/[0.08] flex flex-col gap-2">
+        {/* Save Destination & Preference Bar */}
+        <div className="px-6 py-3 bg-[var(--apple-bg-secondary)] border-t border-[var(--apple-border)] flex flex-col gap-2">
           {/* Radio Options: Separate vs Overwrite */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-[11px] font-bold text-neutral-300">Kayıt Şekli:</span>
+              <span className="text-[11px] font-bold text-[var(--apple-text-secondary)]">{t("saveModeTitle")}</span>
 
-              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-neutral-200">
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-[var(--apple-text-primary)]">
                 <input
                   type="radio"
                   name="saveMode"
                   checked={saveMode === "separate"}
                   onChange={() => setSaveMode("separate")}
-                  className="accent-amber-400 cursor-pointer"
+                  className="accent-[var(--apple-accent)] cursor-pointer"
                 />
-                <span className={saveMode === "separate" ? "text-amber-300 font-semibold" : "text-neutral-400"}>
-                  Ayrı dosya olarak kaydet <span className="text-[10px] text-neutral-400 font-mono">({mode === "crop" ? "_cropped" : "_censored"})</span>
+                <span className={saveMode === "separate" ? "text-[var(--apple-accent)] font-semibold" : "text-[var(--apple-text-secondary)]"}>
+                  {t("saveSeparate")} <span className="text-[10px] text-[var(--apple-text-tertiary)] font-mono">({mode === "crop" ? "_cropped" : "_censored"})</span>
                 </span>
               </label>
 
-              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-neutral-200">
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs text-[var(--apple-text-primary)]">
                 <input
                   type="radio"
                   name="saveMode"
                   checked={saveMode === "overwrite"}
                   onChange={() => setSaveMode("overwrite")}
-                  className="accent-amber-400 cursor-pointer"
+                  className="accent-[var(--apple-accent)] cursor-pointer"
                 />
-                <span className={saveMode === "overwrite" ? "text-rose-400 font-semibold" : "text-neutral-400"}>
-                  Orijinal dosyanın üzerine yaz
+                <span className={saveMode === "overwrite" ? "text-rose-400 font-semibold" : "text-[var(--apple-text-secondary)]"}>
+                  {t("saveOverwrite")}
                 </span>
               </label>
             </div>
 
             {/* Helper Hint */}
-            <span className="text-[10.5px] text-neutral-400 italic">
-              {saveMode === "separate" ? "Orijinal dosya korunur, yeni kopya üretilir." : "⚠️ Orijinal dosya doğrudan değiştirilecektir."}
+            <span className="text-[10.5px] text-[var(--apple-text-tertiary)] italic">
+              {saveMode === "separate" ? t("saveSeparateHint") : t("saveOverwriteHint")}
             </span>
           </div>
 
           {/* Remember Choice Toggle & Informational Text */}
-          <div className="flex items-center justify-between pt-1 border-t border-white/[0.04]">
+          <div className="flex items-center justify-between pt-1 border-t border-[var(--apple-border)]">
             <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
                 checked={alwaysRemember}
                 onChange={(e) => setAlwaysRemember(e.target.checked)}
-                className="w-4 h-4 rounded accent-amber-400 cursor-pointer"
+                className="w-4 h-4 rounded accent-[var(--apple-accent)] cursor-pointer"
               />
-              <span className="text-xs font-medium text-amber-300 group-hover:text-amber-200 transition-colors">
-                Hep bu şekilde kaydet
+              <span className="text-xs font-medium text-[var(--apple-text-primary)] group-hover:text-[var(--apple-accent)] transition-colors">
+                {t("alwaysRemember")}
               </span>
             </label>
 
-            <div className="flex items-center gap-1.5 text-[11px] text-neutral-400">
-              <Info size={13} className="text-amber-400/80 shrink-0" />
-              <span>Bu tercihi dilediğiniz zaman <strong>Ayarlar</strong> bölümünden değiştirebilirsiniz.</span>
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--apple-text-tertiary)]">
+              <Info size={13} className="text-[var(--apple-accent)] shrink-0" />
+              <span>{t("alwaysRememberNote")}</span>
             </div>
           </div>
         </div>
 
         {/* Modal Action Buttons */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-white/[0.08] bg-[#141A24]">
-          <span className="text-[11px] text-neutral-400">
-            Fareyle görsel üzerinde sürükleyerek istediğiniz bölgeyi seçebilirsiniz.
+        <div className="flex items-center justify-between px-6 py-3.5 border-t border-[var(--apple-border)] apple-header">
+          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+            {t("dragToSelectHint")}
           </span>
 
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-neutral-300 hover:bg-white/[0.08] transition-colors cursor-pointer"
+              className="apple-button px-4 py-2 text-xs font-medium cursor-pointer"
             >
-              İptal
+              {t("cancel")}
             </button>
 
             <button
               type="button"
               disabled={isSaving}
               onClick={handleSave}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-neutral-950 shadow-lg transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${
+              className={`apple-button-accent flex items-center gap-2 px-5 py-2 text-xs font-semibold shadow-md transition-all cursor-pointer ${
                 isSaving ? "opacity-60 cursor-not-allowed" : ""
-              } ${
-                mode === "crop"
-                  ? "bg-amber-400 hover:bg-amber-300 shadow-amber-500/20"
-                  : "bg-indigo-400 hover:bg-indigo-300 text-white shadow-indigo-500/20"
               }`}
             >
-              <Check size={15} strokeWidth={2.5} />
+              <Check size={14} strokeWidth={2.5} />
               <span>
                 {isSaving
-                  ? "İşleniyor..."
+                  ? t("processing")
                   : mode === "crop"
-                  ? "Kırp ve Kaydet"
-                  : "Sansürle ve Kaydet"}
+                  ? t("cropAndSave")
+                  : t("censorAndSave")}
               </span>
             </button>
           </div>
