@@ -1040,7 +1040,7 @@ pub fn set_window_vibrancy(_app: tauri::AppHandle, _effect: String) -> Result<()
                     let _ = apply_mica(&main_window, None);
                 }
                 "acrylic" => {
-                    let _ = apply_acrylic(&main_window, Some((10, 14, 23, 190)));
+                    let _ = apply_acrylic(&main_window, Some((8, 10, 18, 60)));
                 }
                 "tabbed" => {
                     let _ = apply_tabbed(&main_window, None);

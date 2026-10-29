@@ -105,8 +105,9 @@ pub fn run() {
             {
                 use window_vibrancy::{apply_acrylic, apply_mica};
                 if let Some(main_win) = app.get_webview_window("main") {
+                    // Try Mica (Windows 11 22H2+); fall back to Acrylic with low alpha so wallpaper shows through
                     if apply_mica(&main_win, None).is_err() {
-                        let _ = apply_acrylic(&main_win, Some((10, 14, 23, 190)));
+                        let _ = apply_acrylic(&main_win, Some((8, 10, 18, 60)));
                     }
                 }
             }
