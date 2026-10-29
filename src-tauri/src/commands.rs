@@ -166,6 +166,7 @@ pub fn convert_image(
     input_path: String,
     target_format: String,
     quality: Option<u8>,
+    custom_name: Option<String>,
 ) -> Result<FileInfo, String> {
     let in_path = Path::new(&input_path);
     if !in_path.exists() {
@@ -199,14 +200,19 @@ pub fn convert_image(
         .map(|s| s.to_string_lossy().to_lowercase())
         .unwrap_or_default();
 
-    let out_name = if original_ext == out_ext {
-        format!("{}_converted.{}", stem, out_ext)
-    } else {
-        format!("{}.{}", stem, out_ext)
+    let out_name = match &custom_name {
+        Some(name) => name.clone(),
+        None => {
+            if original_ext == out_ext {
+                format!("{}_converted.{}", stem, out_ext)
+            } else {
+                format!("{}.{}", stem, out_ext)
+            }
+        }
     };
 
     let mut out_path = parent.join(&out_name);
-    if out_path == in_path {
+    if out_path == in_path && custom_name.is_none() {
         out_path = parent.join(format!("{}_converted.{}", stem, out_ext));
     }
 
@@ -808,7 +814,11 @@ pub fn clear_library() -> Result<(), String> {
 
 // 10. Document conversion (Word, PowerPoint, Excel, Text -> PDF)
 #[cfg_attr(not(test), tauri::command)]
-pub fn convert_document(input_path: String, target_format: String) -> Result<FileInfo, String> {
+pub fn convert_document(
+    input_path: String,
+    target_format: String,
+    custom_name: Option<String>,
+) -> Result<FileInfo, String> {
     let in_path = Path::new(&input_path);
     if !in_path.exists() {
         return Err(format!("Input file does not exist: {}", input_path));
@@ -824,11 +834,16 @@ pub fn convert_document(input_path: String, target_format: String) -> Result<Fil
     let file_stem = in_path.file_stem().and_then(|s| s.to_str()).unwrap_or("document");
     let parent = in_path.parent().unwrap_or_else(|| Path::new("."));
 
-    let out_file_path = parent.join(format!("{}.{}", file_stem, target_ext));
-    let out_file_path = if out_file_path.exists() && out_file_path == in_path {
-        parent.join(format!("{}_converted.{}", file_stem, target_ext))
-    } else {
-        out_file_path
+    let out_file_path = match &custom_name {
+        Some(name) => parent.join(name),
+        None => {
+            let p = parent.join(format!("{}.{}", file_stem, target_ext));
+            if p.exists() && p == in_path {
+                parent.join(format!("{}_converted.{}", file_stem, target_ext))
+            } else {
+                p
+            }
+        }
     };
 
     let size_before = std::fs::metadata(in_path).map(|m| m.len()).unwrap_or(0);
@@ -1011,6 +1026,32 @@ pub fn show_main_window(_app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg_attr(not(test), tauri::command)]
+pub fn set_window_vibrancy(_app: tauri::AppHandle, _effect: String) -> Result<(), String> {
+    #[cfg(not(test))]
+    #[cfg(target_os = "windows")]
+    {
+        use tauri::Manager;
+        use window_vibrancy::{apply_acrylic, apply_mica, apply_tabbed, clear_vibrancy};
+        if let Some(main_window) = _app.get_webview_window("main") {
+            let _ = clear_vibrancy(&main_window);
+            match _effect.as_str() {
+                "mica" => {
+                    let _ = apply_mica(&main_window, None);
+                }
+                "acrylic" => {
+                    let _ = apply_acrylic(&main_window, Some((10, 14, 23, 190)));
+                }
+                "tabbed" => {
+                    let _ = apply_tabbed(&main_window, None);
+                }
+                _ => {}
+            }
+        }
+    }
+    Ok(())
+}
+
 // -------------------------------------------------------------
 // Unit Tests
 // -------------------------------------------------------------
@@ -1095,28 +1136,29 @@ mod tests {
         create_dummy_png(&in_path, 64, 64);
 
         // PNG -> JPG
-        let res_jpg = convert_image(in_path.to_string_lossy().to_string(), "jpg".to_string(), Some(90)).unwrap();
+        let res_jpg = convert_image(in_path.to_string_lossy().to_string(), "jpg".to_string(), Some(90), None).unwrap();
         assert_eq!(res_jpg.extension, "jpg");
         assert!(Path::new(&res_jpg.path).exists());
         assert_eq!(res_jpg.width, Some(64));
         assert_eq!(res_jpg.height, Some(64));
 
-        // PNG -> WebP
-        let res_webp = convert_image(in_path.to_string_lossy().to_string(), "webp".to_string(), None).unwrap();
+        // PNG -> WebP with custom numbering
+        let res_webp = convert_image(in_path.to_string_lossy().to_string(), "webp".to_string(), None, Some("sample_(1 of 3).webp".to_string())).unwrap();
         assert_eq!(res_webp.extension, "webp");
+        assert_eq!(res_webp.name, "sample_(1 of 3).webp");
         assert!(Path::new(&res_webp.path).exists());
         assert_eq!(res_webp.width, Some(64));
         assert_eq!(res_webp.height, Some(64));
 
         // PNG -> BMP
-        let res_bmp = convert_image(in_path.to_string_lossy().to_string(), "bmp".to_string(), None).unwrap();
+        let res_bmp = convert_image(in_path.to_string_lossy().to_string(), "bmp".to_string(), None, None).unwrap();
         assert_eq!(res_bmp.extension, "bmp");
         assert!(Path::new(&res_bmp.path).exists());
         assert_eq!(res_bmp.width, Some(64));
         assert_eq!(res_bmp.height, Some(64));
 
         // JPG -> PNG
-        let res_png = convert_image(res_jpg.path.clone(), "png".to_string(), None).unwrap();
+        let res_png = convert_image(res_jpg.path.clone(), "png".to_string(), None, None).unwrap();
         assert_eq!(res_png.extension, "png");
         assert!(Path::new(&res_png.path).exists());
 

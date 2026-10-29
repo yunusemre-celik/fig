@@ -31,7 +31,7 @@ import {
   openFile,
   showWheelAtCursor,
 } from "./services/api";
-import { Sparkles, FileImage, Crop, QrCode, FileText, ArrowRight } from "lucide-react";
+import { Sparkles, FileImage, Crop, QrCode, FileText } from "lucide-react";
 
 const isWheelWindow =
   typeof window !== "undefined" && window.location.search.includes("window=wheel");
@@ -46,6 +46,7 @@ export function App() {
   const [libraryEntries, setLibraryEntries] = useState<LibraryEntry[]>([]);
   const [isWheelOpen, setIsWheelOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isConverting, setIsConverting] = useState(false);
 
   // Wheel Studio profiles state
   const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
@@ -193,102 +194,104 @@ export function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Action execution from wheel or quick buttons
-  const handleAction = async (actionId: string, category: WheelMode) => {
-    if (category === "documents" || actionId.endsWith("_pdf")) {
-      if (actionId === "img_pdf" || actionId === "pdf") {
-        if (selectedFiles.length === 0) {
-          addToast("error", "Dosya Seçilmedi", "Lütfen önce PDF yapılacak görselleri seçin.");
-          return;
-        }
-        try {
+  // Direct conversion execution for selected files
+  const handleDirectConvert = async (targetFormat: string) => {
+    if (selectedFiles.length === 0) {
+      addToast(
+        "error",
+        "Dosya Seçilmedi",
+        "Lütfen önce dönüştürülecek dosyaları sürükleyin veya 'Dosya Seç' butonunu kullanın."
+      );
+      return;
+    }
+
+    setIsConverting(true);
+    const saveAsSeparate = localStorage.getItem("fig_save_separate") !== "false";
+    const total = selectedFiles.length;
+    let successCount = 0;
+    let lastResult: FileInfo | null = null;
+
+    try {
+      if (targetFormat === "pdf") {
+        const allImages = selectedFiles.every((f) =>
+          ["png", "jpg", "jpeg", "webp", "bmp", "gif"].includes(f.extension.toLowerCase())
+        );
+
+        if (allImages) {
+          // Combine images into single multi-page PDF
           const res = await createPdfFromImages(selectedFiles.map((f) => f.path));
-          playSuccessChime();
-          confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-          addToast(
-            "success",
-            "PDF Oluşturuldu",
-            `${res.name} (${res.formatted_size}) başarıyla hazırlandı.`,
-            res.path
-          );
-          loadLibrary();
-        } catch (err) {
-          addToast("error", "PDF Hatası", `PDF oluşturulamadı: ${err}`);
-        }
-        return;
-      }
-
-      // Office Document conversion
-      if (selectedFiles.length === 0) {
-        setActiveTab("documents");
-        addToast("info", "Belgeler Sekmesi", "Dönüştürmek istediğiniz Word, PPT veya Excel belgesini seçin.");
-        return;
-      }
-
-      let lastResult: FileInfo | null = null;
-      let successCount = 0;
-      for (const file of selectedFiles) {
-        try {
-          const res = await convertDocument(file.path, "pdf");
           lastResult = res;
-          successCount++;
-        } catch (err) {
-          console.error(err);
+          successCount = total;
+        } else {
+          // Convert individual documents
+          for (let i = 0; i < total; i++) {
+            const f = selectedFiles[i];
+            const stem = f.name.substring(0, f.name.lastIndexOf(".")) || f.name;
+            const customName = saveAsSeparate ? `${stem}_(${i + 1} of ${total}).pdf` : undefined;
+            try {
+              const res = await convertDocument(f.path, "pdf", customName);
+              lastResult = res;
+              successCount++;
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }
+      } else {
+        // Image conversions: webp, png, jpg, bmp
+        for (let i = 0; i < total; i++) {
+          const f = selectedFiles[i];
+          const stem = f.name.substring(0, f.name.lastIndexOf(".")) || f.name;
+          const customName = saveAsSeparate
+            ? `${stem}_(${i + 1} of ${total}).${targetFormat}`
+            : undefined;
+          try {
+            const res = await convertImage(f.path, targetFormat, 85, customName);
+            lastResult = res;
+            successCount++;
+          } catch (err) {
+            console.error(err);
+          }
         }
       }
 
       if (successCount > 0 && lastResult) {
         playSuccessChime();
-        confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
+        confetti({ particleCount: 65, spread: 75, origin: { y: 0.8 } });
         addToast(
           "success",
-          "Belgeler PDF'e Dönüştürüldü",
-          `${successCount} adet belge başarıyla PDF formatına aktarıldı.`,
+          "Dönüştürme Tamamlandı",
+          `${successCount} dosya başarıyla ${targetFormat.toUpperCase()} formatına dönüştürüldü.${
+            saveAsSeparate ? " (1 of N numaralandırması uygulandı)" : ""
+          }`,
           lastResult.path
         );
         loadLibrary();
       } else {
         addToast(
           "error",
-          "Belge Dönüştürülemedi",
-          "Office uygulaması yanıt vermedi veya dosya başka bir programda açık."
+          "Dönüştürme Başarısız",
+          "Seçilen dosyalar dönüştürülürken bir hata oluştu. Lütfen dosya formatlarını kontrol edin."
         );
       }
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
+  // Action execution from wheel or quick buttons
+  const handleAction = async (actionId: string, category: WheelMode) => {
+    if (category === "documents" || actionId.endsWith("_pdf")) {
+      await handleDirectConvert("pdf");
       return;
     }
 
     if (category === "convert") {
-      if (selectedFiles.length === 0) {
-        addToast("error", "Dosya Seçilmedi", "Lütfen önce dönüştürülecek görselleri seçin.");
-        return;
-      }
+      await handleDirectConvert(actionId);
+      return;
+    }
 
-      let lastResult: FileInfo | null = null;
-      let successCount = 0;
-      for (const file of selectedFiles) {
-        try {
-          const res = await convertImage(file.path, actionId, 85);
-          lastResult = res;
-          successCount++;
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      if (successCount > 0 && lastResult) {
-        playSuccessChime();
-        confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
-        addToast(
-          "success",
-          "Görseller Dönüştürüldü",
-          `${successCount} dosya ${actionId.toUpperCase()} formatına dönüştürüldü.`,
-          lastResult.path
-        );
-        loadLibrary();
-      } else {
-        addToast("error", "Dönüştürme Hatası", "Görseller dönüştürülürken bir hata oluştu.");
-      }
-    } else if (category === "tools") {
+    if (category === "tools") {
       if (actionId === "crop") {
         if (selectedFiles.length === 0) {
           addToast("error", "Görsel Seçilmedi", "Lütfen kırpılacak bir görsel seçin.");
@@ -384,7 +387,7 @@ export function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-mesh-glass text-neutral-100 select-none overflow-hidden font-sans relative">
-      {/* Brand Top Header with Glass Effect */}
+      {/* Brand Top Header with Window Vibrancy */}
       <div className="h-10 w-full flex items-center justify-between px-5 glass-panel border-x-0 border-t-0 select-none text-xs z-30">
         <div className="flex items-center gap-2.5">
           <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20">
@@ -392,7 +395,7 @@ export function App() {
           </div>
           <span className="font-bold text-white tracking-wide text-xs">Fig</span>
           <span className="text-[10px] text-amber-300 font-semibold px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/25">
-            Windows 11 Fluent Glass
+            Windows 11 Mica & Acrylic
           </span>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-neutral-400">
@@ -429,13 +432,13 @@ export function App() {
             <div className="w-full text-center my-3 animate-in fade-in duration-300">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/25 text-amber-400 text-xs font-semibold mb-2 shadow-sm backdrop-blur-md">
                 <Sparkles size={13} />
-                <span>Modern Windows 11 Glassmorphism Dosya Kiti</span>
+                <span>Windows 11 Native Vibrancy & Dosya Kiti</span>
               </div>
               <h1 className="text-3xl font-black text-white tracking-tight">
                 Dosyaların için <span className="text-amber-400">tatlı bir kolaylık.</span>
               </h1>
               <p className="text-xs text-neutral-400 mt-1 max-w-md mx-auto leading-relaxed">
-                Görselleri ve ofis belgelerini dönüştürün, kırpın veya fare imlecinizin ucundaki çark ile tek tıkla işleyin.
+                Dosyaları bırakın, tek tıkla doğrudan dönüştürün veya fare imlecinizin ucundaki çark ile anında işleyin.
               </p>
             </div>
 
@@ -447,7 +450,7 @@ export function App() {
                 hasSelectedFiles={selectedFiles.length > 0}
               />
 
-              {/* Selected Files with Visual Previews */}
+              {/* Selected Files with Direct 1-Click Convert Bar */}
               <FileChips
                 files={selectedFiles}
                 onRemove={(idx) =>
@@ -456,37 +459,36 @@ export function App() {
                 onClearAll={() => setSelectedFiles([])}
                 onOpenWheel={handleTriggerWheel}
                 onReveal={revealInExplorer}
+                onDirectConvert={handleDirectConvert}
+                isConverting={isConverting}
               />
             </div>
 
             {/* Quick Action Glass Cards */}
             <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
-                onClick={() => handleAction("webp", "convert")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
+                onClick={() => handleDirectConvert("webp")}
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-emerald-400/40"
               >
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shadow-sm">
                   <FileImage size={16} />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">WebP'ye Çevir</span>
-                  <span className="text-[10px] text-neutral-400">Web için %70 hafif</span>
+                  <span className="font-bold text-xs text-white block">⚡ WebP'ye Çevir</span>
+                  <span className="text-[10px] text-neutral-400">Seçilileri dönüştür</span>
                 </div>
               </button>
 
               <button
-                onClick={() => setActiveTab("documents")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 border-blue-500/20 hover:border-blue-400/40"
+                onClick={() => handleDirectConvert("pdf")}
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 border-rose-500/20 hover:border-rose-400/40"
               >
-                <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/25 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform shadow-sm">
                   <FileText size={16} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-xs text-white block">Belgeler</span>
-                    <span className="text-[10px] text-neutral-400">Word, PPT → PDF</span>
-                  </div>
-                  <ArrowRight size={13} className="text-neutral-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                <div>
+                  <span className="font-bold text-xs text-white block">⚡ PDF Yap</span>
+                  <span className="text-[10px] text-neutral-400">Görsel veya Belgeleri</span>
                 </div>
               </button>
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FileInfo } from "../types";
-import { X, Sparkles, Trash2, Eye, FileText, ExternalLink } from "lucide-react";
+import { X, Sparkles, Trash2, Eye, FileText, ExternalLink, Zap, RefreshCw } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 
 interface FileChipsProps {
@@ -9,6 +9,8 @@ interface FileChipsProps {
   onClearAll: () => void;
   onOpenWheel: () => void;
   onReveal?: (path: string) => void;
+  onDirectConvert?: (format: string) => void;
+  isConverting?: boolean;
 }
 
 export const FileChips: React.FC<FileChipsProps> = ({
@@ -17,6 +19,8 @@ export const FileChips: React.FC<FileChipsProps> = ({
   onClearAll,
   onOpenWheel,
   onReveal,
+  onDirectConvert,
+  isConverting = false,
 }) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -45,12 +49,12 @@ export const FileChips: React.FC<FileChipsProps> = ({
 
   return (
     <>
-      <div className="w-full mt-4 p-4 rounded-2xl glass-panel animate-in fade-in duration-200">
+      <div className="w-full mt-4 p-4 rounded-3xl glass-panel animate-in fade-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/[0.06]">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-white tracking-wide">
-              Hazır Dosyalar & Ekran Görüntüleri
+              Seçilen Dosyalar & Ekran Görüntüleri
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
               {files.length} Dosya
@@ -61,9 +65,10 @@ export const FileChips: React.FC<FileChipsProps> = ({
             <button
               onClick={onOpenWheel}
               className="glass-btn-accent flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs transition-all shadow-sm"
+              title="İmleçte Hızlı Çarkı Aç (Ctrl+Space)"
             >
               <Sparkles size={13} />
-              <span>Çark ile İşle</span>
+              <span>Çarkı Aç</span>
             </button>
             <button
               onClick={onClearAll}
@@ -71,6 +76,42 @@ export const FileChips: React.FC<FileChipsProps> = ({
               title="Tümünü Temizle"
             >
               <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* Direct Action 1-Click Convert Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 p-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+          <div className="flex items-center gap-1.5 text-xs text-neutral-300 font-semibold">
+            {isConverting ? (
+              <RefreshCw size={13} className="text-amber-400 animate-spin" />
+            ) : (
+              <Zap size={14} className="text-amber-400" />
+            )}
+            <span>{isConverting ? "Dönüştürülüyor..." : "Seçilileri Doğrudan Dönüştür:"}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => onDirectConvert?.("webp")}
+              disabled={isConverting}
+              className="glass-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-300 hover:text-emerald-200 hover:border-emerald-500/40 transition-all flex items-center gap-1"
+            >
+              ⚡ WebP Yap
+            </button>
+            <button
+              onClick={() => onDirectConvert?.("png")}
+              disabled={isConverting}
+              className="glass-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-300 hover:text-blue-200 hover:border-blue-500/40 transition-all flex items-center gap-1"
+            >
+              ⚡ PNG Yap
+            </button>
+            <button
+              onClick={() => onDirectConvert?.("pdf")}
+              disabled={isConverting}
+              className="glass-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-300 hover:text-rose-200 hover:border-rose-500/40 transition-all flex items-center gap-1"
+            >
+              ⚡ PDF Yap
             </button>
           </div>
         </div>
@@ -89,20 +130,19 @@ export const FileChips: React.FC<FileChipsProps> = ({
             return (
               <div
                 key={`${file.path}-${idx}`}
-                className="group relative flex items-center gap-3 p-2.5 rounded-xl glass-card transition-all"
+                className="group relative flex items-center gap-3 p-2.5 rounded-2xl glass-card transition-all"
               >
                 {/* Visual Thumbnail or Document Icon */}
                 {isImg && imgSrc ? (
                   <div
                     onClick={() => setPreviewImage(imgSrc)}
-                    className="relative w-12 h-12 rounded-lg overflow-hidden bg-black/40 border border-white/[0.1] shrink-0 cursor-zoom-in group/thumb shadow-sm"
+                    className="relative w-12 h-12 rounded-xl overflow-hidden bg-black/40 border border-white/[0.1] shrink-0 cursor-zoom-in group/thumb shadow-sm"
                   >
                     <img
                       src={imgSrc}
                       alt={file.name}
                       className="w-full h-full object-cover transition-transform group-hover/thumb:scale-110"
                       onError={(e) => {
-                        // Fallback icon if preview fails
                         (e.target as HTMLElement).style.display = "none";
                       }}
                     />
@@ -112,7 +152,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
                   </div>
                 ) : (
                   <div
-                    className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center shrink-0 border ${docBadge.bg} ${docBadge.border} ${docBadge.text}`}
+                    className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 border ${docBadge.bg} ${docBadge.border} ${docBadge.text}`}
                   >
                     <FileText size={16} />
                     <span className="text-[8px] font-black tracking-tighter mt-0.5">

@@ -100,12 +100,24 @@ pub fn run() {
                 });
             }
 
+            // Apply native Windows 11 Mica / Acrylic vibrancy
+            #[cfg(target_os = "windows")]
+            {
+                use window_vibrancy::{apply_acrylic, apply_mica};
+                if let Some(main_win) = app.get_webview_window("main") {
+                    if apply_mica(&main_win, None).is_err() {
+                        let _ = apply_acrylic(&main_win, Some((10, 14, 23, 190)));
+                    }
+                }
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::show_wheel_at_cursor,
             commands::hide_wheel,
             commands::show_main_window,
+            commands::set_window_vibrancy,
             commands::get_file_info,
             commands::convert_image,
             commands::crop_image,

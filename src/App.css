@@ -5,7 +5,7 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #0A0D14;
+  background-color: transparent !important;
   color: #F0F6FC;
   font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   user-select: none;
@@ -25,31 +25,31 @@ body.wheel-window #root,
   overflow: hidden !important;
 }
 
-/* Glassmorphism Design System */
+/* Glassmorphism Design System with Native Windows 11 Vibrancy */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.035);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.055);
-  border-color: rgba(245, 158, 11, 0.3);
-  border-top-color: rgba(245, 158, 11, 0.5);
-  box-shadow: 0 12px 32px -4px rgba(245, 158, 11, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.065);
+  border-color: rgba(245, 158, 11, 0.35);
+  border-top-color: rgba(245, 158, 11, 0.55);
+  box-shadow: 0 12px 32px -4px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
 }
 
@@ -88,9 +88,9 @@ body.wheel-window #root,
   transform: translateY(-1px) scale(1.02);
 }
 
-/* Ambient glow background effect */
+/* Ambient glow with semi-translucent backdrop for Mica/Acrylic */
 .bg-mesh-glass {
-  background-color: #090C13;
+  background-color: rgba(10, 13, 20, 0.72);
   background-image: 
     radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 90% 15%, rgba(245, 158, 11, 0.07) 0%, transparent 45%),

@@ -22,18 +22,20 @@ export async function getFileInfo(path: string): Promise<FileInfo> {
 export async function convertImage(
   inputPath: string,
   targetFormat: string,
-  quality?: number
+  quality?: number,
+  customName?: string
 ): Promise<FileInfo> {
   if (isTauri) {
     return await invoke<FileInfo>("convert_image", {
       inputPath,
       targetFormat,
       quality,
+      customName,
     });
   }
   return {
-    name: `converted.${targetFormat}`,
-    path: `C:\\Users\\Mock\\${targetFormat}\\converted.${targetFormat}`,
+    name: customName || `converted.${targetFormat}`,
+    path: `C:\\Users\\Mock\\${targetFormat}\\${customName || `converted.${targetFormat}`}`,
     size: 184320,
     formatted_size: "180 KB",
     extension: targetFormat,
@@ -43,17 +45,19 @@ export async function convertImage(
 
 export async function convertDocument(
   inputPath: string,
-  targetFormat: string
+  targetFormat: string,
+  customName?: string
 ): Promise<FileInfo> {
   if (isTauri) {
     return await invoke<FileInfo>("convert_document", {
       inputPath,
       targetFormat,
+      customName,
     });
   }
   return {
-    name: `converted.${targetFormat}`,
-    path: `C:\\Users\\Mock\\${targetFormat}\\document.${targetFormat}`,
+    name: customName || `converted.${targetFormat}`,
+    path: `C:\\Users\\Mock\\${targetFormat}\\${customName || `document.${targetFormat}`}`,
     size: 350000,
     formatted_size: "341 KB",
     extension: targetFormat,
@@ -209,5 +213,11 @@ export async function hideWheel(): Promise<void> {
 export async function showMainWindow(): Promise<void> {
   if (isTauri) {
     await invoke("show_main_window");
+  }
+}
+
+export async function setWindowVibrancy(effect: string): Promise<void> {
+  if (isTauri) {
+    await invoke("set_window_vibrancy", { effect });
   }
 }

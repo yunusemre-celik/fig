@@ -33,6 +33,7 @@ windows-sys = { version = "0.59", features = [
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_System_Registry",
 ] }
+window-vibrancy = "0.8.1"
 
 [profile.release]
 codegen-units = 16
