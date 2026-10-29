@@ -229,3 +229,10 @@ export async function pickFileDialog(filterType?: string): Promise<string | null
   }
   return null;
 }
+
+export async function getSelectedExplorerFiles(): Promise<string[]> {
+  if (isTauri) {
+    return await invoke<string[]>("get_selected_explorer_files");
+  }
+  return [];
+}

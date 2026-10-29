@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { RadialWheel } from "./RadialWheel";
 import { PRESET_PROFILES } from "./WheelStudio";
 import { FileInfo, WheelItem, WheelMode, WheelProfileId } from "../types";
@@ -13,10 +13,11 @@ import {
   getFileInfo,
   pickFileDialog,
   openFile,
+  getSelectedExplorerFiles,
 } from "../services/api";
 import { playSuccessChime } from "../utils/sound";
 import confetti from "canvas-confetti";
-import { FolderOpen, ExternalLink } from "lucide-react";
+import { FolderOpen, ExternalLink, Files } from "lucide-react";
 
 export const FloatingWheelWindow: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
@@ -33,16 +34,55 @@ export const FloatingWheelWindow: React.FC = () => {
     return PRESET_PROFILES.office.items;
   });
 
-  const [droppedFile, setDroppedFile] = useState<FileInfo | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [lastOutputPath, setLastOutputPath] = useState<string | null>(null);
 
-  // Set transparent window styles immediately
+  // Auto-detect currently selected files in Windows Explorer or on the Desktop
+  const refreshExplorerSelection = useCallback(async () => {
+    try {
+      const paths = await getSelectedExplorerFiles();
+      if (paths && paths.length > 0) {
+        const infoList: FileInfo[] = [];
+        for (const p of paths) {
+          try {
+            const info = await getFileInfo(p);
+            infoList.push(info);
+          } catch {
+            infoList.push({
+              name: p.split("\\").pop() || p,
+              path: p,
+              size: 0,
+              formatted_size: "",
+              extension: p.split(".").pop() || "",
+              modified: "Şimdi",
+            });
+          }
+        }
+        setSelectedFiles(infoList);
+        if (infoList.length === 1) {
+          setStatusMessage(`${infoList[0].name} seçili`);
+        } else {
+          setStatusMessage(`${infoList.length} Dosya Seçili`);
+        }
+      } else {
+        setSelectedFiles([]);
+        setStatusMessage(null);
+      }
+    } catch (err) {
+      console.warn("Failed to read explorer selection:", err);
+    }
+  }, []);
+
+  // Set transparent window styles & listeners
   useEffect(() => {
     document.documentElement.classList.add("wheel-window");
     document.body.classList.add("wheel-window");
     document.documentElement.style.backgroundColor = "transparent";
     document.body.style.backgroundColor = "transparent";
+
+    // Immediate check for selected explorer files on popup
+    refreshExplorerSelection();
 
     const handleStorage = () => {
       const p = (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
@@ -62,19 +102,26 @@ export const FloatingWheelWindow: React.FC = () => {
       }
     };
 
+    const handleFocus = () => {
+      refreshExplorerSelection();
+    };
+
     window.addEventListener("storage", handleStorage);
     window.addEventListener("paste", handlePaste);
+    window.addEventListener("focus", handleFocus);
     return () => {
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("paste", handlePaste);
+      window.removeEventListener("focus", handleFocus);
     };
-  }, []);
+  }, [refreshExplorerSelection]);
 
   const handleClose = async () => {
     try {
       await hideWheel();
       setStatusMessage(null);
       setLastOutputPath(null);
+      setSelectedFiles([]);
     } catch (err) {
       console.error("Failed to hide wheel:", err);
     }
@@ -100,17 +147,18 @@ export const FloatingWheelWindow: React.FC = () => {
     const filePath = (file as unknown as { path?: string }).path || file.name;
     try {
       const info = await getFileInfo(filePath);
-      setDroppedFile(info);
+      setSelectedFiles([info]);
       setStatusMessage(`${info.name} hazır`);
     } catch {
-      setDroppedFile({
+      const fallback: FileInfo = {
         name: file.name,
         path: filePath,
         size: file.size,
         formatted_size: `${Math.round(file.size / 1024)} KB`,
         extension: file.name.split(".").pop() || "",
         modified: "Şimdi",
-      });
+      };
+      setSelectedFiles([fallback]);
       setStatusMessage(`${file.name} hazır`);
     }
   };
@@ -125,16 +173,17 @@ export const FloatingWheelWindow: React.FC = () => {
   };
 
   const handleSelectAction = async (actionId: string, _category: WheelMode) => {
-    // 1. Terminal action: open terminal directly
+    // 1. Terminal action
     if (actionId === "terminal") {
-      await openInTerminal(droppedFile ? droppedFile.path : "");
+      const folderPath = selectedFiles.length > 0 ? selectedFiles[0].path : "";
+      await openInTerminal(folderPath);
       await handleClose();
       return;
     }
 
-    // 2. Ensure target file: use droppedFile or open Windows file picker
-    let file = droppedFile;
-    if (!file) {
+    // 2. Ensure target files: use selectedFiles from Windows Explorer, or prompt file picker
+    let files = selectedFiles;
+    if (files.length === 0) {
       setStatusMessage("Dosya Seçin...");
       const picked = await pickFileDialog(getFilterForAction(actionId));
       if (!picked) {
@@ -142,10 +191,11 @@ export const FloatingWheelWindow: React.FC = () => {
         return;
       }
       try {
-        file = await getFileInfo(picked);
-        setDroppedFile(file);
+        const info = await getFileInfo(picked);
+        files = [info];
+        setSelectedFiles([info]);
       } catch {
-        file = {
+        const fallback: FileInfo = {
           name: picked.split("\\").pop() || picked,
           path: picked,
           size: 0,
@@ -153,48 +203,72 @@ export const FloatingWheelWindow: React.FC = () => {
           extension: picked.split(".").pop() || "",
           modified: "Şimdi",
         };
-        setDroppedFile(file);
+        files = [fallback];
+        setSelectedFiles([fallback]);
       }
     }
 
-    if (!file) return;
+    if (files.length === 0) return;
 
     // 3. Simple utility actions
     if (actionId === "copy_path") {
-      await navigator.clipboard.writeText(file.path);
+      const pathsJoined = files.map((f) => f.path).join("\n");
+      await navigator.clipboard.writeText(pathsJoined);
       playSuccessChime();
-      setStatusMessage("Yol Kopyalandı!");
+      setStatusMessage(files.length === 1 ? "Yol Kopyalandı!" : `${files.length} Yol Kopyalandı!`);
       setTimeout(handleClose, 900);
       return;
     }
 
     if (actionId === "reveal") {
-      await revealInExplorer(file.path);
+      await revealInExplorer(files[0].path);
       await handleClose();
       return;
     }
 
-    // 4. Modals (Crop, Compress, QR, Info) -> launch main dashboard with selected file
+    // 4. Modals (Crop, Compress, QR, Info) -> open main dashboard with files
     if (actionId === "crop" || actionId === "compress" || actionId === "qr" || actionId === "info") {
       await showMainWindow();
       await handleClose();
       return;
     }
 
-    // 5. Document Conversions (Word, PPT, Excel, Text -> PDF)
+    // 5. Image to PDF / Multi-image Combine into 1 PDF
+    if (actionId === "img_pdf" || (actionId === "pdf" && files.every((f) => ["png", "jpg", "jpeg", "webp", "bmp"].includes(f.extension.toLowerCase())))) {
+      try {
+        setStatusMessage(files.length > 1 ? `${files.length} Görsel PDF Yapılıyor...` : "PDF Yapılıyor...");
+        const res = await createPdfFromImages(files.map((f) => f.path));
+        playSuccessChime();
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+        setStatusMessage(`Hazır: ${res.name}`);
+        setLastOutputPath(res.path);
+        setTimeout(handleClose, 1600);
+      } catch (err) {
+        setStatusMessage(`Hata: ${err}`);
+      }
+      return;
+    }
+
+    // 6. Document Conversions (Word, PPT, Excel -> PDF)
     if (
       actionId === "docx_pdf" ||
       actionId === "pptx_pdf" ||
       actionId === "xlsx_pdf" ||
-      actionId === "txt_pdf"
+      actionId === "txt_pdf" ||
+      actionId === "pdf"
     ) {
       try {
-        setStatusMessage("PDF Yapılıyor...");
-        const res = await convertDocument(file.path, "pdf");
+        setStatusMessage(files.length > 1 ? `${files.length} Belge PDF Yapılıyor...` : "PDF Yapılıyor...");
+        let lastRes: FileInfo | null = null;
+        for (const file of files) {
+          lastRes = await convertDocument(file.path, "pdf");
+        }
         playSuccessChime();
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
-        setStatusMessage(`Hazır: ${res.name}`);
-        setLastOutputPath(res.path);
+        if (lastRes) {
+          setStatusMessage(files.length > 1 ? `${files.length} Belge PDF Yapıldı!` : `Hazır: ${lastRes.name}`);
+          setLastOutputPath(lastRes.path);
+        }
         setTimeout(handleClose, 1600);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
@@ -202,31 +276,20 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    // 6. Image Conversions
+    // 7. Image Conversions (WebP, PNG, JPG, BMP)
     if (actionId === "webp" || actionId === "png" || actionId === "jpg" || actionId === "bmp") {
       try {
-        setStatusMessage(`${actionId.toUpperCase()} Yapılıyor...`);
-        const res = await convertImage(file.path, actionId, 85);
+        setStatusMessage(files.length > 1 ? `${files.length} Dosya ${actionId.toUpperCase()} Yapılıyor...` : `${actionId.toUpperCase()} Yapılıyor...`);
+        let lastRes: FileInfo | null = null;
+        for (const file of files) {
+          lastRes = await convertImage(file.path, actionId, 85);
+        }
         playSuccessChime();
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
-        setStatusMessage(`Hazır: ${res.name}`);
-        setLastOutputPath(res.path);
-        setTimeout(handleClose, 1600);
-      } catch (err) {
-        setStatusMessage(`Hata: ${err}`);
-      }
-      return;
-    }
-
-    // 7. Image to PDF
-    if (actionId === "img_pdf" || actionId === "pdf") {
-      try {
-        setStatusMessage("PDF Yapılıyor...");
-        const res = await createPdfFromImages([file.path]);
-        playSuccessChime();
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
-        setStatusMessage(`Hazır: ${res.name}`);
-        setLastOutputPath(res.path);
+        if (lastRes) {
+          setStatusMessage(files.length > 1 ? `${files.length} Dosya Dönüştürüldü!` : `Hazır: ${lastRes.name}`);
+          setLastOutputPath(lastRes.path);
+        }
         setTimeout(handleClose, 1600);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
@@ -251,6 +314,7 @@ export const FloatingWheelWindow: React.FC = () => {
       {/* Floating Status Notification Pill */}
       {statusMessage && (
         <div className="absolute top-2 z-50 px-3.5 py-1.5 rounded-full glass-panel border border-amber-400/40 text-amber-300 text-[11px] font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in flex items-center gap-2">
+          {selectedFiles.length > 1 && <Files size={12} className="text-amber-400" />}
           <span>{statusMessage}</span>
           {lastOutputPath && (
             <div className="flex items-center gap-1.5 ml-1 border-l border-white/20 pl-2">
@@ -279,7 +343,7 @@ export const FloatingWheelWindow: React.FC = () => {
         isOpen={true}
         onClose={handleClose}
         onSelectAction={handleSelectAction}
-        selectedFileNames={droppedFile ? [droppedFile.name] : []}
+        selectedFileNames={selectedFiles.map((f) => f.name)}
         customItems={activeItems}
         isStandalone={true}
         profileName={profileDisplayName}

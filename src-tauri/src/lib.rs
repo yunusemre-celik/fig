@@ -134,6 +134,7 @@ pub fn run() {
             commands::show_main_window,
             commands::set_window_vibrancy,
             commands::pick_file_dialog,
+            commands::get_selected_explorer_files,
             commands::get_file_info,
             commands::convert_image,
             commands::crop_image,

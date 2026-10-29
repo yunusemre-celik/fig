@@ -363,9 +363,13 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
         {/* Selected File Badge if any */}
         {selectedFileNames.length > 0 && (
-          <div className="flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[8.5px] font-bold max-w-[110px] truncate mb-0.5">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[8.5px] font-bold max-w-[115px] truncate mb-0.5 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
-            <span className="truncate">{selectedFileNames[0]}</span>
+            <span className="truncate">
+              {selectedFileNames.length === 1
+                ? selectedFileNames[0]
+                : `${selectedFileNames.length} Dosya Seçili`}
+            </span>
           </div>
         )}
 

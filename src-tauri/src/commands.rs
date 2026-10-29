@@ -1110,6 +1110,74 @@ pub fn pick_file_dialog(filter_type: Option<String>) -> Result<Option<String>, S
     result
 }
 
+// 13. Auto-detect currently selected files in Windows Explorer & Desktop
+#[cfg_attr(not(test), tauri::command)]
+pub fn get_selected_explorer_files() -> Result<Vec<String>, String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+        let script = r#"
+$shell = New-Object -ComObject Shell.Application
+$paths = [System.Collections.Generic.List[string]]::new()
+
+# 1. Check open Explorer folder windows
+try {
+    foreach ($w in $shell.Windows()) {
+        try {
+            $sel = $w.Document.SelectedItems()
+            if ($sel -and $sel.Count -gt 0) {
+                foreach ($it in $sel) {
+                    if ($it.Path) { $paths.Add($it.Path) }
+                }
+                if ($paths.Count -gt 0) { break }
+            }
+        } catch {}
+    }
+} catch {}
+
+# 2. Check Desktop selection if no open Explorer window had items
+if ($paths.Count -eq 0) {
+    try {
+        $dw = $shell.Windows().FindWindowSW(0, 0, 8, 0, 1)
+        if ($dw -and $dw.Document) {
+            $sel = $dw.Document.SelectedItems()
+            if ($sel -and $sel.Count -gt 0) {
+                foreach ($it in $sel) {
+                    if ($it.Path) { $paths.Add($it.Path) }
+                }
+            }
+        }
+    } catch {}
+}
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$paths | ForEach-Object { [Console]::WriteLine($_) }
+"#;
+
+        let output = Command::new("powershell")
+            .args(&["-NoProfile", "-NonInteractive", "-Command", script])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| format!("Seçili dosyalar okunamadı: {}", e))?;
+
+        let text = String::from_utf8_lossy(&output.stdout);
+        let files: Vec<String> = text
+            .lines()
+            .map(|l| l.trim().to_string())
+            .filter(|l| !l.is_empty() && std::path::Path::new(l).exists())
+            .collect();
+
+        Ok(files)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok(Vec::new())
+    }
+}
+
 // -------------------------------------------------------------
 // Unit Tests
 // -------------------------------------------------------------
