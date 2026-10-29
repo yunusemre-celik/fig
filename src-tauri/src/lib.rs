@@ -144,6 +144,7 @@ pub fn run() {
             commands::get_selected_explorer_files,
             commands::get_file_info,
             commands::convert_image,
+            commands::read_image_data_url,
             commands::crop_image,
             commands::compress_image,
             commands::censor_image,

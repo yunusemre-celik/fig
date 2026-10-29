@@ -20,6 +20,7 @@ import {
   Sparkles,
   Music,
   Film,
+  EyeOff,
 } from "lucide-react";
 
 interface WheelStudioProps {
@@ -57,6 +58,7 @@ export const ALL_AVAILABLE_ACTIONS: WheelItem[] = [
 
   // Tools
   { id: "crop", label: "Kırp & Düzenle", description: "Serbest veya oranlı kırpma", icon: "crop", color: "#F59E0B", category: "tools" },
+  { id: "censor", label: "Sansürle / Blur", description: "Bölgesel veya tam görsel buzlama", icon: "censor", color: "#6366F1", category: "tools" },
   { id: "compress", label: "Sıkıştır", description: "Kalite & boyut optimizasyonu", icon: "compress", color: "#10B981", category: "tools" },
   { id: "qr", label: "QR Kod", description: "QR oku veya oluştur", icon: "qr", color: "#3B82F6", category: "tools" },
   { id: "info", label: "Dosya Bilgisi", description: "Boyut, çözünürlük ve meta veriler", icon: "info", color: "#6366F1", category: "tools" },
@@ -85,14 +87,14 @@ export const PRESET_PROFILES: Record<WheelProfileId, WheelProfile> = {
   design: {
     id: "design",
     name: "Tasarım & Fotoğraf",
-    description: "WebP, PNG, ICO, Kırpma, Sıkıştırma ve görsel araçları.",
+    description: "WebP, PNG, Kırpma, Sansürleme ve görsel araçları.",
     icon: "palette",
     items: [
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "webp")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "png")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "jpg")!,
-      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "ico")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "censor")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "crop")!,
+      ALL_AVAILABLE_ACTIONS.find((a) => a.id === "ico")!,
       ALL_AVAILABLE_ACTIONS.find((a) => a.id === "img_pdf")!,
     ],
   },
@@ -173,6 +175,8 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
         return <FileText size={size} />;
       case "crop":
         return <Crop size={size} />;
+      case "censor":
+        return <EyeOff size={size} />;
       case "compress":
         return <Minimize2 size={size} />;
       case "qr":

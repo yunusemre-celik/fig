@@ -98,7 +98,6 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         if (hoveredItem) {
           playSuccessChime();
           onSelectAction(hoveredItem.id, hoveredItem.category);
-          onClose();
         }
       } else if (e.key === "1") {
         playWheelTick();
@@ -300,7 +299,6 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
                 e.stopPropagation();
                 playSuccessChime();
                 onSelectAction(item.id, item.category);
-                onClose();
               }}
             >
               <path

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Crop, EyeOff, Check, Info } from "lucide-react";
 import { FileInfo } from "../../types";
-import { saveAppSettings, getAppSettings, BlurRegion } from "../../services/api";
+import { saveAppSettings, getAppSettings, readImageDataUrl, BlurRegion } from "../../services/api";
 
 export type ImageEditorMode = "crop" | "censor";
 
@@ -10,8 +10,8 @@ interface ImageEditorModalProps {
   initialMode?: ImageEditorMode;
   file: FileInfo | null;
   onClose: () => void;
-  onConfirmCrop: (cropData: { x: number; y: number; width: number; height: number; overwrite: boolean }) => void;
-  onConfirmCensor: (censorData: { blurSigma: number; regions: BlurRegion[] | null; overwrite: boolean }) => void;
+  onConfirmCrop: (cropData: { x: number; y: number; width: number; height: number; overwrite: boolean }) => Promise<void> | void;
+  onConfirmCensor: (censorData: { blurSigma: number; regions: BlurRegion[] | null; overwrite: boolean }) => Promise<void> | void;
 }
 
 type AspectPreset = "free" | "1:1" | "16:9" | "4:3" | "9:16";
@@ -38,6 +38,9 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
     return saved === "false" ? "overwrite" : "separate";
   });
   const [alwaysRemember, setAlwaysRemember] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [dataUrl, setDataUrl] = useState<string>("");
+  const [isLoadingImage, setIsLoadingImage] = useState(true);
 
   const [imageSize, setImageSize] = useState({ width: 800, height: 600 });
   const [isDragging, setIsDragging] = useState(false);
@@ -46,13 +49,26 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync settings when opened
+  // Sync settings and load image Base64 data URL
   useEffect(() => {
-    if (isOpen) {
+    let active = true;
+    if (isOpen && file) {
       setMode(initialMode);
       setBox({ x: 20, y: 20, width: 60, height: 60 });
       setIsFullImageCensor(false);
       setAlwaysRemember(false);
+      setIsLoadingImage(true);
+
+      readImageDataUrl(file.path)
+        .then((url) => {
+          if (active && url) {
+            setDataUrl(url);
+          }
+          if (active) setIsLoadingImage(false);
+        })
+        .catch(() => {
+          if (active) setIsLoadingImage(false);
+        });
 
       getAppSettings()
         .then((s) => {
@@ -60,14 +76,19 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
         })
         .catch(() => {});
     }
+    return () => {
+      active = false;
+    };
   }, [isOpen, initialMode, file]);
 
   if (!isOpen || !file) return null;
 
-  // Local asset preview
-  const fileUrl = file.path.startsWith("http")
-    ? file.path
-    : `https://asset.localhost/${file.path.replace(/\\/g, "/")}`;
+  // Local asset preview URL fallback
+  const fileUrl =
+    dataUrl ||
+    (file.path.startsWith("http")
+      ? file.path
+      : `http://asset.localhost/${file.path.replace(/\\/g, "/")}`);
 
   const handleImageLoad = () => {
     if (imageRef.current) {
@@ -148,52 +169,58 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
   };
 
   const handleSave = async () => {
-    const isOverwrite = saveMode === "overwrite";
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const isOverwrite = saveMode === "overwrite";
 
-    // If user checked "Hep bu şekilde kaydet", persist this choice to app settings & storage
-    if (alwaysRemember) {
-      localStorage.setItem("fig_save_separate", isOverwrite ? "false" : "true");
-      try {
-        const cur = await getAppSettings();
-        await saveAppSettings({
-          ...cur,
-          save_as_separate: !isOverwrite,
-        });
-      } catch {}
-    }
-
-    if (mode === "crop") {
-      const coords = getPixelCoordinates();
-      onConfirmCrop({
-        x: coords.x,
-        y: coords.y,
-        width: Math.max(coords.width, 10),
-        height: Math.max(coords.height, 10),
-        overwrite: isOverwrite,
-      });
-    } else {
-      // Censor mode
-      let regions: BlurRegion[] | null = null;
-      if (!isFullImageCensor) {
-        const coords = getPixelCoordinates();
-        regions = [
-          {
-            x: coords.x,
-            y: coords.y,
-            width: Math.max(coords.width, 10),
-            height: Math.max(coords.height, 10),
-          },
-        ];
+      // If user checked "Hep bu şekilde kaydet", persist this choice to app settings & storage
+      if (alwaysRemember) {
+        localStorage.setItem("fig_save_separate", isOverwrite ? "false" : "true");
+        try {
+          const cur = await getAppSettings();
+          await saveAppSettings({
+            ...cur,
+            save_as_separate: !isOverwrite,
+          });
+        } catch {}
       }
 
-      onConfirmCensor({
-        blurSigma,
-        regions,
-        overwrite: isOverwrite,
-      });
-    }
+      if (mode === "crop") {
+        const coords = getPixelCoordinates();
+        await onConfirmCrop({
+          x: coords.x,
+          y: coords.y,
+          width: Math.max(coords.width, 10),
+          height: Math.max(coords.height, 10),
+          overwrite: isOverwrite,
+        });
+      } else {
+        // Censor mode
+        let regions: BlurRegion[] | null = null;
+        if (!isFullImageCensor) {
+          const coords = getPixelCoordinates();
+          regions = [
+            {
+              x: coords.x,
+              y: coords.y,
+              width: Math.max(coords.width, 10),
+              height: Math.max(coords.height, 10),
+            },
+          ];
+        }
 
-    onClose();
+        await onConfirmCensor({
+          blurSigma,
+          regions,
+          overwrite: isOverwrite,
+        });
+      }
+
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const coords = getPixelCoordinates();
@@ -331,57 +358,64 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          className="flex-1 relative flex items-center justify-center p-4 bg-[#070A0F] overflow-hidden select-none cursor-crosshair"
+          className="flex-1 relative flex items-center justify-center p-4 bg-[#070A0F] overflow-hidden select-none cursor-crosshair min-h-[300px]"
         >
-          <div className="relative max-h-full max-w-full inline-block shadow-2xl rounded-lg overflow-hidden border border-white/[0.1]">
-            <img
-              ref={imageRef}
-              src={fileUrl}
-              alt={file.name}
-              onLoad={handleImageLoad}
-              className="max-h-[340px] max-w-full object-contain pointer-events-none"
-              draggable={false}
-            />
+          {isLoadingImage ? (
+            <div className="flex flex-col items-center justify-center gap-2.5 text-neutral-400 text-xs py-16">
+              <div className="w-7 h-7 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+              <span>Görsel Yükleniyor...</span>
+            </div>
+          ) : (
+            <div className="relative max-h-full max-w-full inline-block shadow-2xl rounded-lg overflow-hidden border border-white/[0.1]">
+              <img
+                ref={imageRef}
+                src={fileUrl}
+                alt={file.name}
+                onLoad={handleImageLoad}
+                className="max-h-[340px] max-w-full object-contain pointer-events-none"
+                draggable={false}
+              />
 
-            {/* Selection Box Overlay */}
-            {!isFullImageCensor ? (
-              <div
-                className={`absolute pointer-events-none transition-all duration-75 ${
-                  mode === "crop"
-                    ? "border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]"
-                    : "border-2 border-indigo-400 bg-indigo-500/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.5)]"
-                }`}
-                style={{
-                  left: `${box.x}%`,
-                  top: `${box.y}%`,
-                  width: `${box.width}%`,
-                  height: `${box.height}%`,
-                }}
-              >
-                {/* Mode Tag on the box */}
-                <span
-                  className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-black text-black uppercase tracking-wider ${
-                    mode === "crop" ? "bg-amber-400" : "bg-indigo-400 text-white"
+              {/* Selection Box Overlay */}
+              {!isFullImageCensor ? (
+                <div
+                  className={`absolute pointer-events-none transition-all duration-75 ${
+                    mode === "crop"
+                      ? "border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]"
+                      : "border-2 border-indigo-400 bg-indigo-500/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.5)]"
                   }`}
+                  style={{
+                    left: `${box.x}%`,
+                    top: `${box.y}%`,
+                    width: `${box.width}%`,
+                    height: `${box.height}%`,
+                  }}
                 >
-                  {mode === "crop" ? "Kırpma Alanı" : "Sansür Bölgesi"}
-                </span>
+                  {/* Mode Tag on the box */}
+                  <span
+                    className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-black text-black uppercase tracking-wider ${
+                      mode === "crop" ? "bg-amber-400" : "bg-indigo-400 text-white"
+                    }`}
+                  >
+                    {mode === "crop" ? "Kırpma Alanı" : "Sansür Bölgesi"}
+                  </span>
 
-                {/* Corner Handles */}
-                <div className={`absolute -top-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                <div className={`absolute -top-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                <div className={`absolute -bottom-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-                <div className={`absolute -bottom-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
-              </div>
-            ) : (
-              /* Full Image Blur Highlight */
-              <div className="absolute inset-0 border-2 border-rose-500 bg-rose-500/15 backdrop-blur-md flex items-center justify-center pointer-events-none">
-                <span className="px-3 py-1 rounded-full bg-rose-600/90 text-white text-xs font-bold shadow-lg">
-                  Tüm Görsel Sansürlenecek
-                </span>
-              </div>
-            )}
-          </div>
+                  {/* Corner Handles */}
+                  <div className={`absolute -top-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
+                  <div className={`absolute -top-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
+                  <div className={`absolute -bottom-1.5 -left-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
+                  <div className={`absolute -bottom-1.5 -right-1.5 w-3 h-3 border border-black rounded-sm ${mode === "crop" ? "bg-amber-400" : "bg-indigo-400"}`} />
+                </div>
+              ) : (
+                /* Full Image Blur Highlight */
+                <div className="absolute inset-0 border-2 border-rose-500 bg-rose-500/15 backdrop-blur-md flex items-center justify-center pointer-events-none">
+                  <span className="px-3 py-1 rounded-full bg-rose-600/90 text-white text-xs font-bold shadow-lg">
+                    Tüm Görsel Sansürlenecek
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Save Destination & Preference Bar (User Requirement) */}
@@ -462,15 +496,24 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
 
             <button
               type="button"
+              disabled={isSaving}
               onClick={handleSave}
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-neutral-950 shadow-lg transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${
+                isSaving ? "opacity-60 cursor-not-allowed" : ""
+              } ${
                 mode === "crop"
                   ? "bg-amber-400 hover:bg-amber-300 shadow-amber-500/20"
                   : "bg-indigo-400 hover:bg-indigo-300 text-white shadow-indigo-500/20"
               }`}
             >
               <Check size={15} strokeWidth={2.5} />
-              <span>{mode === "crop" ? "Kırp ve Kaydet" : "Sansürle ve Kaydet"}</span>
+              <span>
+                {isSaving
+                  ? "İşleniyor..."
+                  : mode === "crop"
+                  ? "Kırp ve Kaydet"
+                  : "Sansürle ve Kaydet"}
+              </span>
             </button>
           </div>
         </div>

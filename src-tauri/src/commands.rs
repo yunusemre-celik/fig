@@ -388,18 +388,29 @@ pub fn crop_image(
         .unwrap_or_else(|| "png".to_string());
 
     let out_path = if overwrite.unwrap_or(false) {
+        let tmp_path = parent.join(format!("{}.tmp_{}.{}", stem, std::process::id(), ext));
+        cropped
+            .save(&tmp_path)
+            .map_err(|e| format!("Kırpılan görsel kaydedilemedi: {}", e))?;
+        let _ = std::fs::remove_file(in_path);
+        std::fs::rename(&tmp_path, in_path)
+            .or_else(|_| {
+                std::fs::copy(&tmp_path, in_path)?;
+                let _ = std::fs::remove_file(&tmp_path);
+                Ok(())
+            })
+            .map_err(|e: std::io::Error| format!("Orijinal dosyanın üzerine yazılamadı: {}", e))?;
         in_path.to_path_buf()
     } else {
         let mut p = parent.join(format!("{}_cropped.{}", stem, ext));
         if p == in_path {
             p = parent.join(format!("{}_cropped_1.{}", stem, ext));
         }
+        cropped
+            .save(&p)
+            .map_err(|e| format!("Kırpılan görsel kaydedilemedi: {}", e))?;
         p
     };
-
-    cropped
-        .save(&out_path)
-        .map_err(|e| format!("Failed to save cropped image: {}", e))?;
 
     let out_path_str = out_path.to_string_lossy().to_string();
     let size_after = std::fs::metadata(&out_path)
@@ -543,17 +554,27 @@ pub fn censor_image(
         .unwrap_or_else(|| "png".to_string());
 
     let out_path = if overwrite.unwrap_or(false) {
+        let tmp_path = parent.join(format!("{}.tmp_c_{}.{}", stem, std::process::id(), original_ext));
+        img.save(&tmp_path)
+            .map_err(|e| format!("Sansürlenmiş görsel kaydedilemedi: {}", e))?;
+        let _ = std::fs::remove_file(in_path);
+        std::fs::rename(&tmp_path, in_path)
+            .or_else(|_| {
+                std::fs::copy(&tmp_path, in_path)?;
+                let _ = std::fs::remove_file(&tmp_path);
+                Ok(())
+            })
+            .map_err(|e: std::io::Error| format!("Orijinal dosyanın üzerine yazılamadı: {}", e))?;
         in_path.to_path_buf()
     } else {
         let mut p = parent.join(format!("{}_censored.{}", stem, original_ext));
         if p == in_path {
             p = parent.join(format!("{}_censored_1.{}", stem, original_ext));
         }
+        img.save(&p)
+            .map_err(|e| format!("Sansürlenmiş görsel kaydedilemedi: {}", e))?;
         p
     };
-
-    img.save(&out_path)
-        .map_err(|e| format!("Sansürlenmiş görsel kaydedilemedi: {}", e))?;
 
     let out_path_str = out_path.to_string_lossy().to_string();
     let size_after = std::fs::metadata(&out_path)
@@ -1554,15 +1575,18 @@ pub fn pick_file_dialog(filter_type: Option<String>) -> Result<Option<String>, S
             let script = format!(
                 "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; \
                  $f = New-Object System.Windows.Forms.OpenFileDialog; \
-                 $f.Title = 'Fig - Dönüştürmek İçin Dosya Seçin'; \
+                 $f.Title = 'Fig - Dosya Seçin'; \
                  $f.Filter = '{}'; \
                  $f.Multiselect = $false; \
-                 if ($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {{ [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::Write($f.FileName) }}",
+                 $f.RestoreDirectory = $true; \
+                 $form = New-Object System.Windows.Forms.Form; \
+                 $form.TopMost = $true; \
+                 if ($f.ShowDialog($form) -eq [System.Windows.Forms.DialogResult]::OK) {{ [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::Write($f.FileName) }}",
                 filter_str
             );
 
             let output = Command::new("powershell")
-                .args(&["-NoProfile", "-NonInteractive", "-Command", &script])
+                .args(&["-NoProfile", "-Sta", "-Command", &script])
                 .creation_flags(CREATE_NO_WINDOW)
                 .output()
                 .map_err(|e| format!("Dosya seçici açılamadı: {}", e))?;
@@ -1581,6 +1605,52 @@ pub fn pick_file_dialog(filter_type: Option<String>) -> Result<Option<String>, S
     })();
     DIALOG_ACTIVE.store(false, std::sync::atomic::Ordering::SeqCst);
     result
+}
+
+fn encode_b64(input: &[u8]) -> String {
+    const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity((input.len() + 2) / 3 * 4);
+    for chunk in input.chunks(3) {
+        let b0 = chunk[0];
+        let b1 = if chunk.len() > 1 { chunk[1] } else { 0 };
+        let b2 = if chunk.len() > 2 { chunk[2] } else { 0 };
+
+        out.push(CHARS[(b0 >> 2) as usize] as char);
+        out.push(CHARS[(((b0 & 3) << 4) | (b1 >> 4)) as usize] as char);
+
+        if chunk.len() > 1 {
+            out.push(CHARS[(((b1 & 15) << 2) | (b2 >> 6)) as usize] as char);
+        } else {
+            out.push('=');
+        }
+
+        if chunk.len() > 2 {
+            out.push(CHARS[(b2 & 63) as usize] as char);
+        } else {
+            out.push('=');
+        }
+    }
+    out
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn read_image_data_url(path: String) -> Result<String, String> {
+    let p = Path::new(&path);
+    if !p.exists() {
+        return Err(format!("Dosya bulunamadı: {}", path));
+    }
+    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("png").to_lowercase();
+    let mime = match ext.as_str() {
+        "jpg" | "jpeg" => "image/jpeg",
+        "webp" => "image/webp",
+        "gif" => "image/gif",
+        "bmp" => "image/bmp",
+        "ico" => "image/x-icon",
+        _ => "image/png",
+    };
+    let bytes = std::fs::read(p).map_err(|e| format!("Dosya okunamadı: {}", e))?;
+    let b64 = encode_b64(&bytes);
+    Ok(format!("data:{};base64,{}", mime, b64))
 }
 
 fn decode_b64(input: &str) -> Option<String> {

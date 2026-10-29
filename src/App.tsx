@@ -325,6 +325,8 @@ export function App() {
 
   // Action execution from wheel or quick buttons
   const handleAction = async (actionId: string, category: WheelMode) => {
+    setIsWheelOpen(false);
+
     if (category === "documents" || actionId.endsWith("_pdf")) {
       await handleDirectConvert("pdf");
       return;
@@ -336,30 +338,38 @@ export function App() {
     }
 
     if (category === "tools") {
-      if (actionId === "crop") {
-        if (selectedFiles.length === 0) {
-          addToast("error", "Görsel Seçilmedi", "Lütfen kırpılacak bir görsel seçin.");
-          return;
+      if (actionId === "crop" || actionId === "censor") {
+        let file = selectedFiles[0];
+        if (!file) {
+          const picked = await pickFileDialog("image");
+          if (!picked) return;
+          try {
+            file = await getFileInfo(picked);
+            setSelectedFiles([file]);
+          } catch {
+            return;
+          }
         }
-        setEditorMode("crop");
-        setIsEditorOpen(true);
-        return;
-      } else if (actionId === "censor") {
-        if (selectedFiles.length === 0) {
-          addToast("error", "Görsel Seçilmedi", "Lütfen sansürlenecek bir görsel seçin.");
-          return;
-        }
-        setEditorMode("censor");
+        setEditorMode(actionId as ImageEditorMode);
         setIsEditorOpen(true);
         return;
       } else if (actionId === "compress") {
-        if (selectedFiles.length === 0) {
-          addToast("error", "Görsel Seçilmedi", "Lütfen sıkıştırılacak bir görsel seçin.");
-          return;
+        let file = selectedFiles[0];
+        if (!file) {
+          const picked = await pickFileDialog("image");
+          if (!picked) return;
+          try {
+            file = await getFileInfo(picked);
+            setSelectedFiles([file]);
+          } catch {
+            return;
+          }
         }
         setIsCompressOpen(true);
+        return;
       } else if (actionId === "qr") {
         setIsQrOpen(true);
+        return;
       } else if (actionId === "info") {
         if (selectedFiles.length > 0) {
           const f = selectedFiles[0];
@@ -370,6 +380,7 @@ export function App() {
             f.path
           );
         }
+        return;
       }
     } else if (category === "actions") {
       if (selectedFiles.length === 0) {

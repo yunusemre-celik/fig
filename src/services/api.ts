@@ -116,6 +116,13 @@ export interface BlurRegion {
   height: number;
 }
 
+export async function readImageDataUrl(path: string): Promise<string> {
+  if (isTauri) {
+    return await invoke<string>("read_image_data_url", { path });
+  }
+  return "";
+}
+
 export async function cropImage(
   inputPath: string,
   x: number,
