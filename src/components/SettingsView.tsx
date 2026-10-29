@@ -6,21 +6,16 @@ import {
   Check,
   Compass,
   FolderDown,
-  Monitor,
   Moon,
-  Sun,
   Globe,
 } from "lucide-react";
-import { setWindowVibrancy, getAppSettings, saveAppSettings } from "../services/api";
+import { getAppSettings, saveAppSettings } from "../services/api";
 import { useTranslation } from "../i18n/useTranslation";
-import { AppTheme, SupportedLanguage } from "../types";
+import { SupportedLanguage } from "../types";
+import { FigLogo } from "./FigLogo";
 
 export const SettingsView: React.FC = () => {
   const { t, language, setLanguage } = useTranslation();
-
-  const [theme, setTheme] = useState<AppTheme>(() => {
-    return (localStorage.getItem("fig_theme") as AppTheme) || "system";
-  });
 
   const [wheelDisplayMode, setWheelDisplayMode] = useState<"center" | "cursor">(() => {
     return (localStorage.getItem("fig_wheel_display_mode") as "center" | "cursor") || "center";
@@ -49,20 +44,6 @@ export const SettingsView: React.FC = () => {
       })
       .catch(() => {});
   }, []);
-
-  const handleSelectTheme = (newTheme: AppTheme) => {
-    setTheme(newTheme);
-    localStorage.setItem("fig_theme", newTheme);
-    window.dispatchEvent(new Event("storage"));
-
-    const isDark =
-      newTheme === "dark" ||
-      (newTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("theme-dark", isDark);
-    document.documentElement.classList.toggle("theme-light", !isDark);
-    document.documentElement.classList.toggle("dark", isDark);
-    document.documentElement.classList.toggle("light", !isDark);
-  };
 
   const handleSelectLanguage = (lang: SupportedLanguage) => {
     setLanguage(lang);
@@ -105,11 +86,6 @@ export const SettingsView: React.FC = () => {
   const handleSelectVibrancy = async (effect: string) => {
     setVibrancyEffect(effect);
     localStorage.setItem("fig_vibrancy", effect);
-    try {
-      await setWindowVibrancy(effect);
-    } catch (err) {
-      console.error("Failed to set window vibrancy:", err);
-    }
     await saveAppSettings({
       wheel_display_mode: wheelDisplayMode,
       save_as_separate: saveAsSeparate,
@@ -127,77 +103,62 @@ export const SettingsView: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto space-y-5 text-[var(--apple-text-primary)] font-sans animate-in fade-in duration-200">
+    <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto space-y-5 text-white font-sans animate-in fade-in duration-200">
       {/* Brand Header */}
-      <div className="p-5 rounded-2xl apple-card flex items-center justify-between">
+      <div className="p-5 rounded-2xl glass-card flex items-center justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-black text-xl shadow-sm">
-            F
-          </div>
+          <FigLogo size={42} />
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-[var(--apple-text-primary)]">Fig</h2>
-              <span className="text-[10px] font-semibold text-[var(--apple-accent)] bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 px-2 py-0.5 rounded-full">
-                v0.3.0 · Apple Minimal
+              <h2 className="text-base font-bold text-white">Fig</h2>
+              <span className="text-[10px] font-semibold text-[#8493FF] bg-[#8493FF]/15 border border-[#8493FF]/20 px-2 py-0.5 rounded-full font-mono">
+                v0.3.1 · Obsidian Core
               </span>
             </div>
-            <p className="text-xs text-[var(--apple-text-secondary)] mt-0.5">
-              {t("brandTagline")}
+            <p className="text-xs text-[#8E95A8] mt-0.5">
+              {t("brandTagline") || "Your files, simply effortless."}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 1. Theme & Appearance (Light / Dark / Auto) */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+      {/* 1. Appearance / Theme */}
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-            <Monitor size={16} className="text-[var(--apple-accent)]" />
-            <span>{t("themeLabel")}</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-white">
+            <Moon size={16} className="text-[#8493FF]" />
+            <span>Theme &amp; Appearance</span>
           </div>
-          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
-            macOS Sequoia & Windows 11
+          <span className="text-[11px] text-[#646C7E] font-mono">
+            Obsidian Dark
           </span>
         </div>
 
-        {/* Apple Segmented Control */}
-        <div className="apple-segmented">
-          <button
-            type="button"
-            onClick={() => handleSelectTheme("system")}
-            className={`apple-segmented-item ${theme === "system" ? "active" : ""}`}
-          >
-            <Monitor size={13} />
-            <span>{t("themeAuto")}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectTheme("dark")}
-            className={`apple-segmented-item ${theme === "dark" ? "active" : ""}`}
-          >
-            <Moon size={13} />
-            <span>{t("themeDark")}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectTheme("light")}
-            className={`apple-segmented-item ${theme === "light" ? "active" : ""}`}
-          >
-            <Sun size={13} />
-            <span>{t("themeLight")}</span>
-          </button>
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#0B0E18] border border-white/[0.06]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#202548] border border-[#8493FF]/30 flex items-center justify-center text-[#8493FF]">
+              <Moon size={16} />
+            </div>
+            <div>
+              <strong className="text-xs font-semibold text-white block">Raycast / Linear Obsidian</strong>
+              <span className="text-[11px] text-[#8E95A8]">High-contrast deep space dark theme with frosted glass</span>
+            </div>
+          </div>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#6EE7A8]/10 text-[#6EE7A8] border border-[#6EE7A8]/20">
+            Active
+          </span>
         </div>
       </div>
 
-      {/* 2. Language Selection (5 Languages) */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+      {/* 2. Language Selector */}
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-            <Globe size={16} className="text-[var(--apple-accent)]" />
-            <span>{t("languageLabel")}</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-white">
+            <Globe size={16} className="text-[#8493FF]" />
+            <span>{t("languageLabel") || "Language"}</span>
           </div>
-          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
-            5 {t("tabDocuments").toLowerCase()}
+          <span className="text-[11px] text-[#646C7E] font-mono">
+            5 Languages (i18n)
           </span>
         </div>
 
@@ -209,10 +170,10 @@ export const SettingsView: React.FC = () => {
                 key={l.code}
                 type="button"
                 onClick={() => handleSelectLanguage(l.code)}
-                className={`px-3 py-2.5 rounded-xl text-center text-xs font-semibold transition-all flex flex-col items-center gap-1 border ${
+                className={`px-3 py-2.5 rounded-xl text-center text-xs font-semibold transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                   isSelected
-                    ? "bg-[var(--apple-accent)] text-white border-[var(--apple-accent)] shadow-sm"
-                    : "bg-[var(--apple-bg-control)] text-[var(--apple-text-primary)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                    ? "bg-[#6366F1] text-white border-[#8493FF] shadow-sm"
+                    : "bg-[#0B0E18] text-[#8E95A8] border-white/[0.06] hover:bg-[#15192C] hover:text-white"
                 }`}
               >
                 <span className="text-base">{l.flag}</span>
@@ -224,33 +185,33 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* 3. Wheel Display Mode */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-          <Compass size={16} className="text-[var(--apple-accent)]" />
-          <span>{t("displayModeLabel")}</span>
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-white">
+          <Compass size={16} className="text-[#8493FF]" />
+          <span>{t("displayModeLabel") || "Wheel Display Mode"}</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => handleSelectWheelMode("center")}
-            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+            className={`p-3.5 rounded-xl text-left border transition-all relative cursor-pointer ${
               wheelDisplayMode === "center"
-                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                ? "bg-[#252A51] border-[#8493FF]"
+                : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
-                {t("displayCenter")}
+              <span className="font-bold text-xs text-white">
+                {t("displayCenter") || "Center of Screen"}
               </span>
               {wheelDisplayMode === "center" && (
-                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                <span className="w-4 h-4 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                   <Check size={10} strokeWidth={3} />
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+            <p className="text-[11px] text-[#8E95A8]">
               {language === "tr"
                 ? "Ekranın tam ortasında zarif arka plan ile açılır."
                 : "Opens centered with a subtle frosted background."}
@@ -260,23 +221,23 @@ export const SettingsView: React.FC = () => {
           <button
             type="button"
             onClick={() => handleSelectWheelMode("cursor")}
-            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+            className={`p-3.5 rounded-xl text-left border transition-all relative cursor-pointer ${
               wheelDisplayMode === "cursor"
-                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                ? "bg-[#252A51] border-[#8493FF]"
+                : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
-                {t("displayCursor")}
+              <span className="font-bold text-xs text-white">
+                {t("displayCursor") || "At Mouse Cursor"}
               </span>
               {wheelDisplayMode === "cursor" && (
-                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                <span className="w-4 h-4 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                   <Check size={10} strokeWidth={3} />
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+            <p className="text-[11px] text-[#8E95A8]">
               {language === "tr"
                 ? "Farenin olduğu noktada doğrudan imleç ucunda belirir."
                 : "Spawns immediately around your mouse cursor position."}
@@ -286,17 +247,17 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* 4. Output Destination */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-          <FolderDown size={16} className="text-[var(--apple-accent)]" />
-          <span>{t("outputDestLabel")}</span>
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-white">
+          <FolderDown size={16} className="text-[#8493FF]" />
+          <span>{t("outputDestLabel") || "Output Destination"}</span>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
           {[
-            { id: "source" as const, label: t("outputSource") },
-            { id: "desktop" as const, label: t("outputDesktop") },
-            { id: "downloads" as const, label: t("outputDownloads") },
+            { id: "source" as const, label: t("outputSource") || "Same Folder" },
+            { id: "desktop" as const, label: t("outputDesktop") || "Desktop" },
+            { id: "downloads" as const, label: t("outputDownloads") || "Downloads" },
           ].map((item) => {
             const isSelected = outputDestination === item.id;
             return (
@@ -304,23 +265,23 @@ export const SettingsView: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => handleSelectDestination(item.id)}
-                className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between h-20 ${
+                className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between h-20 cursor-pointer ${
                   isSelected
-                    ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                    : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                    ? "bg-[#252A51] border-[#8493FF]"
+                    : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-[var(--apple-text-secondary)]">
+                  <span className="text-[10px] font-bold text-[#8E95A8] font-mono">
                     {item.id.toUpperCase()}
                   </span>
                   {isSelected && (
-                    <span className="w-3.5 h-3.5 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                       <Check size={9} strokeWidth={3} />
                     </span>
                   )}
                 </div>
-                <span className="font-semibold text-xs text-[var(--apple-text-primary)] leading-tight">
+                <span className="font-semibold text-xs text-white leading-tight">
                   {item.label}
                 </span>
               </button>
@@ -329,14 +290,14 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. Save Preference (Separate vs Overwrite) */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+      {/* 5. Save Preference */}
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-            <FileDiff size={16} className="text-[var(--apple-accent)]" />
-            <span>{t("savePrefLabel")}</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-white">
+            <FileDiff size={16} className="text-[#8493FF]" />
+            <span>{t("savePrefLabel") || "File Conflict Behavior"}</span>
           </div>
-          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+          <span className="text-[11px] text-[#646C7E] font-mono">
             (1 of N)
           </span>
         </div>
@@ -345,58 +306,58 @@ export const SettingsView: React.FC = () => {
           <button
             type="button"
             onClick={() => handleToggleSaveSeparate(true)}
-            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+            className={`p-3.5 rounded-xl text-left border transition-all relative cursor-pointer ${
               saveAsSeparate
-                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                ? "bg-[#252A51] border-[#8493FF]"
+                : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
-                {t("saveSeparate")}
+              <span className="font-bold text-xs text-white">
+                {t("saveSeparate") || "Save as Separate Copy"}
               </span>
               {saveAsSeparate && (
-                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                <span className="w-4 h-4 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                   <Check size={10} strokeWidth={3} />
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[var(--apple-text-secondary)]">
-              {t("saveSeparateHint")}
+            <p className="text-[11px] text-[#8E95A8]">
+              {t("saveSeparateHint") || "Adds a numbered suffix (e.g. photo (1).webp)"}
             </p>
           </button>
 
           <button
             type="button"
             onClick={() => handleToggleSaveSeparate(false)}
-            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+            className={`p-3.5 rounded-xl text-left border transition-all relative cursor-pointer ${
               !saveAsSeparate
-                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                ? "bg-[#252A51] border-[#8493FF]"
+                : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
-                {t("saveOverwrite")}
+              <span className="font-bold text-xs text-white">
+                {t("saveOverwrite") || "Overwrite Original File"}
               </span>
               {!saveAsSeparate && (
-                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                <span className="w-4 h-4 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                   <Check size={10} strokeWidth={3} />
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[var(--apple-text-secondary)]">
-              {t("saveOverwriteHint")}
+            <p className="text-[11px] text-[#8E95A8]">
+              {t("saveOverwriteHint") || "Replaces original file with converted version"}
             </p>
           </button>
         </div>
       </div>
 
-      {/* Windows 11 Window Vibrancy */}
-      <div className="p-5 rounded-2xl apple-card space-y-3.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
-          <Layers size={16} className="text-[var(--apple-accent)]" />
-          <span>Windows 11 Mica & Acrylic</span>
+      {/* 6. Windows 11 Vibrancy */}
+      <div className="p-5 rounded-2xl glass-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-white">
+          <Layers size={16} className="text-[#8493FF]" />
+          <span>Windows 11 Mica &amp; Acrylic</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -412,27 +373,27 @@ export const SettingsView: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => handleSelectVibrancy(item.id)}
-                className={`p-3 rounded-xl text-left border transition-all relative flex flex-col justify-between h-20 ${
+                className={`p-3 rounded-xl text-left border transition-all relative flex flex-col justify-between h-20 cursor-pointer ${
                   isSelected
-                    ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
-                    : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                    ? "bg-[#252A51] border-[#8493FF]"
+                    : "bg-[#0B0E18] border-white/[0.06] hover:bg-[#15192C]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-[var(--apple-text-tertiary)]">
+                  <span className="text-[10px] font-bold text-[#8E95A8] font-mono">
                     {item.badge}
                   </span>
                   {isSelected && (
-                    <span className="w-3.5 h-3.5 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#6366F1] flex items-center justify-center text-white">
                       <Check size={9} strokeWidth={3} />
                     </span>
                   )}
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
+                  <span className="font-bold text-xs text-white block">
                     {item.name}
                   </span>
-                  <span className="text-[10px] text-[var(--apple-text-secondary)] block">
+                  <span className="text-[10px] text-[#8E95A8] block">
                     {item.desc}
                   </span>
                 </div>
@@ -442,20 +403,15 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. Privacy & System Storage */}
-      <div className="p-5 rounded-2xl apple-card space-y-2">
-        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--apple-success)]">
+      {/* 7. Privacy & Local Storage */}
+      <div className="p-5 rounded-2xl glass-card space-y-2">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#6EE7A8]">
           <Shield size={16} />
-          <span>{t("privacyTitle")}</span>
+          <span>{t("privacyTitle") || "Your files never leave your device"}</span>
         </div>
-        <p className="text-xs text-[var(--apple-text-secondary)] leading-relaxed">
-          {t("privacyDesc")}
+        <p className="text-xs text-[#8E95A8] leading-relaxed">
+          {t("privacyDesc") || "Fig operates 100% offline with zero cloud telemetry and memory-safe Rust execution."}
         </p>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center py-3 text-xs text-[var(--apple-text-tertiary)] flex items-center justify-center gap-1.5">
-        <span>{t("madeWith")}</span>
       </div>
     </div>
   );

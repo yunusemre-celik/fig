@@ -2,7 +2,6 @@ import { useRef, useState, useEffect } from "react";
 import { UploadCloud, FolderPlus } from "lucide-react";
 import { useTranslation } from "../i18n/useTranslation";
 import { FigLogo } from "./FigLogo";
-import dropPortalImg from "../assets/images/dropzone-portal.jpg";
 
 interface DropZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -56,15 +55,15 @@ export const DropZone: React.FC<DropZoneProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      {/* Apple Minimalist Dropzone Box */}
+      {/* Obsidian Dashed Dropzone Box */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative w-full rounded-2xl border-2 border-dashed transition-all duration-200 p-8 flex flex-col items-center justify-center text-center cursor-pointer group apple-card ${
+        className={`relative w-full rounded-2xl border-2 border-dashed transition-all duration-200 p-8 flex flex-col items-center justify-center text-center cursor-pointer group ${
           isDragOver
-            ? "border-[var(--apple-accent)] bg-[var(--apple-accent-light)] scale-[1.01]"
-            : "border-[var(--apple-border)] hover:border-[var(--apple-accent)]/50 hover:bg-[var(--apple-bg-card-hover)]"
+            ? "border-[#8493FF] bg-[#8493FF]/10 scale-[1.01]"
+            : "border-white/[0.12] bg-[#0C0F1A]/60 hover:border-[#8493FF]/50 hover:bg-[#12162A]/70"
         }`}
         onClick={() => fileInputRef.current?.click()}
       >
@@ -76,25 +75,29 @@ export const DropZone: React.FC<DropZoneProps> = ({
           onChange={handleFileInputChange}
         />
 
-        {/* Tech 3D Magnetic Drop Portal Visual */}
-        <div className="relative mb-3.5 w-28 h-20 rounded-2xl overflow-hidden border border-[#38BDF8]/40 shadow-xl group-hover:scale-105 group-hover:border-[#38BDF8] transition-all duration-300">
-          <img
-            src={dropPortalImg}
-            alt="Fig Drop Portal"
-            className="w-full h-full object-cover scale-105"
-            draggable={false}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#090A10]/70 via-transparent to-transparent flex items-end justify-center pb-1.5">
-            <UploadCloud size={18} className="text-[#38BDF8]" />
-          </div>
+        {/* Ambient Glow Center Icon */}
+        <div className="w-12 h-12 rounded-2xl bg-[#202548] border border-[#8493FF]/30 flex items-center justify-center text-[#8493FF] shadow-lg mb-3.5 group-hover:scale-105 group-hover:border-[#8493FF] transition-all">
+          <UploadCloud size={22} />
         </div>
 
-        <h3 className="text-sm font-bold text-[var(--apple-text-primary)] mb-1 tracking-tight">
-          {t("dropTitle")}
+        <h3 className="text-sm font-bold text-white mb-1 tracking-tight">
+          {t("dropTitle") || "Drop files anywhere"}
         </h3>
-        <p className="text-xs text-[var(--apple-text-secondary)] max-w-md mb-4 leading-relaxed">
-          {t("dropSubtitle")}
+        <p className="text-xs text-[#8E95A8] max-w-md mb-4 leading-relaxed">
+          {t("dropSubtitle") || "or click to browse from your computer"}
         </p>
+
+        {/* Supported Format Pills */}
+        <div className="flex items-center gap-1.5 mb-4">
+          {["PDF", "DOCX", "PNG", "MP4", "+36"].map((ext) => (
+            <span
+              key={ext}
+              className="px-2 py-0.5 rounded text-[9px] font-mono text-[#8E95A8] bg-white/[0.04] border border-white/[0.08]"
+            >
+              {ext}
+            </span>
+          ))}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
@@ -104,9 +107,9 @@ export const DropZone: React.FC<DropZoneProps> = ({
               e.stopPropagation();
               fileInputRef.current?.click();
             }}
-            className="apple-button flex items-center gap-2 px-4 py-2 text-xs font-semibold"
+            className="glass-btn flex items-center gap-2 px-4 py-2 text-xs font-semibold cursor-pointer"
           >
-            <FolderPlus size={14} className="text-[var(--apple-accent)]" />
+            <FolderPlus size={14} className="text-[#8493FF]" />
             <span>{language === "tr" ? "Dosya Seç" : "Select Files"}</span>
           </button>
 
@@ -117,57 +120,55 @@ export const DropZone: React.FC<DropZoneProps> = ({
                 e.stopPropagation();
                 onOpenWheel();
               }}
-              className="apple-button-accent flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-sm"
+              className="glass-btn-accent flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-sm cursor-pointer"
             >
-              <FigLogo size={14} />
-              <span>{t("openWheelBtn")}</span>
+              <FigLogo size={14} glow={false} />
+              <span>{t("openWheelBtn") || "Trigger Wheel"}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* 3-Step Visual User Flow Guide */}
+      {/* 3-Step Visual User Flow Guide with Hover Tooltips */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
-        <div className="apple-card p-3 rounded-xl flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 flex items-center justify-center text-[var(--apple-accent)] shrink-0 font-bold text-xs">
+        <div className="glass-card p-3 rounded-xl flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-[#8493FF]/15 border border-[#8493FF]/25 flex items-center justify-center text-[#8493FF] shrink-0 font-bold text-xs">
             1
           </div>
           <div>
-            <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
+            <span className="font-bold text-xs text-white block">
               {language === "tr" ? "Dosyanı Bırak" : "1. Drop File"}
             </span>
-            <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+            <span className="text-[10px] text-[#646C7E]">
               {language === "tr" ? "Görsel, SS veya Belge" : "Images, PDFs, Office"}
             </span>
           </div>
         </div>
 
-        <div className="has-tooltip apple-card p-3 rounded-xl flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 flex items-center justify-center text-[var(--apple-accent)] shrink-0 font-bold text-xs">
+        <div className="has-tooltip glass-card p-3 rounded-xl flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-[#8493FF]/15 border border-[#8493FF]/25 flex items-center justify-center text-[#8493FF] shrink-0 font-bold text-xs">
             2
           </div>
           <div>
-            <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
+            <span className="font-bold text-xs text-white block">
               {language === "tr" ? "Hızlı Çarkı Aç" : "2. Trigger Wheel"}
             </span>
-            <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+            <span className="text-[10px] text-[#646C7E]">
               {language === "tr" ? "İmleç ucunda anında işlem" : "Instant cursor menu"}
             </span>
           </div>
-          <div className="tooltip top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1 text-[11px] pointer-events-none">
-            <kbd>Ctrl + Space</kbd>
-          </div>
+          <div className="tooltip-bubble">Ctrl + Space</div>
         </div>
 
-        <div className="apple-card p-3 rounded-xl flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0 font-bold text-xs">
+        <div className="glass-card p-3 rounded-xl flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[#6EE7A8] shrink-0 font-bold text-xs">
             3
           </div>
           <div>
-            <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
+            <span className="font-bold text-xs text-white block">
               {language === "tr" ? "Tek Tıkla Çıktı" : "3. 1-Click Export"}
             </span>
-            <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+            <span className="text-[10px] text-[#646C7E]">
               {language === "tr" ? "Kusursuz yerel dönüşüm" : "Native & private"}
             </span>
           </div>
