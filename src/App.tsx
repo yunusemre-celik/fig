@@ -29,6 +29,7 @@ import {
   revealInExplorer,
   openInTerminal,
   openFile,
+  showWheelAtCursor,
 } from "./services/api";
 import { Sparkles, FileImage, Crop, QrCode, FileText, ArrowRight } from "lucide-react";
 
@@ -83,7 +84,7 @@ export function App() {
   const handleProfileChange = (id: WheelProfileId) => {
     setActiveProfile(id);
     localStorage.setItem("fig_active_profile", id);
-    addToast("info", `Aktif Profil: ${PRESET_PROFILES[id].name}`);
+    addToast("info", "Profil Değiştirildi", `Aktif Profil: ${PRESET_PROFILES[id].name}`);
   };
 
   const handleUpdateCustomSlices = (slices: WheelItem[]) => {
@@ -91,12 +92,28 @@ export function App() {
     localStorage.setItem("fig_custom_slices", JSON.stringify(slices));
   };
 
-  const addToast = (type: "success" | "error" | "info", text: string) => {
+  const addToast = (
+    type: "success" | "error" | "info",
+    title: string,
+    text: string,
+    outputPath?: string
+  ) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, type, text }]);
+    setToasts((prev) => [
+      ...prev,
+      {
+        id,
+        type,
+        title,
+        text,
+        outputPath,
+        onReveal: revealInExplorer,
+        onOpen: openFile,
+      },
+    ]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3500);
+    }, 4500);
   };
 
   const removeToast = (id: string) => {
@@ -129,7 +146,16 @@ export function App() {
       }
     }
     setSelectedFiles((prev) => [...prev, ...newFiles]);
-    addToast("info", `${newFiles.length} dosya eklendi.`);
+    addToast("info", "Dosyalar Eklendi", `${newFiles.length} dosya işleme hazır.`);
+  };
+
+  // Trigger floating wheel at cursor
+  const handleTriggerWheel = async () => {
+    try {
+      await showWheelAtCursor();
+    } catch {
+      setIsWheelOpen(true);
+    }
   };
 
   // Keyboard shortcuts
@@ -144,7 +170,7 @@ export function App() {
 
       if (e.ctrlKey && e.code === "Space") {
         e.preventDefault();
-        setIsWheelOpen((prev) => !prev);
+        handleTriggerWheel();
       } else if (e.ctrlKey && e.key === "1") {
         e.preventDefault();
         setActiveTab("home");
@@ -172,17 +198,22 @@ export function App() {
     if (category === "documents" || actionId.endsWith("_pdf")) {
       if (actionId === "img_pdf" || actionId === "pdf") {
         if (selectedFiles.length === 0) {
-          addToast("error", "Lütfen önce dönüştürülecek görselleri seçin.");
+          addToast("error", "Dosya Seçilmedi", "Lütfen önce PDF yapılacak görselleri seçin.");
           return;
         }
         try {
           const res = await createPdfFromImages(selectedFiles.map((f) => f.path));
           playSuccessChime();
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
-          addToast("success", `PDF başarıyla oluşturuldu: ${res.name}`);
+          addToast(
+            "success",
+            "PDF Oluşturuldu",
+            `${res.name} (${res.formatted_size}) başarıyla hazırlandı.`,
+            res.path
+          );
           loadLibrary();
         } catch (err) {
-          addToast("error", `PDF oluşturulamadı: ${err}`);
+          addToast("error", "PDF Hatası", `PDF oluşturulamadı: ${err}`);
         }
         return;
       }
@@ -190,68 +221,83 @@ export function App() {
       // Office Document conversion
       if (selectedFiles.length === 0) {
         setActiveTab("documents");
-        addToast("info", "Dönüştürmek istediğiniz Word, PPT veya Excel belgesini seçin.");
+        addToast("info", "Belgeler Sekmesi", "Dönüştürmek istediğiniz Word, PPT veya Excel belgesini seçin.");
         return;
       }
 
+      let lastResult: FileInfo | null = null;
       let successCount = 0;
       for (const file of selectedFiles) {
         try {
-          await convertDocument(file.path, "pdf");
+          const res = await convertDocument(file.path, "pdf");
+          lastResult = res;
           successCount++;
         } catch (err) {
           console.error(err);
         }
       }
 
-      if (successCount > 0) {
+      if (successCount > 0 && lastResult) {
         playSuccessChime();
         confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
-        addToast("success", `${successCount} belge PDF formatına dönüştürüldü!`);
+        addToast(
+          "success",
+          "Belgeler PDF'e Dönüştürüldü",
+          `${successCount} adet belge başarıyla PDF formatına aktarıldı.`,
+          lastResult.path
+        );
         loadLibrary();
       } else {
-        addToast("error", "Belge dönüştürme sırasında bir hata oluştu.");
+        addToast(
+          "error",
+          "Belge Dönüştürülemedi",
+          "Office uygulaması yanıt vermedi veya dosya başka bir programda açık."
+        );
       }
       return;
     }
 
     if (category === "convert") {
       if (selectedFiles.length === 0) {
-        addToast("error", "Lütfen önce dönüştürülecek görselleri seçin.");
+        addToast("error", "Dosya Seçilmedi", "Lütfen önce dönüştürülecek görselleri seçin.");
         return;
       }
 
+      let lastResult: FileInfo | null = null;
       let successCount = 0;
       for (const file of selectedFiles) {
         try {
-          await convertImage(file.path, actionId, 85);
+          const res = await convertImage(file.path, actionId, 85);
+          lastResult = res;
           successCount++;
         } catch (err) {
           console.error(err);
         }
       }
 
-      if (successCount > 0) {
+      if (successCount > 0 && lastResult) {
         playSuccessChime();
         confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
         addToast(
           "success",
-          `${successCount} dosya ${actionId.toUpperCase()} formatına dönüştürüldü!`
+          "Görseller Dönüştürüldü",
+          `${successCount} dosya ${actionId.toUpperCase()} formatına dönüştürüldü.`,
+          lastResult.path
         );
         loadLibrary();
       } else {
-        addToast("error", "Dönüştürme sırasında bir hata oluştu.");
+        addToast("error", "Dönüştürme Hatası", "Görseller dönüştürülürken bir hata oluştu.");
       }
     } else if (category === "tools") {
       if (actionId === "crop") {
         if (selectedFiles.length === 0) {
-          addToast("error", "Lütfen kırpılacak bir görsel seçin.");
+          addToast("error", "Görsel Seçilmedi", "Lütfen kırpılacak bir görsel seçin.");
           return;
         }
         setIsCropOpen(true);
       } else if (actionId === "compress") {
         if (selectedFiles.length === 0) {
-          addToast("error", "Lütfen sıkıştırılacak bir görsel seçin.");
+          addToast("error", "Görsel Seçilmedi", "Lütfen sıkıştırılacak bir görsel seçin.");
           return;
         }
         setIsCompressOpen(true);
@@ -262,7 +308,9 @@ export function App() {
           const f = selectedFiles[0];
           addToast(
             "info",
-            `${f.name} • ${f.formatted_size} • ${f.width || "?"}×${f.height || "?"}px`
+            "Dosya Bilgisi",
+            `${f.name} • ${f.formatted_size} • ${f.width || "?"}×${f.height || "?"}px`,
+            f.path
           );
         }
       }
@@ -270,22 +318,22 @@ export function App() {
       if (selectedFiles.length === 0) {
         if (actionId === "terminal") {
           openInTerminal("");
-          addToast("info", "PowerShell terminali açılıyor...");
+          addToast("info", "Terminal", "PowerShell terminali açılıyor...");
           return;
         }
-        addToast("error", "Lütfen bir dosya seçin.");
+        addToast("error", "Dosya Seçilmedi", "Lütfen bir dosya seçin.");
         return;
       }
       const first = selectedFiles[0];
       if (actionId === "copy_path") {
         navigator.clipboard.writeText(first.path);
-        addToast("success", "Dosya yolu panoya kopyalandı!");
+        addToast("success", "Panoya Kopyalandı", "Dosya yolu başarıyla panoya aktarıldı.");
       } else if (actionId === "reveal") {
         revealInExplorer(first.path);
-        addToast("info", "Dosya Gezgini açılıyor...");
+        addToast("info", "Dosya Gezgini", "Dosya konumu açılıyor...");
       } else if (actionId === "terminal") {
         openInTerminal(first.path);
-        addToast("info", "PowerShell terminali açılıyor...");
+        addToast("info", "Terminal", "Klasör konumunda PowerShell açılıyor...");
       }
     }
   };
@@ -306,10 +354,10 @@ export function App() {
         cropData.height
       );
       playSuccessChime();
-      addToast("success", `Görsel kırpıldı: ${res.name}`);
+      addToast("success", "Görsel Kırpıldı", `${res.name} oluşturuldu.`, res.path);
       loadLibrary();
     } catch (err) {
-      addToast("error", `Kırpma hatası: ${err}`);
+      addToast("error", "Kırpma Hatası", `Kırpma işlemi tamamlanamadı: ${err}`);
     }
   };
 
@@ -322,10 +370,10 @@ export function App() {
         maxWidth
       );
       playSuccessChime();
-      addToast("success", `Görsel sıkıştırıldı: ${res.name}`);
+      addToast("success", "Görsel Sıkıştırıldı", `${res.name} oluşturuldu.`, res.path);
       loadLibrary();
     } catch (err) {
-      addToast("error", `Sıkıştırma hatası: ${err}`);
+      addToast("error", "Sıkıştırma Hatası", `Sıkıştırma tamamlanamadı: ${err}`);
     }
   };
 
@@ -335,29 +383,32 @@ export function App() {
       : PRESET_PROFILES[activeProfile]?.items || PRESET_PROFILES.design.items;
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0B0F17] text-neutral-100 select-none overflow-hidden font-sans">
-      {/* Brand Top Header */}
-      <div className="h-10 w-full flex items-center justify-between px-5 bg-[#101520] border-b border-white/[0.08] select-none text-xs">
+    <div className="flex flex-col h-screen w-screen bg-mesh-glass text-neutral-100 select-none overflow-hidden font-sans relative">
+      {/* Brand Top Header with Glass Effect */}
+      <div className="h-10 w-full flex items-center justify-between px-5 glass-panel border-x-0 border-t-0 select-none text-xs z-30">
         <div className="flex items-center gap-2.5">
-          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm shadow-amber-500/20">
+          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20">
             <span className="text-black font-black text-[11px] leading-none">F</span>
           </div>
-          <span className="font-bold text-neutral-100 tracking-wide text-xs">Fig</span>
-          <span className="text-[10px] text-amber-400/90 font-medium px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/20">
-            Windows 11 Dosya Araç Kiti
+          <span className="font-bold text-white tracking-wide text-xs">Fig</span>
+          <span className="text-[10px] text-amber-300 font-semibold px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/25">
+            Windows 11 Fluent Glass
           </span>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-neutral-400">
-          <span className="flex items-center gap-1.5">
-            <span className="text-neutral-400">Profil:</span>
-            <span className="text-amber-400 font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
-          </span>
-          <span className="text-white/20">•</span>
           <div className="flex items-center gap-1.5">
-            <span>Hızlı Çark:</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-amber-300 font-mono text-[10px]">
+            <span className="text-neutral-400">Aktif Çark:</span>
+            <span className="text-amber-300 font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
+          </div>
+          <span className="text-white/20">•</span>
+          <div className="has-tooltip flex items-center gap-1.5 cursor-pointer" onClick={handleTriggerWheel}>
+            <span>İmleçte Hızlı Çark:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.12] text-amber-300 font-mono text-[10px]">
               Ctrl + Space
             </kbd>
+            <div className="tooltip top-full mt-2 right-0 px-2.5 py-1 rounded-lg bg-[#141A24]/95 border border-amber-400/30 text-[10px] text-amber-200 shadow-xl backdrop-blur-xl">
+              Tıkla veya Ctrl+Space bas
+            </div>
           </div>
         </div>
       </div>
@@ -366,25 +417,25 @@ export function App() {
       <Navigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenWheel={() => setIsWheelOpen(true)}
+        onOpenWheel={handleTriggerWheel}
         libraryCount={libraryEntries.length}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
+      <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         {activeTab === "home" && (
           <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center max-w-4xl w-full mx-auto">
             {/* Hero Brand Card */}
             <div className="w-full text-center my-3 animate-in fade-in duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-semibold mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/25 text-amber-400 text-xs font-semibold mb-2 shadow-sm backdrop-blur-md">
                 <Sparkles size={13} />
-                <span>Hızlı, Yerel ve Güvenli Dosya Kiti</span>
+                <span>Modern Windows 11 Glassmorphism Dosya Kiti</span>
               </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              <h1 className="text-3xl font-black text-white tracking-tight">
                 Dosyaların için <span className="text-amber-400">tatlı bir kolaylık.</span>
               </h1>
-              <p className="text-xs text-neutral-400 mt-1 max-w-md mx-auto">
-                Görselleri ve ofis belgelerini anında dönüştürün, kırpın veya fare imlecinizin ucundaki çark ile tek tıkla işleyin.
+              <p className="text-xs text-neutral-400 mt-1 max-w-md mx-auto leading-relaxed">
+                Görselleri ve ofis belgelerini dönüştürün, kırpın veya fare imlecinizin ucundaki çark ile tek tıkla işleyin.
               </p>
             </div>
 
@@ -392,46 +443,47 @@ export function App() {
             <div className="w-full max-w-2xl mt-1">
               <DropZone
                 onFilesSelected={handleFilesSelected}
-                onOpenWheel={() => setIsWheelOpen(true)}
+                onOpenWheel={handleTriggerWheel}
                 hasSelectedFiles={selectedFiles.length > 0}
               />
 
-              {/* Selected Files */}
+              {/* Selected Files with Visual Previews */}
               <FileChips
                 files={selectedFiles}
                 onRemove={(idx) =>
                   setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))
                 }
                 onClearAll={() => setSelectedFiles([])}
-                onOpenWheel={() => setIsWheelOpen(true)}
+                onOpenWheel={handleTriggerWheel}
+                onReveal={revealInExplorer}
               />
             </div>
 
-            {/* Quick Action Cards */}
+            {/* Quick Action Glass Cards */}
             <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 onClick={() => handleAction("webp", "convert")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-amber-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
               >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shadow-sm">
                   <FileImage size={16} />
                 </div>
                 <div>
-                  <span className="font-semibold text-xs text-white block">WebP'ye Çevir</span>
+                  <span className="font-bold text-xs text-white block">WebP'ye Çevir</span>
                   <span className="text-[10px] text-neutral-400">Web için %70 hafif</span>
                 </div>
               </button>
 
               <button
                 onClick={() => setActiveTab("documents")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-blue-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 border-blue-500/20 hover:border-blue-400/40"
               >
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shadow-sm">
                   <FileText size={16} />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-semibold text-xs text-white block">Belgeler</span>
+                    <span className="font-bold text-xs text-white block">Belgeler</span>
                     <span className="text-[10px] text-neutral-400">Word, PPT → PDF</span>
                   </div>
                   <ArrowRight size={13} className="text-neutral-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
@@ -440,26 +492,26 @@ export function App() {
 
               <button
                 onClick={() => handleAction("crop", "tools")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-amber-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
               >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shadow-sm">
                   <Crop size={16} />
                 </div>
                 <div>
-                  <span className="font-semibold text-xs text-white block">Kırp & Boyutla</span>
+                  <span className="font-bold text-xs text-white block">Kırp & Boyutla</span>
                   <span className="text-[10px] text-neutral-400">1:1, 16:9 oranları</span>
                 </div>
               </button>
 
               <button
                 onClick={() => handleAction("qr", "tools")}
-                className="p-3.5 rounded-2xl bg-[#121722]/60 hover:bg-[#1A2232] border border-white/[0.08] hover:border-purple-400/40 transition-all text-left group flex flex-col justify-between h-24"
+                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
               >
-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform shadow-sm">
                   <QrCode size={16} />
                 </div>
                 <div>
-                  <span className="font-semibold text-xs text-white block">QR Kod</span>
+                  <span className="font-bold text-xs text-white block">QR Kod</span>
                   <span className="text-[10px] text-neutral-400">Oku veya oluştur</span>
                 </div>
               </button>
@@ -470,7 +522,12 @@ export function App() {
         {activeTab === "documents" && (
           <DocumentsView
             onSuccess={(_info) => {
-              addToast("success", "Belge dönüştürüldü ve kütüphaneye eklendi!");
+              addToast(
+                "success",
+                "Belge PDF'e Dönüştürüldü",
+                `${_info.name} oluşturuldu ve kütüphaneye eklendi.`,
+                _info.path
+              );
               loadLibrary();
             }}
           />
@@ -493,7 +550,7 @@ export function App() {
             onClear={async () => {
               await clearLibrary();
               setLibraryEntries([]);
-              addToast("info", "Kütüphane geçmişi temizlendi.");
+              addToast("info", "Kütüphane Temizlendi", "Dönüştürme geçmişi temizlendi.");
             }}
           />
         )}
@@ -501,7 +558,7 @@ export function App() {
         {activeTab === "settings" && <SettingsView />}
       </main>
 
-      {/* The Radial Action Wheel */}
+      {/* Fallback In-App Radial Action Wheel */}
       <RadialWheel
         isOpen={isWheelOpen}
         onClose={() => setIsWheelOpen(false)}
@@ -534,11 +591,12 @@ export function App() {
         onGenerateQr={async (txt) => {
           const res = await generateQrCode(txt);
           loadLibrary();
+          addToast("success", "QR Kod Oluşturuldu", "QR kod görseli hazırlandı.", res.path);
           return res.path;
         }}
       />
 
-      {/* Toasts */}
+      {/* Glassmorphic Toast Notifications */}
       <Toast toasts={toasts} onDismiss={removeToast} />
     </div>
   );

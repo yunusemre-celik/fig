@@ -183,15 +183,15 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
               onClick={() => onSelectProfile(pid)}
               className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between h-32 ${
                 isSelected
-                  ? "bg-amber-500/15 border-amber-500/50 shadow-lg shadow-amber-500/10 scale-[1.02]"
-                  : "bg-[#141A24]/70 border-white/[0.08] hover:bg-[#1A2230] hover:border-white/[0.15]"
+                  ? "bg-amber-500/20 border-amber-500/50 shadow-lg shadow-amber-500/15 scale-[1.02] backdrop-blur-xl"
+                  : "glass-card hover:border-white/[0.18]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div
                   className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                     isSelected
-                      ? "bg-amber-500 text-black font-bold"
+                      ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/30"
                       : "bg-white/[0.08] text-neutral-300"
                   }`}
                 >
@@ -216,11 +216,11 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
       </div>
 
       {/* Active Slices Preview */}
-      <div className="p-5 rounded-2xl bg-[#121722]/80 border border-white/[0.08] backdrop-blur-md">
+      <div className="p-5 rounded-3xl glass-panel">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-white">Çarktaki Aktif Dilimler</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-400 border border-amber-400/30">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
               {activeItems.length} Dilim
             </span>
           </div>
@@ -236,7 +236,7 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
           {activeItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08]"
+              className="flex items-center justify-between p-2.5 rounded-xl glass-card"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div
@@ -267,7 +267,7 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
 
       {/* Available Actions Pool (Shown for custom profile) */}
       {currentProfile === "custom" && (
-        <div className="p-5 rounded-2xl bg-[#121722]/80 border border-white/[0.08] backdrop-blur-md">
+        <div className="p-5 rounded-3xl glass-panel">
           <h3 className="text-xs font-bold text-white mb-3">Tüm Kullanılabilir Eylemler Havuzu</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {ALL_AVAILABLE_ACTIONS.map((action) => {
@@ -279,8 +279,8 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
                   onClick={() => handleToggleAction(action)}
                   className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
                     isAdded
-                      ? "bg-amber-500/10 border-amber-500/30 text-white"
-                      : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:bg-white/[0.06] hover:text-white"
+                      ? "bg-amber-500/15 border-amber-500/35 text-white shadow-sm"
+                      : "glass-card text-neutral-400 hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">

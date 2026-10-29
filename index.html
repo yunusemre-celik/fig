@@ -1,12 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + React + Typescript</title>
+    <title>Fig - Dosya Araç Kiti</title>
+    <script>
+      if (window.location.search.includes('window=wheel')) {
+        document.documentElement.classList.add('wheel-window');
+        document.documentElement.style.backgroundColor = 'transparent';
+        document.documentElement.style.background = 'transparent';
+      }
+    </script>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

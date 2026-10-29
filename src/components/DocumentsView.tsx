@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
-import { UploadCloud, CheckCircle2, AlertCircle, Sparkles, FolderOpen } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Sparkles, FolderOpen, FileText, ArrowRight, RefreshCw, ExternalLink } from "lucide-react";
 import { FileInfo } from "../types";
-import { convertDocument, revealInExplorer } from "../services/api";
+import { convertDocument, revealInExplorer, openFile } from "../services/api";
 import confetti from "canvas-confetti";
 import { playSuccessChime } from "../utils/sound";
 
@@ -37,66 +37,88 @@ export const DocumentsView: React.FC<DocumentsViewProps> = ({ onSuccess }) => {
       const res = await convertDocument(filePath, targetType);
       setResult(res);
       playSuccessChime();
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
       onSuccess(res);
     } catch (err) {
-      setError(String(err));
+      setError(
+        String(err).includes("0x800401F3")
+          ? "Microsoft Office uygulaması başlatılamadı. Bilgisayarınızda Word/Excel/PowerPoint yüklü olduğundan emin olun."
+          : `Dönüştürme hatası: ${err}. Dosya başka bir programda açıksa kapatıp tekrar deneyin.`
+      );
     } finally {
       setIsConverting(false);
     }
   };
 
+  const getDocTypeInfo = (filename: string) => {
+    const ext = filename.split(".").pop()?.toLowerCase() || "";
+    if (["docx", "doc", "rtf"].includes(ext)) {
+      return { title: "Word Belgesi", badge: "DOCX", color: "from-blue-500/20 to-blue-600/10", border: "border-blue-500/30", text: "text-blue-400" };
+    }
+    if (["pptx", "ppt"].includes(ext)) {
+      return { title: "PowerPoint Sunumu", badge: "PPTX", color: "from-orange-500/20 to-orange-600/10", border: "border-orange-500/30", text: "text-orange-400" };
+    }
+    if (["xlsx", "xls", "csv"].includes(ext)) {
+      return { title: "Excel Tablosu", badge: "XLSX", color: "from-emerald-500/20 to-emerald-600/10", border: "border-emerald-500/30", text: "text-emerald-400" };
+    }
+    return { title: "Metin Belgesi", badge: "TXT", color: "from-purple-500/20 to-purple-600/10", border: "border-purple-500/30", text: "text-purple-400" };
+  };
+
+  const docInfo = selectedFile ? getDocTypeInfo(selectedFile.name) : null;
+
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-3xl mx-auto space-y-6 text-neutral-100">
+    <div className="flex-1 overflow-y-auto p-6 max-w-3xl w-full mx-auto space-y-6 text-neutral-100 animate-in fade-in duration-300">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-semibold mb-2 shadow-sm backdrop-blur-md">
           <Sparkles size={13} />
-          <span>Belge & Ofis Dönüştürücü</span>
+          <span>Yerel Belge & Ofis Motoru</span>
         </div>
-        <h2 className="text-xl font-bold text-white">Word, PowerPoint ve Excel'i PDF'e Çevirin</h2>
-        <p className="text-xs text-neutral-400 mt-1">
-          Windows'un yerel Microsoft Office otomasyonu ile orijinal yazı tipleri ve mizanpaj korunarak kusursuz PDF oluşturulur.
+        <h2 className="text-2xl font-black text-white tracking-tight">
+          Word, PowerPoint ve Excel'i <span className="text-blue-400">PDF'e Çevirin</span>
+        </h2>
+        <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
+          Windows'un yerel Microsoft Office otomasyonu ile yazı tipleri, tablolar ve mizanpaj korunarak kusursuz PDF oluşturulur.
         </p>
       </div>
 
       {/* Document Types Info Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-2xl bg-[#141A24] border border-white/[0.08] text-left">
-          <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-2 font-bold text-xs">
+        <div className="glass-card p-3.5 rounded-2xl text-left">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-2 font-black text-xs shadow-sm">
             W
           </div>
-          <span className="font-semibold text-xs text-white block">Word → PDF</span>
+          <span className="font-bold text-xs text-white block">Word → PDF</span>
           <span className="text-[10px] text-neutral-400">DOCX, DOC, RTF</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-[#141A24] border border-white/[0.08] text-left">
-          <div className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 mb-2 font-bold text-xs">
+        <div className="glass-card p-3.5 rounded-2xl text-left">
+          <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 mb-2 font-black text-xs shadow-sm">
             P
           </div>
-          <span className="font-semibold text-xs text-white block">PowerPoint → PDF</span>
+          <span className="font-bold text-xs text-white block">PowerPoint → PDF</span>
           <span className="text-[10px] text-neutral-400">PPTX, PPT</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-[#141A24] border border-white/[0.08] text-left">
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2 font-bold text-xs">
+        <div className="glass-card p-3.5 rounded-2xl text-left">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-2 font-black text-xs shadow-sm">
             X
           </div>
-          <span className="font-semibold text-xs text-white block">Excel → PDF</span>
+          <span className="font-bold text-xs text-white block">Excel → PDF</span>
           <span className="text-[10px] text-neutral-400">XLSX, XLS, CSV</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-[#141A24] border border-white/[0.08] text-left">
-          <div className="w-7 h-7 rounded-lg bg-neutral-500/10 border border-neutral-500/20 flex items-center justify-center text-neutral-300 mb-2 font-bold text-xs">
+        <div className="glass-card p-3.5 rounded-2xl text-left">
+          <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-2 font-black text-xs shadow-sm">
             T
           </div>
-          <span className="font-semibold text-xs text-white block">Metin → PDF</span>
+          <span className="font-bold text-xs text-white block">Metin → PDF</span>
           <span className="text-[10px] text-neutral-400">TXT, Markdown</span>
         </div>
       </div>
 
       {/* Upload & Convert Box */}
-      <div className="p-6 rounded-2xl bg-[#121722]/80 border border-white/[0.08] space-y-4">
+      <div className="p-6 rounded-3xl glass-panel space-y-4">
         <input
           ref={fileInputRef}
           type="file"
@@ -105,75 +127,119 @@ export const DocumentsView: React.FC<DocumentsViewProps> = ({ onSuccess }) => {
           onChange={handleFileChange}
         />
 
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="p-8 border-2 border-dashed border-white/[0.1] hover:border-blue-400/40 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col items-center justify-center cursor-pointer text-center"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-3">
-            <UploadCloud size={24} />
-          </div>
-          {selectedFile ? (
-            <div>
-              <p className="text-xs font-semibold text-white">{selectedFile.name}</p>
-              <p className="text-[11px] text-neutral-400 mt-0.5">
-                {(selectedFile.size / 1024).toFixed(1)} KB • Değiştirmek için tıklayın
-              </p>
+        {/* Drop Box or Selected Document Card */}
+        {selectedFile && docInfo ? (
+          <div className="p-5 rounded-2xl glass-card border border-white/[0.12] flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div
+                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${docInfo.color} border ${docInfo.border} flex flex-col items-center justify-center shrink-0 ${docInfo.text} shadow-lg`}
+              >
+                <FileText size={20} />
+                <span className="text-[8px] font-black tracking-tighter mt-0.5">{docInfo.badge}</span>
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-sm text-white block truncate">{selectedFile.name}</span>
+                <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-400">
+                  <span>{docInfo.title}</span>
+                  <span className="text-white/20">•</span>
+                  <span className="font-mono text-neutral-300">{(selectedFile.size / 1024).toFixed(1)} KB</span>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div>
-              <p className="text-xs font-semibold text-neutral-200">
-                Dönüştürmek istediğiniz Word, PowerPoint veya Excel belgesini seçin
-              </p>
-              <p className="text-[11px] text-neutral-500 mt-1">
-                .docx, .pptx, .xlsx, .txt, .md dosyaları desteklenir
-              </p>
-            </div>
-          )}
-        </div>
 
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="glass-btn px-3 py-1.5 rounded-xl text-xs font-semibold text-neutral-300 hover:text-white shrink-0"
+            >
+              Değiştir
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="p-8 border-2 border-dashed border-white/[0.12] hover:border-blue-400/50 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center cursor-pointer text-center group"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-3 group-hover:scale-110 transition-transform shadow-lg">
+              <UploadCloud size={24} />
+            </div>
+            <p className="text-xs font-bold text-white">
+              Dönüştürmek istediğiniz Word, PowerPoint veya Excel belgesini seçin
+            </p>
+            <p className="text-[11px] text-neutral-400 mt-1">
+              .docx, .pptx, .xlsx, .txt dosyaları yerel olarak dönüştürülür
+            </p>
+          </div>
+        )}
+
+        {/* Action Button */}
         {selectedFile && (
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-2 text-xs text-neutral-300">
-              <span>Hedef Format:</span>
-              <span className="px-2.5 py-1 rounded-lg font-bold bg-blue-500/15 border border-blue-500/30 text-blue-300 uppercase">
-                {targetType}
+              <span>Hedef Çıktı:</span>
+              <span className="px-2.5 py-1 rounded-lg font-bold bg-rose-500/20 border border-rose-500/30 text-rose-300 uppercase font-mono text-[11px]">
+                PDF Belgesi (.pdf)
               </span>
             </div>
 
             <button
               onClick={handleConvert}
               disabled={isConverting}
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+              className="glass-btn-accent flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xl disabled:opacity-50"
             >
-              {isConverting ? "PDF'e Dönüştürülüyor..." : "PDF'e Dönüştür"}
+              {isConverting ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" />
+                  <span>Office Otomasyonu Çalışıyor...</span>
+                </>
+              ) : (
+                <>
+                  <span>PDF'e Dönüştür</span>
+                  <ArrowRight size={14} />
+                </>
+              )}
             </button>
           </div>
         )}
 
-        {/* Result Message */}
+        {/* Result Notification Card */}
         {result && (
-          <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/20 text-xs text-emerald-200 flex items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl glass-panel border-emerald-500/30 bg-[#0E1C16]/80 text-xs text-emerald-200 flex items-center justify-between gap-3 animate-in fade-in duration-200">
             <div className="flex items-center gap-2.5 min-w-0">
-              <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <CheckCircle2 size={18} />
+              </div>
               <div className="min-w-0">
-                <span className="font-bold block truncate">Başarıyla Dönüştürüldü: {result.name}</span>
-                <span className="text-[10px] text-emerald-400/80 truncate block">{result.path}</span>
+                <span className="font-bold text-white block truncate">PDF Başarıyla Oluşturuldu</span>
+                <span className="text-[10px] text-emerald-400/80 truncate block">{result.name} ({result.formatted_size})</span>
               </div>
             </div>
-            <button
-              onClick={() => revealInExplorer(result.path)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-semibold text-xs shrink-0 transition-colors"
-            >
-              <FolderOpen size={13} />
-              <span>Klasörde Aç</span>
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => openFile(result.path)}
+                className="glass-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-neutral-200 hover:text-white text-xs font-semibold"
+              >
+                <ExternalLink size={12} />
+                <span>Aç</span>
+              </button>
+              <button
+                onClick={() => revealInExplorer(result.path)}
+                className="glass-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-neutral-200 hover:text-amber-300 text-xs font-semibold"
+              >
+                <FolderOpen size={12} />
+                <span>Klasörde Göster</span>
+              </button>
+            </div>
           </div>
         )}
 
+        {/* Error Card */}
         {error && (
-          <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/20 text-xs text-rose-200 flex items-center gap-2.5">
-            <AlertCircle size={18} className="text-rose-400 shrink-0" />
-            <span>Hata: {error}</span>
+          <div className="p-4 rounded-2xl glass-panel border-rose-500/30 bg-[#251114]/80 text-xs text-rose-200 flex items-start gap-3 animate-in fade-in duration-200">
+            <AlertCircle size={18} className="text-rose-400 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-bold text-white block mb-0.5">Dönüştürme Hatası</span>
+              <span>{error}</span>
+            </div>
           </div>
         )}
       </div>

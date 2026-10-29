@@ -38,9 +38,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0D1117] text-neutral-100 overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-neutral-100 overflow-hidden">
       {/* Top Bar: Search & Filter */}
-      <div className="p-4 border-b border-white/[0.08] flex items-center justify-between gap-4 bg-[#111620]/60 backdrop-blur-md">
+      <div className="p-4 glass-panel border-x-0 border-t-0 flex items-center justify-between gap-4">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -106,7 +106,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             return (
               <div
                 key={item.id}
-                className="group p-3 rounded-xl bg-[#141A24]/70 hover:bg-[#1A2230] border border-white/[0.06] hover:border-white/[0.12] transition-all flex items-center justify-between gap-4"
+                className="group p-3 rounded-2xl glass-card flex items-center justify-between gap-4"
               >
                 {/* Left: Icon & Names */}
                 <div className="flex items-center gap-3 min-w-0">

@@ -33,14 +33,13 @@ export const FloatingWheelWindow: React.FC = () => {
   const [droppedFile, setDroppedFile] = useState<FileInfo | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  // Set transparent window styles on mount
+  // Set transparent window styles immediately
   useEffect(() => {
     document.documentElement.classList.add("wheel-window");
     document.body.classList.add("wheel-window");
     document.documentElement.style.backgroundColor = "transparent";
     document.body.style.backgroundColor = "transparent";
 
-    // Listen for storage events if user changed profile in main window
     const handleStorage = () => {
       const p = (localStorage.getItem("fig_active_profile") as WheelProfileId) || "design";
       setActiveProfile(p);
@@ -93,7 +92,7 @@ export const FloatingWheelWindow: React.FC = () => {
   };
 
   const handleSelectAction = async (actionId: string, _category: WheelMode) => {
-    // 1. Standalone actions that don't strictly require a dropped file
+    // 1. Actions that don't need a file
     if (actionId === "terminal") {
       await openInTerminal(droppedFile ? droppedFile.path : "");
       await handleClose();
@@ -104,9 +103,9 @@ export const FloatingWheelWindow: React.FC = () => {
       if (droppedFile) {
         navigator.clipboard.writeText(droppedFile.path);
         playSuccessChime();
-        setStatusMessage("Yol kopyalandı!");
+        setStatusMessage("Yol Kopyalandı!");
       }
-      setTimeout(handleClose, 400);
+      setTimeout(handleClose, 500);
       return;
     }
 
@@ -118,7 +117,7 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    // 2. Modals (Crop, Compress, QR) -> open in main dashboard
+    // 2. Modals (Crop, Compress, QR) -> open main dashboard
     if (actionId === "crop" || actionId === "compress" || actionId === "qr" || actionId === "info") {
       await showMainWindow();
       await handleClose();
@@ -133,19 +132,18 @@ export const FloatingWheelWindow: React.FC = () => {
       actionId === "txt_pdf"
     ) {
       if (!droppedFile) {
-        // Direct to Documents tab in main window
         await showMainWindow();
         await handleClose();
         return;
       }
 
       try {
-        setStatusMessage("Dönüştürülüyor...");
+        setStatusMessage("PDF Yapılıyor...");
         await convertDocument(droppedFile.path, "pdf");
         playSuccessChime();
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         setStatusMessage("PDF Hazır!");
-        setTimeout(handleClose, 800);
+        setTimeout(handleClose, 700);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
@@ -161,12 +159,12 @@ export const FloatingWheelWindow: React.FC = () => {
       }
 
       try {
-        setStatusMessage(`${actionId.toUpperCase()} yapılıyor...`);
+        setStatusMessage(`${actionId.toUpperCase()} Yapılıyor...`);
         await convertImage(droppedFile.path, actionId, 85);
         playSuccessChime();
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         setStatusMessage("Dönüştürüldü!");
-        setTimeout(handleClose, 800);
+        setTimeout(handleClose, 700);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
@@ -182,12 +180,12 @@ export const FloatingWheelWindow: React.FC = () => {
       }
 
       try {
-        setStatusMessage("PDF oluşturuluyor...");
+        setStatusMessage("PDF Yapılıyor...");
         await createPdfFromImages([droppedFile.path]);
         playSuccessChime();
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.5 } });
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         setStatusMessage("PDF Hazır!");
-        setTimeout(handleClose, 800);
+        setTimeout(handleClose, 700);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
@@ -207,9 +205,9 @@ export const FloatingWheelWindow: React.FC = () => {
   const profileDisplayName = PRESET_PROFILES[activeProfile]?.name || "Özel Çark";
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-transparent select-none">
+    <div className="w-[460px] h-[460px] flex items-center justify-center bg-transparent select-none overflow-hidden relative">
       {statusMessage && (
-        <div className="absolute top-2 z-50 px-3 py-1 rounded-full bg-black/85 border border-amber-400/30 text-amber-300 text-xs font-semibold shadow-lg backdrop-blur-md animate-in fade-in">
+        <div className="absolute top-3 z-50 px-3 py-1 rounded-full glass-panel border border-amber-400/40 text-amber-300 text-[11px] font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in">
           {statusMessage}
         </div>
       )}
