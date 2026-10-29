@@ -14,6 +14,10 @@ import { CompressModal } from "./components/modals/CompressModal";
 import { QrModal } from "./components/modals/QrModal";
 import { Toast, ToastMessage } from "./components/Toast";
 import { EarthLogo } from "./components/EarthLogo";
+import imgStudioThumb from "./assets/images/feature-image-studio.jpg";
+import docPdfThumb from "./assets/images/feature-doc-pdf.jpg";
+import pdfExtractThumb from "./assets/images/feature-pdf-extract.jpg";
+import mediaAudioThumb from "./assets/images/feature-media-audio.jpg";
 import { FileInfo, LibraryEntry, TabType, WheelMode, WheelProfileId, WheelItem, AppTheme } from "./types";
 import { playSuccessChime } from "./utils/sound";
 import { useTranslation } from "./i18n/useTranslation";
@@ -37,7 +41,7 @@ import {
   showWheelAtCursor,
   pickFileDialog,
 } from "./services/api";
-import { FileImage, Crop, QrCode, FileText } from "lucide-react";
+
 
 const isWheelWindow =
   typeof window !== "undefined" && window.location.search.includes("window=wheel");
@@ -614,15 +618,15 @@ export function App() {
               />
             </div>
 
-            {/* Quick Action Tech Cards */}
+            {/* Quick Action Tech Cards with 3D Visual Thumbnails */}
             <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 type="button"
                 onClick={() => handleDirectConvert("webp")}
                 className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
-                  <FileImage size={16} />
+                <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#38BDF8]/40 shadow-sm group-hover:scale-105 group-hover:border-[#38BDF8] transition-all">
+                  <img src={imgStudioThumb} alt="WebP Studio" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-bold text-xs text-[var(--apple-text-primary)] block">WebP</span>
@@ -635,8 +639,8 @@ export function App() {
                 onClick={() => handleDirectConvert("pdf")}
                 className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
-                  <FileText size={16} />
+                <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#38BDF8]/40 shadow-sm group-hover:scale-105 group-hover:border-[#38BDF8] transition-all">
+                  <img src={docPdfThumb} alt="Document to PDF" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-bold text-xs text-[var(--apple-text-primary)] block">PDF</span>
@@ -649,8 +653,8 @@ export function App() {
                 onClick={() => handleAction("crop", "tools")}
                 className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
-                  <Crop size={16} />
+                <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#38BDF8]/40 shadow-sm group-hover:scale-105 group-hover:border-[#38BDF8] transition-all">
+                  <img src={pdfExtractThumb} alt="Crop & Extract" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-bold text-xs text-[var(--apple-text-primary)] block">{t("cropTab")}</span>
@@ -663,8 +667,8 @@ export function App() {
                 onClick={() => handleAction("qr", "tools")}
                 className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
-                  <QrCode size={16} />
+                <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#38BDF8]/40 shadow-sm group-hover:scale-105 group-hover:border-[#38BDF8] transition-all">
+                  <img src={mediaAudioThumb} alt="Media & Audio" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-bold text-xs text-[var(--apple-text-primary)] block">QR</span>

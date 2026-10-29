@@ -1,21 +1,47 @@
 import React from "react";
+import earthGlobeImg from "../assets/images/earth-globe-icon.jpg";
 
 interface EarthLogoProps {
   size?: number;
   className?: string;
+  variant?: "3d" | "vector";
 }
 
-export const EarthLogo: React.FC<EarthLogoProps> = ({ size = 28, className = "" }) => {
+export const EarthLogo: React.FC<EarthLogoProps> = ({
+  size = 28,
+  className = "",
+  variant = "3d",
+}) => {
+  if (variant === "3d") {
+    return (
+      <div
+        className={`relative shrink-0 select-none rounded-full overflow-hidden flex items-center justify-center ${className}`}
+        style={{
+          width: size,
+          height: size,
+          boxShadow: "0 0 12px rgba(56, 189, 248, 0.45)",
+          border: "1px solid rgba(56, 189, 248, 0.5)",
+          background: "#090A10",
+        }}
+      >
+        <img
+          src={earthGlobeImg}
+          alt="Fig 3D Earth Globe Logo"
+          className="w-full h-full object-cover scale-105 pointer-events-none"
+          draggable={false}
+        />
+      </div>
+    );
+  }
+
   // 6 radial segments around center (50, 50)
-  // Radius = 44, Inner Core Radius = 14
-  // 60 degrees each: angles [0, 60], [60, 120], [120, 180], [180, 240], [240, 300], [300, 360]
   const segments = [
-    { start: 0, end: 60, fill: "#1D4ED8", stroke: "#38BDF8", label: "Atlantic" }, // Ocean Royal Cobalt
-    { start: 60, end: 120, fill: "#10B981", stroke: "#34D399", label: "Eurasia" }, // Land Emerald
-    { start: 120, end: 180, fill: "#0284C7", stroke: "#38BDF8", label: "Indian" }, // Ocean Cerulean
-    { start: 180, end: 240, fill: "#059669", stroke: "#10B981", label: "Americas" }, // Land Forest
-    { start: 240, end: 300, fill: "#2563EB", stroke: "#60A5FA", label: "Pacific" }, // Ocean Sapphire
-    { start: 300, end: 360, fill: "#F8FAFC", stroke: "#BAE6FD", label: "Polar" }, // Polar Ice White
+    { start: 0, end: 60, fill: "#1D4ED8", label: "Atlantic" }, // Ocean Royal Cobalt
+    { start: 60, end: 120, fill: "#10B981", label: "Eurasia" }, // Land Emerald
+    { start: 120, end: 180, fill: "#0284C7", label: "Indian" }, // Ocean Cerulean
+    { start: 180, end: 240, fill: "#059669", label: "Americas" }, // Land Forest
+    { start: 240, end: 300, fill: "#2563EB", label: "Pacific" }, // Ocean Sapphire
+    { start: 300, end: 360, fill: "#F8FAFC", label: "Polar" }, // Polar Ice White
   ];
 
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -49,19 +75,6 @@ export const EarthLogo: React.FC<EarthLogoProps> = ({ size = 28, className = "" 
       className={`shrink-0 select-none ${className}`}
       style={{ filter: "drop-shadow(0 2px 8px rgba(10, 132, 255, 0.35))" }}
     >
-      <defs>
-        {/* Atmosphere glow filter */}
-        <filter id="earthAtmosphere" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#38BDF8" floodOpacity="0.5" />
-        </filter>
-        {/* Core radial gradient */}
-        <radialGradient id="earthCoreGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#1E293B" />
-          <stop offset="100%" stopColor="#0A0B10" />
-        </radialGradient>
-      </defs>
-
-      {/* Atmospheric outer aura ring */}
       <circle
         cx="50"
         cy="50"
@@ -72,7 +85,6 @@ export const EarthLogo: React.FC<EarthLogoProps> = ({ size = 28, className = "" 
         strokeOpacity="0.4"
       />
 
-      {/* 6 Earth Planetary Segments */}
       {segments.map((seg, idx) => (
         <path
           key={idx}
@@ -83,7 +95,6 @@ export const EarthLogo: React.FC<EarthLogoProps> = ({ size = 28, className = "" 
         />
       ))}
 
-      {/* Planetary Latitude/Equator curve lines for globe realism */}
       <ellipse
         cx="50"
         cy="50"
@@ -96,20 +107,15 @@ export const EarthLogo: React.FC<EarthLogoProps> = ({ size = 28, className = "" 
         className="pointer-events-none"
       />
 
-      {/* Central Core (Hub) */}
       <circle
         cx="50"
         cy="50"
         r="14"
-        fill="url(#earthCoreGrad)"
+        fill="#090A10"
         stroke="#38BDF8"
         strokeWidth="1.5"
       />
-
-      {/* Center pinpoint coordinate light */}
       <circle cx="50" cy="50" r="3.5" fill="#38BDF8" />
     </svg>
   );
 };
-
-export default EarthLogo;

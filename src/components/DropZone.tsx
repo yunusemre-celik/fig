@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from "react";
-import { UploadCloud, FolderPlus, Sparkles } from "lucide-react";
+import { UploadCloud, FolderPlus } from "lucide-react";
 import { useTranslation } from "../i18n/useTranslation";
+import { EarthLogo } from "./EarthLogo";
+import dropPortalImg from "../assets/images/dropzone-portal.jpg";
 
 interface DropZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -74,10 +76,16 @@ export const DropZone: React.FC<DropZoneProps> = ({
           onChange={handleFileInputChange}
         />
 
-        {/* Apple Minimal Icon */}
-        <div className="relative mb-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 flex items-center justify-center text-[var(--apple-accent)] group-hover:scale-105 transition-transform duration-200">
-            <UploadCloud size={28} />
+        {/* Tech 3D Magnetic Drop Portal Visual */}
+        <div className="relative mb-3.5 w-28 h-20 rounded-2xl overflow-hidden border border-[#38BDF8]/40 shadow-xl group-hover:scale-105 group-hover:border-[#38BDF8] transition-all duration-300">
+          <img
+            src={dropPortalImg}
+            alt="Fig Drop Portal"
+            className="w-full h-full object-cover scale-105"
+            draggable={false}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090A10]/70 via-transparent to-transparent flex items-end justify-center pb-1.5">
+            <UploadCloud size={18} className="text-[#38BDF8]" />
           </div>
         </div>
 
@@ -111,7 +119,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
               }}
               className="apple-button-accent flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-sm"
             >
-              <Sparkles size={14} />
+              <EarthLogo size={14} />
               <span>{t("openWheelBtn")}</span>
             </button>
           )}
