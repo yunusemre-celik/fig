@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
-import { TitleBar } from "./components/TitleBar";
 import { Navigation } from "./components/Navigation";
 import { DropZone } from "./components/DropZone";
 import { FileChips } from "./components/FileChips";
@@ -254,9 +253,25 @@ export function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0A0D14] text-neutral-100 select-none overflow-hidden font-sans">
-      {/* TitleBar */}
-      <TitleBar />
+    <div className="flex flex-col h-screen w-screen bg-[#0B0F17] text-neutral-100 select-none overflow-hidden font-sans">
+      {/* Brand Top Header */}
+      <div className="h-10 w-full flex items-center justify-between px-5 bg-[#101520] border-b border-white/[0.08] select-none text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm shadow-amber-500/20">
+            <span className="text-black font-black text-[11px] leading-none">F</span>
+          </div>
+          <span className="font-bold text-neutral-100 tracking-wide text-xs">Fig</span>
+          <span className="text-[10px] text-amber-400/90 font-medium px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/20">
+            Windows 11 Dosya Araç Kiti
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+          <span>Hızlı Çark:</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-amber-300 font-mono text-[10px]">
+            Ctrl + Space
+          </kbd>
+        </div>
+      </div>
 
       {/* Navigation */}
       <Navigation
