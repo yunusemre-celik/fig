@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <a href="https://yunusemremre.github.io/fig/"><img src="https://img.shields.io/badge/Website-GitHub%20Pages-0A84FF?style=for-the-badge&logo=safari&logoColor=white" alt="Landing Page" /></a>
-  <a href="https://github.com/yunusemremre/fig/releases"><img src="https://img.shields.io/badge/Download-Portable%20.exe-30D158?style=for-the-badge&logo=windows11&logoColor=white" alt="Download" /></a>
+  <a href="https://yunusemre-celik.github.io/fig/"><img src="https://img.shields.io/badge/Website-GitHub%20Pages-0A84FF?style=for-the-badge&logo=safari&logoColor=white" alt="Landing Page" /></a>
+  <a href="https://github.com/yunusemre-celik/fig/releases"><img src="https://img.shields.io/badge/Download-Portable%20.exe-30D158?style=for-the-badge&logo=windows11&logoColor=white" alt="Download" /></a>
   <img src="https://img.shields.io/badge/Platform-Windows%2011%20%2F%2010-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
@@ -17,7 +17,7 @@
 ## 🌐 1-Click Download Website / İndirme Sayfası
 
 You can download and start using Fig immediately from the standalone GitHub Pages site:
-👉 **[Launch Fig Website & 1-Click Download](https://yunusemremre.github.io/fig/)**
+👉 **[Launch Fig Website & 1-Click Download](https://yunusemre-celik.github.io/fig/)**
 
 - **Zero installer:** Single standalone portable executable (`Fig.exe`, ~16 MB).
 - **Zero cloud telemetry:** 100% offline, local Rust engine.
@@ -95,7 +95,7 @@ Full localization across both the App and the Web Landing Page:
 ### Setup & Run in Development
 ```bash
 # Clone the repository
-git clone https://github.com/yunusemremre/fig.git
+git clone https://github.com/yunusemre-celik/fig.git
 cd fig
 
 # Install frontend dependencies
