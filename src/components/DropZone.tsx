@@ -134,7 +134,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
           </div>
         </div>
 
-        <div className="apple-card p-3 rounded-xl flex items-center gap-3">
+        <div className="has-tooltip apple-card p-3 rounded-xl flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 flex items-center justify-center text-[var(--apple-accent)] shrink-0 font-bold text-xs">
             2
           </div>
@@ -142,9 +142,12 @@ export const DropZone: React.FC<DropZoneProps> = ({
             <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
               {language === "tr" ? "Hızlı Çarkı Aç" : "2. Trigger Wheel"}
             </span>
-            <span className="text-[10px] text-[var(--apple-text-tertiary)] font-mono">
-              Ctrl + Space
+            <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+              {language === "tr" ? "İmleç ucunda anında işlem" : "Instant cursor menu"}
             </span>
+          </div>
+          <div className="tooltip top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1 text-[11px] pointer-events-none">
+            <kbd>Ctrl + Space</kbd>
           </div>
         </div>
 

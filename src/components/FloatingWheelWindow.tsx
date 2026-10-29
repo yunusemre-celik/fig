@@ -146,10 +146,31 @@ export const FloatingWheelWindow: React.FC = () => {
     window.addEventListener("storage", handleStorage);
     window.addEventListener("paste", handlePaste);
     window.addEventListener("focus", handleFocus);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+
+    const handleBlur = () => {
+      // If image editor modal is not open, dismiss wheel on blur
+      const isModalActive = document.querySelector(".cursor-crosshair") !== null;
+      if (!isModalActive) {
+        handleClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("blur", handleBlur);
+
     return () => {
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener("paste", handlePaste);
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("blur", handleBlur);
       unlistenPromise.then((unlisten) => unlisten());
     };
   }, [refreshExplorerSelection]);
@@ -672,7 +693,12 @@ export const FloatingWheelWindow: React.FC = () => {
           : "w-[460px] h-[460px] flex items-center justify-center bg-transparent select-none overflow-hidden relative"
       }
       onClick={(e) => {
-        if (e.target === e.currentTarget && !isEditorOpen) {
+        if (isEditorOpen) return;
+        const target = e.target as HTMLElement;
+        const isSliceClick = target.closest("g.cursor-pointer");
+        const isHubClick = target.closest(".pointer-events-auto");
+        const isActionPill = target.closest(".apple-card");
+        if (!isSliceClick && !isHubClick && !isActionPill) {
           handleClose();
         }
       }}

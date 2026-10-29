@@ -215,7 +215,10 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
     <div
       className="relative w-[420px] h-[420px] flex items-center justify-center select-none"
       onClick={(e) => {
-        if (e.target === e.currentTarget) {
+        const target = e.target as HTMLElement;
+        const isSliceClick = target.closest("g.cursor-pointer");
+        const isHubClick = target.closest(".pointer-events-auto");
+        if (!isSliceClick && !isHubClick) {
           onClose();
         }
       }}
@@ -242,7 +245,10 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       <svg
         className="w-full h-full transform -rotate-90 filter drop-shadow-[0_16px_36px_rgba(0,0,0,0.45)]"
         onClick={(e) => {
-          if (e.target === e.currentTarget) {
+          const target = e.target as HTMLElement;
+          const isSliceClick = target.closest("g.cursor-pointer");
+          const isHubClick = target.closest(".pointer-events-auto");
+          if (!isSliceClick && !isHubClick) {
             onClose();
           }
         }}

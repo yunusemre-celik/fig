@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Shield,
-  Keyboard,
   FileDiff,
   Layers,
   Check,
@@ -443,42 +442,7 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 6. Keyboard Shortcuts Card */}
-      <div className="p-5 rounded-2xl apple-card space-y-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--apple-text-primary)]">
-          <Keyboard size={16} className="text-[var(--apple-accent)]" />
-          <span>{t("shortcutsTitle")}</span>
-        </div>
-
-        <div className="space-y-2 text-xs divide-y divide-[var(--apple-border)]">
-          <div className="flex items-center justify-between py-2">
-            <span className="text-[var(--apple-text-secondary)]">
-              {t("quickWheelHint")}
-            </span>
-            <kbd className="px-2 py-0.5 rounded-md bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[11px]">
-              Ctrl + Space
-            </kbd>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-[var(--apple-text-secondary)]">
-              {language === "tr" ? "Sekmeler Arası Geçiş" : "Switch Tabs"}
-            </span>
-            <kbd className="px-2 py-0.5 rounded-md bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[11px]">
-              Ctrl + 1..5
-            </kbd>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-[var(--apple-text-secondary)]">
-              {language === "tr" ? "Çark Dilimlerini Döndür / Seç" : "Cycle Slices"}
-            </span>
-            <span className="font-mono text-[11px] text-[var(--apple-accent)]">
-              ← / → or Scroll
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 7. Privacy & System Storage */}
+      {/* 5. Privacy & System Storage */}
       <div className="p-5 rounded-2xl apple-card space-y-2">
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--apple-success)]">
           <Shield size={16} />
