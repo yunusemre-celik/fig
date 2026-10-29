@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Minus, Square, Copy, X } from "lucide-react";
+import { FigLogo } from "./FigLogo";
 
 export const TitleBar: React.FC = () => {
   const [isMaximized, setIsMaximized] = useState(false);
@@ -50,16 +51,14 @@ export const TitleBar: React.FC = () => {
   return (
     <div
       data-tauri-drag-region
-      className="h-10 w-full flex items-center justify-between px-3 select-none bg-[#111620]/90 backdrop-blur-xl border-b border-white/[0.06] z-50 text-xs"
+      className="h-10 w-full flex items-center justify-between px-3 select-none bg-[#0c0f18]/95 backdrop-blur-2xl border-b border-white/[0.07] z-50 text-xs"
     >
       {/* Brand & Title */}
       <div className="flex items-center gap-2 pointer-events-none" data-tauri-drag-region>
-        <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm shadow-amber-500/20">
-          <span className="text-black font-black text-[11px] leading-none">F</span>
-        </div>
-        <span className="font-semibold text-neutral-200 tracking-wide text-xs">Fig</span>
-        <span className="text-[10px] text-amber-400/80 font-medium px-1.5 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/20">
-          Windows 11
+        <FigLogo size={20} glow={false} />
+        <span className="font-semibold text-neutral-100 tracking-tight text-xs">Fig</span>
+        <span className="text-[9px] font-mono text-[#9ea6bb] px-1.5 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.08]">
+          v0.3.1
         </span>
       </div>
 

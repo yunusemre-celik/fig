@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { UploadCloud, FolderPlus } from "lucide-react";
 import { useTranslation } from "../i18n/useTranslation";
-import { EarthLogo } from "./EarthLogo";
+import { FigLogo } from "./FigLogo";
 import dropPortalImg from "../assets/images/dropzone-portal.jpg";
 
 interface DropZoneProps {
@@ -119,7 +119,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
               }}
               className="apple-button-accent flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-sm"
             >
-              <EarthLogo size={14} />
+              <FigLogo size={14} />
               <span>{t("openWheelBtn")}</span>
             </button>
           )}

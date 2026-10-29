@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { WheelItem, WheelMode, WheelProfileId } from "../types";
 import { playSuccessChime, playWheelTick } from "../utils/sound";
 import { useTranslation } from "../i18n/useTranslation";
-import { EarthLogo } from "./EarthLogo";
+import { FigLogo } from "./FigLogo";
 import {
   FileImage,
   Crop,
@@ -413,7 +413,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
 
         {/* Center Earth Logo indicator */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center">
-          <EarthLogo size={36} />
+          <FigLogo size={36} />
         </div>
 
         {/* Right Half: Next Profile / Category */}
