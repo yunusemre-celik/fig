@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Your files, simply effortless. · Dosyaların için tatlı bir kolaylık.</strong><br>
-  <em>An Apple-inspired minimalist radial file toolkit for Windows. Fast, 100% offline, and portable.</em>
+  <em>An Raycast & Linear inspired minimalist radial file toolkit for Windows. Fast, 100% offline, and portable.</em>
 </p>
 
 <p align="center">
@@ -36,8 +36,8 @@ Trigger an Apple-inspired radial action menu right around your mouse cursor with
   - **Videos & Media:** Video to MP3 extraction, Video to high-quality animated GIF, MP4, WebM, WAV, FLAC.
 - **Split Hub Navigation:** Click `‹` or `›` or use your mouse wheel / Tab key to cycle through wheel profiles (Office, Design, Media, Developer, Custom).
 
-### 🎨 2. Apple Minimalist Design (macOS Sequoia & Windows 11)
-- Clean, distraction-free aesthetic with subtle borders, frosted glass vibrancy, and adaptive light/dark mode.
+### 🎨 2. Obsidian Tech Design (Raycast & Linear Polish)
+- Deep obsidian palette (#080A11), frosted glass surfaces, subtle 1px border highlights, and Fig Fruit squircle branding.
 - **Automatic System Theme:** Syncs automatically with Windows light/dark system themes, or choose your preference in Settings.
 
 ### 🖼️ 3. Visual Crop & Regional Censor Studio
