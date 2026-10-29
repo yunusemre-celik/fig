@@ -1,8 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { Shield, Keyboard, Heart, FileDiff, Layers, Check, Compass, FolderDown, Monitor } from "lucide-react";
+import {
+  Shield,
+  Keyboard,
+  FileDiff,
+  Layers,
+  Check,
+  Compass,
+  FolderDown,
+  Monitor,
+  Moon,
+  Sun,
+  Globe,
+} from "lucide-react";
 import { setWindowVibrancy, getAppSettings, saveAppSettings } from "../services/api";
+import { useTranslation } from "../i18n/useTranslation";
+import { AppTheme, SupportedLanguage } from "../types";
 
 export const SettingsView: React.FC = () => {
+  const { t, language, setLanguage } = useTranslation();
+
+  const [theme, setTheme] = useState<AppTheme>(() => {
+    return (localStorage.getItem("fig_theme") as AppTheme) || "system";
+  });
+
   const [wheelDisplayMode, setWheelDisplayMode] = useState<"center" | "cursor">(() => {
     return (localStorage.getItem("fig_wheel_display_mode") as "center" | "cursor") || "center";
   });
@@ -30,6 +50,24 @@ export const SettingsView: React.FC = () => {
       })
       .catch(() => {});
   }, []);
+
+  const handleSelectTheme = (newTheme: AppTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem("fig_theme", newTheme);
+    window.dispatchEvent(new Event("storage"));
+
+    const isDark =
+      newTheme === "dark" ||
+      (newTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("theme-dark", isDark);
+    document.documentElement.classList.toggle("theme-light", !isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle("light", !isDark);
+  };
+
+  const handleSelectLanguage = (lang: SupportedLanguage) => {
+    setLanguage(lang);
+  };
 
   const handleSelectWheelMode = async (mode: "center" | "cursor") => {
     setWheelDisplayMode(mode);
@@ -81,196 +119,293 @@ export const SettingsView: React.FC = () => {
     }).catch(() => {});
   };
 
+  const languages: { code: SupportedLanguage; label: string; flag: string }[] = [
+    { code: "en", label: "English", flag: "🇬🇧" },
+    { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+    { code: "es", label: "Español", flag: "🇪🇸" },
+    { code: "de", label: "Deutsch", flag: "🇩🇪" },
+    { code: "fr", label: "Français", flag: "🇫🇷" },
+  ];
+
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto space-y-6 text-neutral-100 animate-in fade-in duration-300">
+    <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto space-y-5 text-[var(--apple-text-primary)] font-sans animate-in fade-in duration-200">
       {/* Brand Header */}
-      <div className="p-5 rounded-3xl glass-panel flex items-center justify-between">
+      <div className="p-5 rounded-2xl apple-card flex items-center justify-between">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/25 text-black font-black text-xl">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-black text-xl shadow-sm">
             F
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-white">Fig for Windows 11</h2>
-              <span className="text-[10px] font-semibold text-amber-300 bg-amber-400/15 border border-amber-400/30 px-2 py-0.5 rounded-full">
-                v0.3.0 • Fluent Edition
+              <h2 className="text-base font-bold text-[var(--apple-text-primary)]">Fig</h2>
+              <span className="text-[10px] font-semibold text-[var(--apple-accent)] bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20 px-2 py-0.5 rounded-full">
+                v0.3.0 · Apple Minimal
               </span>
             </div>
-            <p className="text-xs text-neutral-400 mt-0.5">
-              Windows 11 Fluent Design & Akıllı Çark Mimarisi
+            <p className="text-xs text-[var(--apple-text-secondary)] mt-0.5">
+              {t("brandTagline")}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 1. Wheel Display Mode (Screen Center with Flu Backdrop vs Cursor Position) */}
-      <div className="p-5 rounded-3xl glass-panel space-y-4">
-        <div className="flex items-center gap-2 text-xs font-bold text-white">
-          <Compass size={17} className="text-amber-400" />
-          <span>İşlem Çarkı Görünüm & Konum Modu</span>
+      {/* 1. Theme & Appearance (Light / Dark / Auto) */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+            <Monitor size={16} className="text-[var(--apple-accent)]" />
+            <span>{t("themeLabel")}</span>
+          </div>
+          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+            macOS Sequoia & Windows 11
+          </span>
         </div>
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          `Ctrl + Space` tuşuna bastığınızda çarkın ekranda nasıl görüneceğini seçin.
-        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Apple Segmented Control */}
+        <div className="apple-segmented">
           <button
             type="button"
-            onClick={() => handleSelectWheelMode("center")}
-            className={`p-4 rounded-2xl text-left border transition-all relative flex flex-col justify-between h-32 ${
-              wheelDisplayMode === "center"
-                ? "bg-amber-500/15 border-amber-500/50 shadow-lg shadow-amber-500/15 scale-[1.02]"
-                : "glass-card hover:border-white/[0.18]"
-            }`}
+            onClick={() => handleSelectTheme("system")}
+            className={`apple-segmented-item ${theme === "system" ? "active" : ""}`}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Monitor size={17} className="text-amber-400" />
-                <span className="font-bold text-xs text-white">Ekran Ortası & Flu Arka Plan</span>
-              </div>
-              {wheelDisplayMode === "center" && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-black">
-                  <Check size={10} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 inline-block mb-1">
-                Varsayılan & Önerilen
-              </span>
-              <span className="text-[11px] text-neutral-400 block leading-snug">
-                Çark ekranın tam ortasında açılır, arkasındaki pencereler derin flu buzlu camla kararır (Spotlight/HUD stili).
-              </span>
-            </div>
+            <Monitor size={13} />
+            <span>{t("themeAuto")}</span>
           </button>
-
           <button
             type="button"
-            onClick={() => handleSelectWheelMode("cursor")}
-            className={`p-4 rounded-2xl text-left border transition-all relative flex flex-col justify-between h-32 ${
-              wheelDisplayMode === "cursor"
-                ? "bg-amber-500/15 border-amber-500/50 shadow-lg shadow-amber-500/15 scale-[1.02]"
-                : "glass-card hover:border-white/[0.18]"
-            }`}
+            onClick={() => handleSelectTheme("dark")}
+            className={`apple-segmented-item ${theme === "dark" ? "active" : ""}`}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Compass size={17} className="text-sky-400" />
-                <span className="font-bold text-xs text-white">İmleç Konumu (Serbest Çark)</span>
-              </div>
-              {wheelDisplayMode === "cursor" && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-black">
-                  <Check size={10} strokeWidth={3} />
-                </span>
-              )}
-            </div>
-            <div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.08] text-neutral-300 inline-block mb-1">
-                Kompakt Widget
-              </span>
-              <span className="text-[11px] text-neutral-400 block leading-snug">
-                Çark doğrudan farenizin o an bulunduğu koordinatların ucunda yüzen serbest widget olarak belirir.
-              </span>
-            </div>
+            <Moon size={13} />
+            <span>{t("themeDark")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectTheme("light")}
+            className={`apple-segmented-item ${theme === "light" ? "active" : ""}`}
+          >
+            <Sun size={13} />
+            <span>{t("themeLight")}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Output Destination Folder */}
-      <div className="p-5 rounded-3xl glass-panel space-y-4">
-        <div className="flex items-center gap-2 text-xs font-bold text-white">
-          <FolderDown size={17} className="text-emerald-400" />
-          <span>Dönüştürülen Dosyaların Kayıt Konumu</span>
+      {/* 2. Language Selection (5 Languages) */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+            <Globe size={16} className="text-[var(--apple-accent)]" />
+            <span>{t("languageLabel")}</span>
+          </div>
+          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+            5 {t("tabDocuments").toLowerCase()}
+          </span>
         </div>
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          Oluşturulan veya dönüştürülen dosyaların kaydedileceği hedef klasör.
-        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          {[
-            { id: "source", title: "Kaynak ile Aynı", desc: "Orijinal dosyanın bulunduğu klasör", badge: "Varsayılan" },
-            { id: "desktop", title: "Masaüstü (Desktop)", desc: "Doğrudan masaüstüne kaydeder", badge: "Hızlı Erişim" },
-            { id: "downloads", title: "İndirilenler", desc: "İndirilenler klasörüne kaydeder", badge: "Downloads" },
-          ].map((dest) => {
-            const isSelected = outputDestination === dest.id;
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {languages.map((l) => {
+            const isSelected = language === l.code;
             return (
               <button
-                key={dest.id}
+                key={l.code}
                 type="button"
-                onClick={() => handleSelectDestination(dest.id as "source" | "desktop" | "downloads")}
-                className={`p-3 rounded-2xl text-left border transition-all relative flex flex-col justify-between h-24 ${
+                onClick={() => handleSelectLanguage(l.code)}
+                className={`px-3 py-2.5 rounded-xl text-center text-xs font-semibold transition-all flex flex-col items-center gap-1 border ${
                   isSelected
-                    ? "bg-amber-500/15 border-amber-500/50 shadow-lg shadow-amber-500/10 scale-[1.02]"
-                    : "glass-card hover:border-white/[0.18]"
+                    ? "bg-[var(--apple-accent)] text-white border-[var(--apple-accent)] shadow-sm"
+                    : "bg-[var(--apple-bg-control)] text-[var(--apple-text-primary)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.08] text-neutral-300">
-                    {dest.badge}
-                  </span>
-                  {isSelected && (
-                    <span className="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-black">
-                      <Check size={10} strokeWidth={3} />
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <span className="font-bold text-xs text-white block">{dest.title}</span>
-                  <span className="text-[10px] text-neutral-400 block mt-0.5">{dest.desc}</span>
-                </div>
+                <span className="text-base">{l.flag}</span>
+                <span className="text-[11px]">{l.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 3. Output Naming & "Farklı Dosya Olarak Kaydet (1 of N)" */}
-      <div className="p-5 rounded-3xl glass-panel space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-white">
-            <FileDiff size={17} className="text-amber-400" />
-            <span>Farklı Dosya Şeklinde Kaydet (Numaralandırma)</span>
-          </div>
-
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={saveAsSeparate}
-              onChange={(e) => handleToggleSaveSeparate(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-white/[0.1] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-          </label>
+      {/* 3. Wheel Display Mode */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+          <Compass size={16} className="text-[var(--apple-accent)]" />
+          <span>{t("displayModeLabel")}</span>
         </div>
 
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          Etkinleştirildiğinde orijinal dosya korunur ve çıktı adının sonuna <code className="text-amber-300 font-mono text-[11px]">(1 of 3)</code> gibi kaçıncı dosya olduğu ve toplam adet eklenir.
-        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleSelectWheelMode("center")}
+            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+              wheelDisplayMode === "center"
+                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
+                {t("displayCenter")}
+              </span>
+              {wheelDisplayMode === "center" && (
+                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                  <Check size={10} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+              {language === "tr"
+                ? "Ekranın tam ortasında zarif arka plan ile açılır."
+                : "Opens centered with a subtle frosted background."}
+            </p>
+          </button>
 
-        <div className="p-3.5 rounded-2xl glass-card flex items-center justify-between text-xs">
-          <span className="text-neutral-400">Çıktı Örneği:</span>
-          <span className="font-mono text-amber-300 font-bold px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/[0.1]">
-            {saveAsSeparate ? "belge_(1 of 3).pdf" : "belge.pdf"}
-          </span>
+          <button
+            type="button"
+            onClick={() => handleSelectWheelMode("cursor")}
+            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+              wheelDisplayMode === "cursor"
+                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
+                {t("displayCursor")}
+              </span>
+              {wheelDisplayMode === "cursor" && (
+                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                  <Check size={10} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+              {language === "tr"
+                ? "Farenin olduğu noktada doğrudan imleç ucunda belirir."
+                : "Spawns immediately around your mouse cursor position."}
+            </p>
+          </button>
         </div>
       </div>
 
-      {/* 4. Windows 11 Native Window Vibrancy Selector */}
-      <div className="p-5 rounded-3xl glass-panel space-y-4">
-        <div className="flex items-center gap-2 text-xs font-bold text-white">
-          <Layers size={17} className="text-blue-400" />
-          <span>Windows 11 Cam Malzemesi (Window Vibrancy)</span>
+      {/* 4. Output Destination */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+          <FolderDown size={16} className="text-[var(--apple-accent)]" />
+          <span>{t("outputDestLabel")}</span>
         </div>
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          Masaüstü duvar kağıdınız ve açık pencereler uygulamanın arkasından doğal Windows 11 DWM bulanıklığıyla süzülür.
-        </p>
+
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            { id: "source" as const, label: t("outputSource") },
+            { id: "desktop" as const, label: t("outputDesktop") },
+            { id: "downloads" as const, label: t("outputDownloads") },
+          ].map((item) => {
+            const isSelected = outputDestination === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelectDestination(item.id)}
+                className={`p-3 rounded-xl text-left border transition-all flex flex-col justify-between h-20 ${
+                  isSelected
+                    ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                    : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[var(--apple-text-secondary)]">
+                    {item.id.toUpperCase()}
+                  </span>
+                  {isSelected && (
+                    <span className="w-3.5 h-3.5 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                      <Check size={9} strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+                <span className="font-semibold text-xs text-[var(--apple-text-primary)] leading-tight">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 5. Save Preference (Separate vs Overwrite) */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+            <FileDiff size={16} className="text-[var(--apple-accent)]" />
+            <span>{t("savePrefLabel")}</span>
+          </div>
+          <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+            (1 of N)
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleToggleSaveSeparate(true)}
+            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+              saveAsSeparate
+                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
+                {t("saveSeparate")}
+              </span>
+              {saveAsSeparate && (
+                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                  <Check size={10} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+              {t("saveSeparateHint")}
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleToggleSaveSeparate(false)}
+            className={`p-3.5 rounded-xl text-left border transition-all relative ${
+              !saveAsSeparate
+                ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-bold text-xs text-[var(--apple-text-primary)]">
+                {t("saveOverwrite")}
+              </span>
+              {!saveAsSeparate && (
+                <span className="w-4 h-4 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                  <Check size={10} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--apple-text-secondary)]">
+              {t("saveOverwriteHint")}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      {/* Windows 11 Window Vibrancy */}
+      <div className="p-5 rounded-2xl apple-card space-y-3.5">
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--apple-text-primary)]">
+          <Layers size={16} className="text-[var(--apple-accent)]" />
+          <span>Windows 11 Mica & Acrylic</span>
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {[
-            { id: "mica", name: "Mica", desc: "Doğal W11 Teması", badge: "Önerilen" },
-            { id: "acrylic", name: "Acrylic", desc: "Derin Buzlu Cam", badge: "Akrilik" },
-            { id: "tabbed", name: "Tabbed", desc: "Mica Alt Sekmeli", badge: "W11" },
-            { id: "solid", name: "Solid", desc: "Klasik Koyu Mod", badge: "Opak" },
+            { id: "mica", name: "Mica", desc: "Native W11", badge: "Default" },
+            { id: "acrylic", name: "Acrylic", desc: "Frosted Glass", badge: "Acrylic" },
+            { id: "tabbed", name: "Tabbed", desc: "Mica Tabbed", badge: "W11" },
+            { id: "solid", name: "Solid", desc: "Standard", badge: "Opaque" },
           ].map((item) => {
             const isSelected = vibrancyEffect === item.id;
             return (
@@ -278,25 +413,29 @@ export const SettingsView: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => handleSelectVibrancy(item.id)}
-                className={`p-3 rounded-2xl text-left border transition-all relative flex flex-col justify-between h-24 ${
+                className={`p-3 rounded-xl text-left border transition-all relative flex flex-col justify-between h-20 ${
                   isSelected
-                    ? "bg-amber-500/15 border-amber-500/50 shadow-lg shadow-amber-500/10 scale-[1.02]"
-                    : "glass-card hover:border-white/[0.18]"
+                    ? "bg-[var(--apple-accent-light)] border-[var(--apple-accent)]"
+                    : "bg-[var(--apple-bg-control)] border-[var(--apple-border)] hover:bg-[var(--apple-bg-control-hover)]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/[0.08] text-neutral-300">
+                  <span className="text-[10px] font-bold text-[var(--apple-text-tertiary)]">
                     {item.badge}
                   </span>
                   {isSelected && (
-                    <span className="w-4 h-4 rounded-full bg-amber-400 flex items-center justify-center text-black">
-                      <Check size={10} strokeWidth={3} />
+                    <span className="w-3.5 h-3.5 rounded-full bg-[var(--apple-accent)] flex items-center justify-center text-white">
+                      <Check size={9} strokeWidth={3} />
                     </span>
                   )}
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">{item.name}</span>
-                  <span className="text-[10px] text-neutral-400 block">{item.desc}</span>
+                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">
+                    {item.name}
+                  </span>
+                  <span className="text-[10px] text-[var(--apple-text-secondary)] block">
+                    {item.desc}
+                  </span>
                 </div>
               </button>
             );
@@ -304,50 +443,55 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. Shortcuts Card */}
-      <div className="p-5 rounded-3xl glass-panel space-y-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-200">
-          <Keyboard size={16} className="text-amber-400" />
-          <span>Kısayol Tuşları Haritası</span>
+      {/* 6. Keyboard Shortcuts Card */}
+      <div className="p-5 rounded-2xl apple-card space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--apple-text-primary)]">
+          <Keyboard size={16} className="text-[var(--apple-accent)]" />
+          <span>{t("shortcutsTitle")}</span>
         </div>
 
-        <div className="space-y-2 text-xs divide-y divide-white/[0.06]">
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-neutral-300 font-medium">Hızlı Çarkı Aç (Global)</span>
-            <kbd>Ctrl + Space</kbd>
+        <div className="space-y-2 text-xs divide-y divide-[var(--apple-border)]">
+          <div className="flex items-center justify-between py-2">
+            <span className="text-[var(--apple-text-secondary)]">
+              {t("quickWheelHint")}
+            </span>
+            <kbd className="px-2 py-0.5 rounded-md bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[11px]">
+              Ctrl + Space
+            </kbd>
           </div>
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-neutral-400">Çark Dilimlerini Döndür / Geç</span>
-            <span className="text-amber-300 font-mono text-[11px]">← / → veya Fare Tekerleği</span>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-[var(--apple-text-secondary)]">
+              {language === "tr" ? "Sekmeler Arası Geçiş" : "Switch Tabs"}
+            </span>
+            <kbd className="px-2 py-0.5 rounded-md bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[11px]">
+              Ctrl + 1..5
+            </kbd>
           </div>
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-neutral-400">Profilleri Değiştir</span>
-            <kbd>Tab veya 1-5</kbd>
-          </div>
-          <div className="flex items-center justify-between py-2.5">
-            <span className="text-neutral-400">Panodan Görsel / Dosya Yapıştır</span>
-            <kbd>Ctrl + V</kbd>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-[var(--apple-text-secondary)]">
+              {language === "tr" ? "Çark Dilimlerini Döndür / Seç" : "Cycle Slices"}
+            </span>
+            <span className="font-mono text-[11px] text-[var(--apple-accent)]">
+              ← / → or Scroll
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Privacy & System Storage */}
-      <div className="p-5 rounded-3xl glass-panel space-y-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-200">
-          <Shield size={16} className="text-emerald-400" />
-          <span>%100 Yerel, Güvenli ve Özel</span>
+      {/* 7. Privacy & System Storage */}
+      <div className="p-5 rounded-2xl apple-card space-y-2">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--apple-success)]">
+          <Shield size={16} />
+          <span>{t("privacyTitle")}</span>
         </div>
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          Fig, tüm dönüşüm işlemlerini bilgisayarınızdaki yerel Rust, FFmpeg ve Python motorları ile gerçekleştirir.
-          Hiçbir dosya veya veri buluta aktarılmaz.
+        <p className="text-xs text-[var(--apple-text-secondary)] leading-relaxed">
+          {t("privacyDesc")}
         </p>
       </div>
 
       {/* Footer */}
-      <div className="text-center py-4 text-xs text-neutral-500 flex items-center justify-center gap-1.5">
-        <span>Geliştirildi</span>
-        <Heart size={13} className="text-rose-500 fill-rose-500" />
-        <span>Açık Kaynak • Windows 11</span>
+      <div className="text-center py-3 text-xs text-[var(--apple-text-tertiary)] flex items-center justify-center gap-1.5">
+        <span>{t("madeWith")}</span>
       </div>
     </div>
   );

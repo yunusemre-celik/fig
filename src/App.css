@@ -1,97 +1,99 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Windows 11 WinUI 3 / Fluent Design System — Token Layer
-   Fig App · Tauri v2 · Mica/Acrylic Native Vibrancy
+   Apple-Inspired Minimalist Design System
+   Fig App · macOS Sequoia / iOS Minimal Aesthetics
+   Light & Dark Adaptive Theme Engine
    ============================================================ */
 
-:root {
-  /* === ARKA PLAN — Katmanlı Mica/Acrylic Sistemi === */
-  --fluent-bg-base: transparent;
-  --fluent-bg-card: rgba(255, 255, 255, 0.060);
-  --fluent-bg-card-hover: rgba(255, 255, 255, 0.085);
-  --fluent-bg-card-pressed: rgba(255, 255, 255, 0.035);
-  --fluent-bg-secondary: rgba(255, 255, 255, 0.034);
-  --fluent-bg-tertiary: rgba(255, 255, 255, 0.022);
-  --fluent-bg-control: rgba(255, 255, 255, 0.054);
-  --fluent-bg-control-hover: rgba(255, 255, 255, 0.080);
-  --fluent-bg-control-pressed: rgba(255, 255, 255, 0.030);
+:root,
+.theme-dark {
+  /* Canvas & Backgrounds (Dark Mode - Obsidian & Graphite) */
+  --apple-bg-canvas: #0C0C0E;
+  --apple-bg-panel: rgba(24, 24, 27, 0.78);
+  --apple-bg-card: rgba(39, 39, 42, 0.55);
+  --apple-bg-card-hover: rgba(52, 52, 58, 0.75);
+  --apple-bg-card-pressed: rgba(30, 30, 34, 0.85);
+  --apple-bg-control: rgba(255, 255, 255, 0.07);
+  --apple-bg-control-hover: rgba(255, 255, 255, 0.12);
+  --apple-bg-secondary: rgba(255, 255, 255, 0.035);
 
-  /* === YAZI RENKLERİ — Fluent Dark Theme === */
-  --fluent-text-primary: rgba(255, 255, 255, 1.0);
-  --fluent-text-secondary: rgba(255, 255, 255, 0.606);
-  --fluent-text-tertiary: rgba(255, 255, 255, 0.446);
-  --fluent-text-disabled: rgba(255, 255, 255, 0.363);
-  --fluent-text-on-accent: rgba(0, 0, 0, 1.0);
+  /* Typography Colors */
+  --apple-text-primary: #F5F5F7;
+  --apple-text-secondary: #8E8E93;
+  --apple-text-tertiary: #636366;
+  --apple-text-disabled: #48484A;
 
-  /* === STROKE — Sınır & Çizgi Sistemi === */
-  --fluent-stroke-surface: rgba(255, 255, 255, 0.070);
-  --fluent-stroke-control: rgba(255, 255, 255, 0.054);
-  --fluent-stroke-divider: rgba(255, 255, 255, 0.084);
-  --fluent-stroke-focus: rgba(255, 255, 255, 1.0);
-  --fluent-stroke-subtle: rgba(255, 255, 255, 0.15);
-  --fluent-stroke-bottom: rgba(0, 0, 0, 0.22);
+  /* Borders & Dividers */
+  --apple-border: rgba(255, 255, 255, 0.08);
+  --apple-border-subtle: rgba(255, 255, 255, 0.04);
+  --apple-border-focus: #0A84FF;
 
-  /* === ACCENT — Fig Amber Vurgu Rengi === */
-  --fluent-accent: #F5A623;
-  --fluent-accent-hover: #E8961A;
-  --fluent-accent-pressed: #D4881A;
-  --fluent-accent-light: rgba(245, 166, 35, 0.15);
-  --fluent-accent-border: rgba(245, 166, 35, 0.38);
-  --fluent-accent-text: #000000;
+  /* Accents & Status */
+  --apple-accent: #0A84FF;
+  --apple-accent-hover: #0071E3;
+  --apple-accent-light: rgba(10, 132, 255, 0.15);
+  --apple-accent-text: #FFFFFF;
 
-  /* === DURUM RENKLERİ === */
-  --fluent-success: rgba(108, 203, 95, 1.0);
-  --fluent-success-bg: rgba(108, 203, 95, 0.10);
-  --fluent-success-border: rgba(108, 203, 95, 0.30);
-  --fluent-error: rgba(255, 153, 164, 1.0);
-  --fluent-error-bg: rgba(255, 153, 164, 0.10);
-  --fluent-error-border: rgba(255, 153, 164, 0.30);
-  --fluent-info: rgba(96, 205, 255, 1.0);
-  --fluent-info-bg: rgba(96, 205, 255, 0.10);
-  --fluent-info-border: rgba(96, 205, 255, 0.30);
+  --apple-success: #30D158;
+  --apple-error: #FF453A;
+  --apple-warning: #FF9F0A;
 
-  /* === TİPOGRAFİ — Segoe UI Variable (WinUI Type Ramp) === */
-  --fluent-font: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI",
-    -apple-system, BlinkMacSystemFont, sans-serif;
-  --fluent-font-display: "Segoe UI Variable Display", "Segoe UI Variable",
-    "Segoe UI", sans-serif;
-  --fluent-size-caption: 12px;
-  --fluent-size-body: 14px;
-  --fluent-size-body-strong: 14px;
-  --fluent-size-subtitle: 20px;
-  --fluent-size-title: 28px;
-  --fluent-weight-regular: 400;
-  --fluent-weight-semibold: 600;
-  --fluent-weight-bold: 700;
-  --fluent-line-body: 20px;
+  /* Shadows */
+  --apple-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --apple-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --apple-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
 
-  /* === KENAR YUVARLAMA — WinUI Corner Radius === */
-  --fluent-radius-sm: 4px;
-  --fluent-radius-md: 8px;
-  --fluent-radius-lg: 12px;
-  --fluent-radius-xl: 16px;
-  --fluent-radius-2xl: 20px;
-  --fluent-radius-full: 9999px;
+  /* Scrollbar thumb */
+  --apple-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --apple-scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+}
 
-  /* === ELEVATION — WinUI Shadow System === */
-  --fluent-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.13), 0 0 2px rgba(0, 0, 0, 0.09);
-  --fluent-shadow-4: 0 2px 4px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.10);
-  --fluent-shadow-8: 0 4px 8px rgba(0, 0, 0, 0.14), 0 0 4px rgba(0, 0, 0, 0.10);
-  --fluent-shadow-16: 0 8px 16px rgba(0, 0, 0, 0.14), 0 0 4px rgba(0, 0, 0, 0.10);
-  --fluent-shadow-28: 0 14px 28px rgba(0, 0, 0, 0.20), 0 0 8px rgba(0, 0, 0, 0.12);
-  --fluent-shadow-64: 0 32px 64px rgba(0, 0, 0, 0.24), 0 0 16px rgba(0, 0, 0, 0.14);
+.theme-light,
+.light {
+  /* Canvas & Backgrounds (Light Mode - Snow & Silver) */
+  --apple-bg-canvas: #F5F5F7;
+  --apple-bg-panel: rgba(255, 255, 255, 0.82);
+  --apple-bg-card: #FFFFFF;
+  --apple-bg-card-hover: #F8F8F9;
+  --apple-bg-card-pressed: #EBEBED;
+  --apple-bg-control: rgba(0, 0, 0, 0.05);
+  --apple-bg-control-hover: rgba(0, 0, 0, 0.08);
+  --apple-bg-secondary: #FAFAFC;
 
-  /* === BLUR — Malzeme Katmanları === */
-  --fluent-blur-acrylic: blur(60px) saturate(180%);
-  --fluent-blur-mica: blur(30px) saturate(150%);
-  --fluent-blur-card: blur(24px) saturate(140%);
-  --fluent-blur-overlay: blur(16px) saturate(160%);
-  --fluent-blur-subtle: blur(8px) saturate(120%);
+  /* Typography Colors */
+  --apple-text-primary: #1D1D1F;
+  --apple-text-secondary: #6E6E73;
+  --apple-text-tertiary: #86868B;
+  --apple-text-disabled: #A1A1A6;
+
+  /* Borders & Dividers */
+  --apple-border: rgba(0, 0, 0, 0.08);
+  --apple-border-subtle: rgba(0, 0, 0, 0.04);
+  --apple-border-focus: #0071E3;
+
+  /* Accents & Status */
+  --apple-accent: #0071E3;
+  --apple-accent-hover: #0077ED;
+  --apple-accent-light: rgba(0, 113, 227, 0.10);
+  --apple-accent-text: #FFFFFF;
+
+  --apple-success: #34C759;
+  --apple-error: #FF3B30;
+  --apple-warning: #FF9500;
+
+  /* Shadows */
+  --apple-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --apple-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08);
+  --apple-shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.12);
+
+  /* Scrollbar thumb */
+  --apple-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --apple-scrollbar-thumb-hover: rgba(0, 0, 0, 0.35);
 }
 
 /* ============================================================
-   TEMEL SAYFA — Şeffaf Base (Mica/Acrylic wallpaper geçişi)
+   Base Setup & Typography
    ============================================================ */
 
 html, body, #root {
@@ -100,20 +102,17 @@ html, body, #root {
   margin: 0;
   padding: 0;
   background-color: transparent !important;
-  color: var(--fluent-text-primary);
-  font-family: var(--fluent-font);
-  font-size: var(--fluent-size-body);
-  font-weight: var(--fluent-weight-regular);
-  line-height: 1.4286;
+  color: var(--apple-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* ============================================================
-   WHEEL WINDOW — Tam şeffaf, dekore edilmemiş
-   ============================================================ */
-
+/* Wheel Window Transparent Base */
 html.wheel-window,
 body.wheel-window,
 body.wheel-window #root,
@@ -126,227 +125,85 @@ body.wheel-window #root,
 }
 
 /* ============================================================
-   FLUENT PANEL — Navigation, Toolbar, Header çubuğu
-   WinUI: SmokeFill / AcrylicInAppFill malzemesi
+   Apple Modern Panels & Cards
    ============================================================ */
 
 .glass-panel {
-  background: var(--fluent-bg-card);
-  backdrop-filter: var(--fluent-blur-card);
-  -webkit-backdrop-filter: var(--fluent-blur-card);
-  border: 1px solid var(--fluent-stroke-surface);
-  border-top-color: var(--fluent-stroke-subtle);
-  box-shadow: var(--fluent-shadow-4);
+  background: var(--apple-bg-panel);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--apple-border);
+  box-shadow: var(--apple-shadow-sm);
 }
 
-/* ============================================================
-   FLUENT KART — İçerik kartları
-   WinUI: CardBackgroundFillColorDefault
-   ============================================================ */
-
 .glass-card {
-  background: var(--fluent-bg-secondary);
-  backdrop-filter: var(--fluent-blur-card);
-  -webkit-backdrop-filter: var(--fluent-blur-card);
-  border: 1px solid var(--fluent-stroke-control);
-  border-top-color: var(--fluent-stroke-subtle);
-  box-shadow: var(--fluent-shadow-2);
-  border-radius: var(--fluent-radius-xl);
-  transition: background 0.1s ease, border-color 0.1s ease,
-    box-shadow 0.1s ease, transform 0.1s ease;
+  background: var(--apple-bg-card);
+  border: 1px solid var(--apple-border);
+  border-radius: 14px;
+  box-shadow: var(--apple-shadow-sm);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  background: var(--fluent-bg-card-hover);
-  border-color: var(--fluent-accent-border);
-  border-top-color: rgba(245, 166, 35, 0.45);
-  box-shadow: var(--fluent-shadow-8);
+  background: var(--apple-bg-card-hover);
+  border-color: var(--apple-accent);
+  box-shadow: var(--apple-shadow-md);
   transform: translateY(-1px);
 }
 
 .glass-card:active {
-  background: var(--fluent-bg-card-pressed);
+  background: var(--apple-bg-card-pressed);
   transform: translateY(0);
-  box-shadow: var(--fluent-shadow-2);
 }
 
-/* ============================================================
-   FLUENT BUTTON — Standart buton
-   WinUI: ButtonBackgroundFillColor + BottomStroke depth
-   ============================================================ */
-
+/* Apple Buttons */
 .glass-btn {
-  background: var(--fluent-bg-control);
-  backdrop-filter: var(--fluent-blur-overlay);
-  -webkit-backdrop-filter: var(--fluent-blur-overlay);
-  border: 1px solid var(--fluent-stroke-control);
-  border-bottom-color: var(--fluent-stroke-bottom);
-  border-radius: var(--fluent-radius-md);
-  color: var(--fluent-text-primary);
-  box-shadow: var(--fluent-shadow-2);
-  transition: background 0.1s ease, border-color 0.1s ease,
-    box-shadow 0.1s ease;
+  background: var(--apple-bg-control);
+  border: 1px solid var(--apple-border);
+  border-radius: 9px;
+  color: var(--apple-text-primary);
+  font-weight: 500;
+  transition: all 0.12s ease;
 }
 
 .glass-btn:hover {
-  background: var(--fluent-bg-control-hover);
-  border-color: var(--fluent-stroke-subtle);
-  box-shadow: var(--fluent-shadow-4);
+  background: var(--apple-bg-control-hover);
+  border-color: var(--apple-border);
 }
 
 .glass-btn:active {
-  background: var(--fluent-bg-control-pressed);
-  border-bottom-color: var(--fluent-stroke-control);
-  box-shadow: none;
-  transform: translateY(1px);
+  opacity: 0.85;
+  transform: scale(0.98);
 }
 
-/* ============================================================
-   FLUENT ACCENT BUTTON — Birincil aksiyon
-   WinUI: AccentButtonBackground + gradient depth highlight
-   ============================================================ */
-
 .glass-btn-accent {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0) 100%
-  ),
-  var(--fluent-accent);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-bottom-color: rgba(0, 0, 0, 0.28);
-  border-radius: var(--fluent-radius-md);
-  color: var(--fluent-accent-text);
-  font-weight: var(--fluent-weight-semibold);
-  box-shadow: var(--fluent-shadow-2);
-  transition: background 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+  background: var(--apple-accent);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9px;
+  color: var(--apple-accent-text);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.35);
+  transition: all 0.12s ease;
 }
 
 .glass-btn-accent:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(255, 255, 255, 0.04) 100%
-  ),
-  var(--fluent-accent-hover);
-  box-shadow: var(--fluent-shadow-4);
+  background: var(--apple-accent-hover);
+  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.45);
 }
 
 .glass-btn-accent:active {
-  background: var(--fluent-accent-pressed);
-  border-bottom-color: rgba(0, 0, 0, 0.14);
-  box-shadow: none;
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
-/* ============================================================
-   MICA ANA ARKA PLAN — Çok ince ambient overlay
-   DWM'nin wallpaper blur'u görünür kılmak için max %12 opak
-   ============================================================ */
-
+/* Background Canvas */
 .bg-mesh-glass {
-  background-color: rgba(10, 12, 20, 0.12);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -5%,
-      rgba(245, 166, 35, 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 5% 85%,
-      rgba(59, 130, 246, 0.05) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 35% at 95% 75%,
-      rgba(139, 92, 246, 0.04) 0%, transparent 55%);
+  background-color: var(--apple-bg-canvas);
 }
 
-/* ============================================================
-   FLUENT FOCUS RING — WinUI FocusVisual
-   ============================================================ */
-
-.fluent-focus:focus-visible {
-  outline: 2px solid var(--fluent-stroke-focus);
-  outline-offset: 2px;
-  border-radius: inherit;
-}
-
-/* ============================================================
-   FLUENT DIVIDER
-   ============================================================ */
-
-.fluent-divider {
-  height: 1px;
-  background: var(--fluent-stroke-divider);
-  border: none;
-  margin: 0;
-}
-
-/* ============================================================
-   FLUENT INPUT — WinUI TextBox
-   ============================================================ */
-
-input[type="text"],
-input[type="search"],
-textarea {
-  background: var(--fluent-bg-control);
-  border: 1px solid var(--fluent-stroke-control);
-  border-bottom: 2px solid var(--fluent-stroke-subtle);
-  border-radius: var(--fluent-radius-md) var(--fluent-radius-md) 0 0;
-  color: var(--fluent-text-primary);
-  font-family: var(--fluent-font);
-  font-size: var(--fluent-size-body);
-  transition: background 0.1s ease, border-color 0.1s ease;
-}
-
-input[type="text"]:hover,
-input[type="search"]:hover {
-  background: var(--fluent-bg-control-hover);
-}
-
-input[type="text"]:focus,
-input[type="search"]:focus,
-textarea:focus {
-  outline: none;
-  background: var(--fluent-bg-control-hover);
-  border-bottom-color: var(--fluent-accent);
-}
-
-/* ============================================================
-   TOOLTIP — WinUI TeachingTip / ToolTip Flyout stili
-   ============================================================ */
-
-.has-tooltip {
-  position: relative;
-}
-
-.tooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  z-index: 50;
-  pointer-events: none;
-  transition: opacity 0.12s ease, transform 0.12s ease;
-  transform: translateY(4px);
-  white-space: nowrap;
-  background: rgba(44, 44, 44, 0.96);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid var(--fluent-stroke-surface);
-  border-radius: var(--fluent-radius-md);
-  box-shadow: var(--fluent-shadow-16);
-  color: var(--fluent-text-primary);
-  font-family: var(--fluent-font);
-  font-size: 12px;
-}
-
-.has-tooltip:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ============================================================
-   SCROLLBAR — WinUI ince modern scrollbar
-   ============================================================ */
-
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -354,31 +211,25 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: var(--fluent-radius-full);
-  transition: background 0.2s;
+  background: var(--apple-scrollbar-thumb);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.32);
+  background: var(--apple-scrollbar-thumb-hover);
 }
 
-/* ============================================================
-   KBD — Kısayol tuşu görünümü (WinUI KeyboardAccelerator)
-   ============================================================ */
-
+/* Keyboard Badges */
 kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 1px 6px;
-  border-radius: var(--fluent-radius-sm);
-  background: var(--fluent-bg-control);
-  border: 1px solid var(--fluent-stroke-control);
-  border-bottom-color: var(--fluent-stroke-bottom);
-  font-family: "Cascadia Code", "Consolas", monospace;
+  border-radius: 5px;
+  background: var(--apple-bg-control);
+  border: 1px solid var(--apple-border);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", monospace;
   font-size: 10px;
-  color: var(--fluent-text-secondary);
-  box-shadow: var(--fluent-shadow-2);
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: var(--apple-text-secondary);
 }

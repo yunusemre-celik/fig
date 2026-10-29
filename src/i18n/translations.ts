@@ -154,6 +154,13 @@ export interface TranslationDictionary {
   aboutSection: string;
   version: string;
   madeWith: string;
+  outputDestLabel: string;
+  outputSource: string;
+  outputDesktop: string;
+  outputDownloads: string;
+  shortcutsTitle: string;
+  privacyTitle: string;
+  privacyDesc: string;
 }
 
 export const translations: Record<SupportedLanguage, TranslationDictionary> = {
@@ -304,6 +311,13 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aboutSection: "About Fig",
     version: "Version",
     madeWith: "Crafted with Tauri v2, Rust & React",
+    outputDestLabel: "Output Destination",
+    outputSource: "Same folder as source file",
+    outputDesktop: "Desktop",
+    outputDownloads: "Downloads",
+    shortcutsTitle: "Keyboard Shortcuts",
+    privacyTitle: "100% Local, Private & Secure",
+    privacyDesc: "Fig processes everything locally on your machine with native Rust and tools. No file or telemetry is ever uploaded to any cloud.",
   },
 
   // 2. TURKISH (Original)
@@ -453,6 +467,13 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aboutSection: "Fig Hakkında",
     version: "Sürüm",
     madeWith: "Tauri v2, Rust ve React ile geliştirildi",
+    outputDestLabel: "Çıktı Hedef Klasörü",
+    outputSource: "Kaynak dosya ile aynı klasör",
+    outputDesktop: "Masaüstü",
+    outputDownloads: "İndirilenler",
+    shortcutsTitle: "Kısayol Tuşları Haritası",
+    privacyTitle: "%100 Yerel, Güvenli ve Özel",
+    privacyDesc: "Fig, tüm dönüşüm işlemlerini bilgisayarınızdaki yerel Rust ve yerleşik motorlarla gerçekleştirir. Hiçbir dosya veya veri buluta aktarılmaz.",
   },
 
   // 3. SPANISH (Español)
@@ -602,6 +623,13 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aboutSection: "Acerca de Fig",
     version: "Versión",
     madeWith: "Creado con Tauri v2, Rust y React",
+    outputDestLabel: "Carpeta de Destino",
+    outputSource: "Misma carpeta que el archivo de origen",
+    outputDesktop: "Escritorio",
+    outputDownloads: "Descargas",
+    shortcutsTitle: "Atajos de Teclado",
+    privacyTitle: "100% Local, Privado y Seguro",
+    privacyDesc: "Fig procesa todo localmente en su equipo con Rust y utilidades nativas. Ningún archivo se envía a la nube.",
   },
 
   // 4. GERMAN (Deutsch)
@@ -751,6 +779,13 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aboutSection: "Über Fig",
     version: "Version",
     madeWith: "Entwickelt mit Tauri v2, Rust & React",
+    outputDestLabel: "Ausgabeordner",
+    outputSource: "Gleicher Ordner wie Quelldatei",
+    outputDesktop: "Desktop",
+    outputDownloads: "Downloads",
+    shortcutsTitle: "Tastaturkürzel",
+    privacyTitle: "100% Lokal, Sicher & Privat",
+    privacyDesc: "Fig verarbeitet alles lokal auf Ihrem PC mit nativer Rust-Engine. Keine Dateien werden in eine Cloud übertragen.",
   },
 
   // 5. FRENCH (Français)
@@ -900,5 +935,12 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     aboutSection: "À propos de Fig",
     version: "Version",
     madeWith: "Conçu avec Tauri v2, Rust & React",
+    outputDestLabel: "Dossier de sortie",
+    outputSource: "Même dossier que le fichier source",
+    outputDesktop: "Bureau",
+    outputDownloads: "Téléchargements",
+    shortcutsTitle: "Raccourcis clavier",
+    privacyTitle: "100% Local, Privé & Sécurisé",
+    privacyDesc: "Fig traite tout localement sur votre ordinateur avec le moteur Rust natif. Aucun fichier n'est envoyé dans le cloud.",
   },
 };

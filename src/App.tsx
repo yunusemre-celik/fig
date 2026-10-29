@@ -13,8 +13,9 @@ import { ImageEditorModal, ImageEditorMode } from "./components/modals/ImageEdit
 import { CompressModal } from "./components/modals/CompressModal";
 import { QrModal } from "./components/modals/QrModal";
 import { Toast, ToastMessage } from "./components/Toast";
-import { FileInfo, LibraryEntry, TabType, WheelMode, WheelProfileId, WheelItem } from "./types";
+import { FileInfo, LibraryEntry, TabType, WheelMode, WheelProfileId, WheelItem, AppTheme } from "./types";
 import { playSuccessChime } from "./utils/sound";
+import { useTranslation } from "./i18n/useTranslation";
 import {
   getFileInfo,
   convertImage,
@@ -41,6 +42,45 @@ const isWheelWindow =
   typeof window !== "undefined" && window.location.search.includes("window=wheel");
 
 export function App() {
+  const { t, language } = useTranslation();
+
+  const [theme, setTheme] = useState<AppTheme>(() => {
+    return (localStorage.getItem("fig_theme") as AppTheme) || "system";
+  });
+
+  // Dynamic Theme Engine: Auto Sync with System & User Preference
+  useEffect(() => {
+    const applyTheme = () => {
+      const currentTheme = (localStorage.getItem("fig_theme") as AppTheme) || "system";
+      const isDark =
+        currentTheme === "dark" ||
+        (currentTheme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.toggle("theme-dark", isDark);
+      document.documentElement.classList.toggle("theme-light", !isDark);
+      document.documentElement.classList.toggle("dark", isDark);
+      document.documentElement.classList.toggle("light", !isDark);
+    };
+
+    applyTheme();
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleMediaChange = () => applyTheme();
+    media.addEventListener("change", handleMediaChange);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "fig_theme") {
+        setTheme((localStorage.getItem("fig_theme") as AppTheme) || "system");
+        applyTheme();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      media.removeEventListener("change", handleMediaChange);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [theme]);
+
   if (isWheelWindow) {
     return <FloatingWheelWindow />;
   }
@@ -90,7 +130,11 @@ export function App() {
   const handleProfileChange = (id: WheelProfileId) => {
     setActiveProfile(id);
     localStorage.setItem("fig_active_profile", id);
-    addToast("info", "Profil Değiştirildi", `Aktif Profil: ${PRESET_PROFILES[id].name}`);
+    addToast(
+      "info",
+      language === "tr" ? "Profil Değiştirildi" : "Profile Changed",
+      `${language === "tr" ? "Aktif Profil:" : "Active Profile:"} ${PRESET_PROFILES[id].name}`
+    );
   };
 
   const handleUpdateCustomSlices = (slices: WheelItem[]) => {
@@ -152,7 +196,11 @@ export function App() {
       }
     }
     setSelectedFiles((prev) => [...prev, ...newFiles]);
-    addToast("info", "Dosyalar Eklendi", `${newFiles.length} dosya işleme hazır.`);
+    addToast(
+      "info",
+      language === "tr" ? "Dosyalar Eklendi" : "Files Added",
+      `${newFiles.length} ${language === "tr" ? "dosya hazır." : "files ready."}`
+    );
   };
 
   // Trigger floating wheel at cursor
@@ -248,6 +296,7 @@ export function App() {
           const customName = saveAsSeparate
             ? `${stem}_(${i + 1} of ${total}).${targetExt}`
             : undefined;
+
           try {
             const res = await convertMedia(f.path, targetFormat, customName);
             lastResult = res;
@@ -301,21 +350,21 @@ export function App() {
 
       if (successCount > 0 && lastResult) {
         playSuccessChime();
-        confetti({ particleCount: 65, spread: 75, origin: { y: 0.8 } });
+        confetti({ particleCount: 50, spread: 70, origin: { y: 0.8 } });
         addToast(
           "success",
-          "Dönüştürme Tamamlandı",
-          `${successCount} dosya başarıyla ${targetFormat.toUpperCase()} formatına dönüştürüldü.${
-            saveAsSeparate ? " (1 of N numaralandırması uygulandı)" : ""
-          }`,
+          t("conversionDone"),
+          `${successCount} ${language === "tr" ? "dosya başarıyla dönüştürüldü." : "files converted successfully."}`,
           lastResult.path
         );
         loadLibrary();
       } else {
         addToast(
           "error",
-          "Dönüştürme Başarısız",
-          "Seçilen dosyalar dönüştürülürken bir hata oluştu. Lütfen dosya formatlarını kontrol edin."
+          language === "tr" ? "Dönüştürme Başarısız" : "Conversion Failed",
+          language === "tr"
+            ? "Seçilen dosyalar dönüştürülürken bir hata oluştu."
+            : "An error occurred while converting the selected files."
         );
       }
     } finally {
@@ -375,7 +424,7 @@ export function App() {
           const f = selectedFiles[0];
           addToast(
             "info",
-            "Dosya Bilgisi",
+            t("sliceInfo"),
             `${f.name} • ${f.formatted_size} • ${f.width || "?"}×${f.height || "?"}px`,
             f.path
           );
@@ -386,22 +435,24 @@ export function App() {
       if (selectedFiles.length === 0) {
         if (actionId === "terminal") {
           openInTerminal("");
-          addToast("info", "Terminal", "PowerShell terminali açılıyor...");
+          addToast("info", "Terminal", language === "tr" ? "Terminal açılıyor..." : "Opening terminal...");
           return;
         }
-        addToast("error", "Dosya Seçilmedi", "Lütfen bir dosya seçin.");
+        addToast(
+          "error",
+          language === "tr" ? "Dosya Seçilmedi" : "No File Selected",
+          language === "tr" ? "Lütfen bir dosya seçin." : "Please select a file first."
+        );
         return;
       }
       const first = selectedFiles[0];
       if (actionId === "copy_path") {
         navigator.clipboard.writeText(first.path);
-        addToast("success", "Panoya Kopyalandı", "Dosya yolu başarıyla panoya aktarıldı.");
+        addToast("success", t("pathCopied"), first.path);
       } else if (actionId === "reveal") {
         revealInExplorer(first.path);
-        addToast("info", "Dosya Gezgini", "Dosya konumu açılıyor...");
       } else if (actionId === "terminal") {
         openInTerminal(first.path);
-        addToast("info", "Terminal", "Klasör konumunda PowerShell açılıyor...");
       }
     }
   };
@@ -426,13 +477,13 @@ export function App() {
       playSuccessChime();
       addToast(
         "success",
-        "Görsel Kırpıldı",
-        `${res.name} ${cropData.overwrite ? "üzerine kaydedildi." : "olarak oluşturuldu."}`,
+        language === "tr" ? "Görsel Kırpıldı" : "Image Cropped",
+        `${res.name} ${cropData.overwrite ? (language === "tr" ? "üzerine kaydedildi." : "overwritten.") : (language === "tr" ? "oluşturuldu." : "created.")}`,
         res.path
       );
       loadLibrary();
     } catch (err) {
-      addToast("error", "Kırpma Hatası", `Kırpma işlemi tamamlanamadı: ${err}`);
+      addToast("error", "Error", `${err}`);
     }
   };
 
@@ -452,13 +503,13 @@ export function App() {
       playSuccessChime();
       addToast(
         "success",
-        "Görsel Sansürlendi",
-        `${res.name} ${censorData.overwrite ? "üzerine kaydedildi." : "olarak oluşturuldu."}`,
+        language === "tr" ? "Görsel Sansürlendi" : "Image Censored",
+        `${res.name} ${censorData.overwrite ? (language === "tr" ? "üzerine kaydedildi." : "overwritten.") : (language === "tr" ? "oluşturuldu." : "created.")}`,
         res.path
       );
       loadLibrary();
     } catch (err) {
-      addToast("error", "Sansürleme Hatası", `Sansürleme tamamlanamadı: ${err}`);
+      addToast("error", "Error", `${err}`);
     }
   };
 
@@ -471,10 +522,10 @@ export function App() {
         maxWidth
       );
       playSuccessChime();
-      addToast("success", "Görsel Sıkıştırıldı", `${res.name} oluşturuldu.`, res.path);
+      addToast("success", t("sliceCompress"), `${res.name} created.`, res.path);
       loadLibrary();
     } catch (err) {
-      addToast("error", "Sıkıştırma Hatası", `Sıkıştırma tamamlanamadı: ${err}`);
+      addToast("error", "Error", `${err}`);
     }
   };
 
@@ -484,29 +535,31 @@ export function App() {
       : PRESET_PROFILES[activeProfile]?.items || PRESET_PROFILES.design.items;
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-mesh-glass text-neutral-100 select-none overflow-hidden font-sans relative">
-      {/* Brand Top Header with Window Vibrancy */}
-      <div className="h-10 w-full flex items-center justify-between px-5 glass-panel border-x-0 border-t-0 select-none text-xs z-30">
+    <div className="flex flex-col h-screen w-screen bg-[var(--apple-bg-canvas)] text-[var(--apple-text-primary)] select-none overflow-hidden font-sans relative transition-colors duration-200">
+      {/* Brand Top Header */}
+      <div className="h-10 w-full flex items-center justify-between px-5 apple-header border-x-0 border-t-0 select-none text-xs z-30">
         <div className="flex items-center gap-2.5">
-          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20">
+          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm">
             <span className="text-black font-black text-[11px] leading-none">F</span>
           </div>
-          <span className="font-bold text-white tracking-wide text-xs">Fig</span>
-          <span className="text-[10px] text-amber-300 font-semibold px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/25">
-            Windows 11 Mica & Acrylic
+          <span className="font-bold text-[var(--apple-text-primary)] tracking-wide text-xs">Fig</span>
+          <span className="text-[10px] text-[var(--apple-accent)] font-semibold px-2 py-0.5 rounded-full bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20">
+            Apple Minimal · Sequoia
           </span>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-neutral-400">
+        <div className="flex items-center gap-3 text-[11px] text-[var(--apple-text-secondary)]">
           <div className="flex items-center gap-1.5">
-            <span className="text-neutral-400">Aktif Çark:</span>
-            <span className="text-amber-300 font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
+            <span>{t("activeWheel")}</span>
+            <span className="text-[var(--apple-accent)] font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
           </div>
-          <span className="text-white/20">•</span>
+          <span className="text-[var(--apple-border)]">•</span>
           <div className="has-tooltip flex items-center gap-1.5 cursor-pointer" onClick={handleTriggerWheel}>
-            <span>İmleçte Hızlı Çark:</span>
-            <kbd>Ctrl + Space</kbd>
+            <span>{t("quickWheelHint")}</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[10px]">
+              Ctrl + Space
+            </kbd>
             <div className="tooltip top-full mt-2 right-0 px-2.5 py-1 text-[11px] pointer-events-none">
-              Tıkla veya Ctrl+Space bas
+              Ctrl + Space
             </div>
           </div>
         </div>
@@ -526,15 +579,15 @@ export function App() {
           <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center max-w-4xl w-full mx-auto">
             {/* Hero Brand Card */}
             <div className="w-full text-center my-3 animate-in fade-in duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/25 text-amber-400 text-xs font-semibold mb-2 shadow-sm backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/25 text-[var(--apple-accent)] text-xs font-semibold mb-2 shadow-sm">
                 <Sparkles size={13} />
-                <span>Windows 11 Native Vibrancy & Dosya Kiti</span>
+                <span>{t("heroBadge")}</span>
               </div>
-              <h1 className="text-3xl font-black text-white tracking-tight">
-                Dosyaların için <span className="text-amber-400">tatlı bir kolaylık.</span>
+              <h1 className="text-3xl font-black text-[var(--apple-text-primary)] tracking-tight">
+                {t("heroTitle1")} <span className="text-[var(--apple-accent)]">{t("heroTitle2")}</span>
               </h1>
-              <p className="text-xs text-neutral-400 mt-1 max-w-md mx-auto leading-relaxed">
-                Dosyaları bırakın, tek tıkla doğrudan dönüştürün veya fare imlecinizin ucundaki çark ile anında işleyin.
+              <p className="text-xs text-[var(--apple-text-secondary)] mt-1.5 max-w-md mx-auto leading-relaxed">
+                {t("heroDesc")}
               </p>
             </div>
 
@@ -560,57 +613,61 @@ export function App() {
               />
             </div>
 
-            {/* Quick Action Glass Cards */}
+            {/* Quick Action Apple Cards */}
             <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
+                type="button"
                 onClick={() => handleDirectConvert("webp")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-emerald-400/40"
+                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-transform">
                   <FileImage size={16} />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">⚡ WebP'ye Çevir</span>
-                  <span className="text-[10px] text-neutral-400">Seçilileri dönüştür</span>
+                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">WebP</span>
+                  <span className="text-[10px] text-[var(--apple-text-secondary)]">{t("quickWebp")}</span>
                 </div>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleDirectConvert("pdf")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 border-rose-500/20 hover:border-rose-400/40"
+                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/25 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 group-hover:scale-105 transition-transform">
                   <FileText size={16} />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">⚡ PDF Yap</span>
-                  <span className="text-[10px] text-neutral-400">Görsel veya Belgeleri</span>
+                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">PDF</span>
+                  <span className="text-[10px] text-[var(--apple-text-secondary)]">{t("quickPdf")}</span>
                 </div>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleAction("crop", "tools")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
+                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-105 transition-transform">
                   <Crop size={16} />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">Kırp & Boyutla</span>
-                  <span className="text-[10px] text-neutral-400">1:1, 16:9 oranları</span>
+                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">{t("cropTab")}</span>
+                  <span className="text-[10px] text-[var(--apple-text-secondary)]">{t("quickCrop")}</span>
                 </div>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleAction("qr", "tools")}
-                className="glass-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24"
+                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-transform">
                   <QrCode size={16} />
                 </div>
                 <div>
-                  <span className="font-bold text-xs text-white block">QR Kod</span>
-                  <span className="text-[10px] text-neutral-400">Oku veya oluştur</span>
+                  <span className="font-bold text-xs text-[var(--apple-text-primary)] block">QR</span>
+                  <span className="text-[10px] text-[var(--apple-text-secondary)]">{t("quickQr")}</span>
                 </div>
               </button>
             </div>
@@ -622,8 +679,8 @@ export function App() {
             onSuccess={(_info) => {
               addToast(
                 "success",
-                "Belge PDF'e Dönüştürüldü",
-                `${_info.name} oluşturuldu ve kütüphaneye eklendi.`,
+                t("sliceDocxPdf"),
+                `${_info.name} created.`,
                 _info.path
               );
               loadLibrary();
@@ -648,7 +705,7 @@ export function App() {
             onClear={async () => {
               await clearLibrary();
               setLibraryEntries([]);
-              addToast("info", "Kütüphane Temizlendi", "Dönüştürme geçmişi temizlendi.");
+              addToast("info", "Library", language === "tr" ? "Kütüphane temizlendi." : "Library cleared.");
             }}
           />
         )}
@@ -698,7 +755,7 @@ export function App() {
         onGenerateQr={async (txt) => {
           const res = await generateQrCode(txt);
           loadLibrary();
-          addToast("success", "QR Kod Oluşturuldu", "QR kod görseli hazırlandı.", res.path);
+          addToast("success", "QR Code", "QR code created.", res.path);
           return res.path;
         }}
       />
