@@ -329,6 +329,14 @@ pub fn convert_image(
     get_file_info(out_path_str)
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BlurRegion {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
 // 3. crop_image
 #[cfg_attr(not(test), tauri::command)]
 pub fn crop_image(
@@ -337,6 +345,7 @@ pub fn crop_image(
     y: u32,
     width: u32,
     height: u32,
+    overwrite: Option<bool>,
 ) -> Result<FileInfo, String> {
     let in_path = Path::new(&input_path);
     if !in_path.exists() {
@@ -378,7 +387,16 @@ pub fn crop_image(
         .map(|s| s.to_string_lossy().to_string())
         .unwrap_or_else(|| "png".to_string());
 
-    let out_path = parent.join(format!("{}_cropped.{}", stem, ext));
+    let out_path = if overwrite.unwrap_or(false) {
+        in_path.to_path_buf()
+    } else {
+        let mut p = parent.join(format!("{}_cropped.{}", stem, ext));
+        if p == in_path {
+            p = parent.join(format!("{}_cropped_1.{}", stem, ext));
+        }
+        p
+    };
+
     cropped
         .save(&out_path)
         .map_err(|e| format!("Failed to save cropped image: {}", e))?;
@@ -388,7 +406,7 @@ pub fn crop_image(
         .map(|m| m.len())
         .unwrap_or(0);
 
-    let action = format!("Crop ({}x{})", crop_w, crop_h);
+    let action = format!("Crop ({}x{} @ {},{})", crop_w, crop_h, x, y);
     record_library_action(&input_path, &out_path_str, &action, size_before, size_after);
 
     get_file_info(out_path_str)
@@ -470,9 +488,14 @@ pub fn compress_image(
     get_file_info(out_path_str)
 }
 
-// 4b. censor_image (Gaussian blur / censor tool)
+// 4b. censor_image (Gaussian blur / censor tool with region support and overwrite option)
 #[cfg_attr(not(test), tauri::command)]
-pub fn censor_image(input_path: String, blur_sigma: Option<f32>) -> Result<FileInfo, String> {
+pub fn censor_image(
+    input_path: String,
+    blur_sigma: Option<f32>,
+    regions: Option<Vec<BlurRegion>>,
+    overwrite: Option<bool>,
+) -> Result<FileInfo, String> {
     let in_path = Path::new(&input_path);
     if !in_path.exists() {
         return Err(format!("Girdi görseli bulunamadı: {}", input_path));
@@ -482,11 +505,32 @@ pub fn censor_image(input_path: String, blur_sigma: Option<f32>) -> Result<FileI
         .map(|m| m.len())
         .unwrap_or(0);
 
-    let img = image::open(in_path)
+    let mut img = image::open(in_path)
         .map_err(|e| format!("Görsel açılamadı {}: {}", input_path, e))?;
 
-    let sigma = blur_sigma.unwrap_or(14.0).clamp(1.0, 50.0);
-    let blurred = img.blur(sigma);
+    let sigma = blur_sigma.unwrap_or(16.0).clamp(1.0, 50.0);
+
+    if let Some(regs) = regions {
+        if !regs.is_empty() {
+            let img_w = img.width();
+            let img_h = img.height();
+            for r in regs {
+                let rx = r.x.min(img_w);
+                let ry = r.y.min(img_h);
+                let rw = r.width.min(img_w.saturating_sub(rx));
+                let rh = r.height.min(img_h.saturating_sub(ry));
+                if rw > 0 && rh > 0 {
+                    let sub = img.crop_imm(rx, ry, rw, rh);
+                    let blurred_sub = sub.blur(sigma);
+                    image::imageops::overlay(&mut img, &blurred_sub, rx as i64, ry as i64);
+                }
+            }
+        } else {
+            img = img.blur(sigma);
+        }
+    } else {
+        img = img.blur(sigma);
+    }
 
     let parent = in_path.parent().unwrap_or_else(|| Path::new("."));
     let stem = in_path
@@ -498,13 +542,17 @@ pub fn censor_image(input_path: String, blur_sigma: Option<f32>) -> Result<FileI
         .map(|s| s.to_string_lossy().to_lowercase())
         .unwrap_or_else(|| "png".to_string());
 
-    let mut out_path = parent.join(format!("{}_censored.{}", stem, original_ext));
-    if out_path == in_path {
-        out_path = parent.join(format!("{}_censored_1.{}", stem, original_ext));
-    }
+    let out_path = if overwrite.unwrap_or(false) {
+        in_path.to_path_buf()
+    } else {
+        let mut p = parent.join(format!("{}_censored.{}", stem, original_ext));
+        if p == in_path {
+            p = parent.join(format!("{}_censored_1.{}", stem, original_ext));
+        }
+        p
+    };
 
-    blurred
-        .save(&out_path)
+    img.save(&out_path)
         .map_err(|e| format!("Sansürlenmiş görsel kaydedilemedi: {}", e))?;
 
     let out_path_str = out_path.to_string_lossy().to_string();
@@ -1399,6 +1447,40 @@ pub fn hide_wheel(_app: tauri::AppHandle) -> Result<(), String> {
         use tauri::Manager;
         if let Some(wheel_window) = _app.get_webview_window("wheel") {
             let _ = wheel_window.hide();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn expand_wheel_window(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(wheel_window) = _app.get_webview_window("wheel") {
+            if let Ok(Some(monitor)) = wheel_window.current_monitor() {
+                let size = monitor.size();
+                let pos = monitor.position();
+                let _ = wheel_window.set_position(tauri::Position::Physical(*pos));
+                let _ = wheel_window.set_size(tauri::Size::Physical(*size));
+            } else {
+                let _ = wheel_window.center();
+            }
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn restore_wheel_window(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(wheel_window) = _app.get_webview_window("wheel") {
+            let settings = get_app_settings().unwrap_or_default();
+            if settings.wheel_display_mode == "cursor" {
+                let _ = wheel_window.set_size(tauri::Size::Physical(tauri::PhysicalSize { width: 460, height: 460 }));
+            }
         }
     }
     Ok(())

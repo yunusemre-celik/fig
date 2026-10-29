@@ -2,12 +2,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { RadialWheel } from "./RadialWheel";
 import { PRESET_PROFILES } from "./WheelStudio";
+import { ImageEditorModal, ImageEditorMode } from "./modals/ImageEditorModal";
 import { FileInfo, WheelItem, WheelMode, WheelProfileId } from "../types";
 import {
   hideWheel,
+  expandWheelWindow,
+  restoreWheelWindow,
   showMainWindow,
   convertImage,
+  cropImage,
   censorImage,
+  BlurRegion,
   convertDocument,
   convertMedia,
   convertPdf,
@@ -48,6 +53,11 @@ export const FloatingWheelWindow: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [lastOutputPath, setLastOutputPath] = useState<string | null>(null);
   const [lastOutputName, setLastOutputName] = useState<string | null>(null);
+
+  // Visual Image Editor Modal State (Crop & Censor)
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<ImageEditorMode>("crop");
+  const [editorFile, setEditorFile] = useState<FileInfo | null>(null);
 
   // Sync settings
   useEffect(() => {
@@ -150,9 +160,80 @@ export const FloatingWheelWindow: React.FC = () => {
       setLastOutputName(null);
       setSelectedFiles([]);
       setProfileOverride(null);
+      setIsEditorOpen(false);
+      setEditorFile(null);
     } catch (err) {
       console.error("Failed to hide wheel:", err);
     }
+  };
+
+  const handleConfirmCrop = async (cropData: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    overwrite: boolean;
+  }) => {
+    if (!editorFile) return;
+    try {
+      setStatusMessage("Görsel Kırpılıyor...");
+      const res = await cropImage(
+        editorFile.path,
+        cropData.x,
+        cropData.y,
+        cropData.width,
+        cropData.height,
+        cropData.overwrite
+      );
+      playSuccessChime();
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+      setStatusMessage(cropData.overwrite ? `Üzerine Yazıldı: ${res.name}` : `Hazır: ${res.name}`);
+      setLastOutputPath(res.path);
+      setLastOutputName(res.name);
+    } catch (err) {
+      setStatusMessage(`Hata: ${err}`);
+    }
+  };
+
+  const handleConfirmCensor = async (censorData: {
+    blurSigma: number;
+    regions: BlurRegion[] | null;
+    overwrite: boolean;
+  }) => {
+    if (!editorFile) return;
+    try {
+      setStatusMessage("Görsel Sansürleniyor...");
+      const res = await censorImage(
+        editorFile.path,
+        censorData.blurSigma,
+        censorData.regions || undefined,
+        censorData.overwrite
+      );
+      playSuccessChime();
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+      setStatusMessage(censorData.overwrite ? `Üzerine Yazıldı: ${res.name}` : `Sansürlendi: ${res.name}`);
+      setLastOutputPath(res.path);
+      setLastOutputName(res.name);
+    } catch (err) {
+      setStatusMessage(`Hata: ${err}`);
+    }
+  };
+
+  const openEditor = async (mode: ImageEditorMode, file: FileInfo) => {
+    setEditorMode(mode);
+    setEditorFile(file);
+    setIsEditorOpen(true);
+    try {
+      await expandWheelWindow();
+    } catch {}
+  };
+
+  const closeEditor = async () => {
+    setIsEditorOpen(false);
+    setEditorFile(null);
+    try {
+      await restoreWheelWindow();
+    } catch {}
   };
 
   const handleCycleProfile = (direction: 1 | -1 = 1) => {
@@ -423,30 +504,19 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    if (actionId === "crop" || actionId === "compress" || actionId === "qr" || actionId === "info") {
-      await showMainWindow();
-      await handleClose();
+    if (actionId === "crop") {
+      openEditor("crop", files[0]);
       return;
     }
 
-    // 0. Censor / Blur Action
     if (actionId === "censor") {
-      try {
-        setStatusMessage(files.length > 1 ? `${files.length} Görsel Sansürleniyor...` : "Görsel Sansürleniyor...");
-        let lastRes: FileInfo | null = null;
-        for (const file of files) {
-          lastRes = await censorImage(file.path, 16.0);
-        }
-        playSuccessChime();
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
-        if (lastRes) {
-          setStatusMessage(files.length > 1 ? `${files.length} Görsel Sansürlendi!` : `Hazır: ${lastRes.name}`);
-          setLastOutputPath(lastRes.path);
-          setLastOutputName(lastRes.name);
-        }
-      } catch (err) {
-        setStatusMessage(`Hata: ${err}`);
-      }
+      openEditor("censor", files[0]);
+      return;
+    }
+
+    if (actionId === "compress" || actionId === "qr" || actionId === "info") {
+      await showMainWindow();
+      await handleClose();
       return;
     }
 
@@ -595,12 +665,12 @@ export const FloatingWheelWindow: React.FC = () => {
   return (
     <div
       className={
-        isCenterMode
+        isCenterMode || isEditorOpen
           ? "fixed inset-0 w-screen h-screen flex flex-col items-center justify-center bg-black/45 backdrop-blur-md select-none overflow-hidden relative transition-all duration-300"
           : "w-[460px] h-[460px] flex items-center justify-center bg-transparent select-none overflow-hidden relative"
       }
       onClick={(e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !isEditorOpen) {
           handleClose();
         }
       }}
@@ -672,6 +742,16 @@ export const FloatingWheelWindow: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Visual Image Editor Modal (Crop & Regional Censor) */}
+      <ImageEditorModal
+        isOpen={isEditorOpen}
+        initialMode={editorMode}
+        file={editorFile}
+        onClose={closeEditor}
+        onConfirmCrop={handleConfirmCrop}
+        onConfirmCensor={handleConfirmCensor}
+      />
     </div>
   );
 };

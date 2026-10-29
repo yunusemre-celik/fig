@@ -136,6 +136,8 @@ pub fn run() {
             commands::show_wheel_window,
             commands::show_wheel_at_cursor,
             commands::hide_wheel,
+            commands::expand_wheel_window,
+            commands::restore_wheel_window,
             commands::show_main_window,
             commands::set_window_vibrancy,
             commands::pick_file_dialog,

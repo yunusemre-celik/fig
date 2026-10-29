@@ -109,12 +109,20 @@ export async function convertPdf(
   };
 }
 
+export interface BlurRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export async function cropImage(
   inputPath: string,
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  overwrite?: boolean
 ): Promise<FileInfo> {
   if (isTauri) {
     return await invoke<FileInfo>("crop_image", {
@@ -123,6 +131,7 @@ export async function cropImage(
       y,
       width,
       height,
+      overwrite: overwrite || false,
     });
   }
   return {
@@ -163,12 +172,16 @@ export async function compressImage(
 
 export async function censorImage(
   inputPath: string,
-  blurSigma?: number
+  blurSigma?: number,
+  regions?: BlurRegion[],
+  overwrite?: boolean
 ): Promise<FileInfo> {
   if (isTauri) {
     return await invoke<FileInfo>("censor_image", {
       inputPath,
-      blurSigma,
+      blurSigma: blurSigma || 16.0,
+      regions: regions && regions.length > 0 ? regions : null,
+      overwrite: overwrite || false,
     });
   }
   return {
@@ -299,6 +312,18 @@ export async function saveAppSettings(settings: AppSettings): Promise<void> {
 export async function hideWheel(): Promise<void> {
   if (isTauri) {
     await invoke("hide_wheel");
+  }
+}
+
+export async function expandWheelWindow(): Promise<void> {
+  if (isTauri) {
+    await invoke("expand_wheel_window");
+  }
+}
+
+export async function restoreWheelWindow(): Promise<void> {
+  if (isTauri) {
+    await invoke("restore_wheel_window");
   }
 }
 

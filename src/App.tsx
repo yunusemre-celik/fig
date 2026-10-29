@@ -9,7 +9,7 @@ import { SettingsView } from "./components/SettingsView";
 import { DocumentsView } from "./components/DocumentsView";
 import { WheelStudio, PRESET_PROFILES } from "./components/WheelStudio";
 import { FloatingWheelWindow } from "./components/FloatingWheelWindow";
-import { CropModal } from "./components/modals/CropModal";
+import { ImageEditorModal, ImageEditorMode } from "./components/modals/ImageEditorModal";
 import { CompressModal } from "./components/modals/CompressModal";
 import { QrModal } from "./components/modals/QrModal";
 import { Toast, ToastMessage } from "./components/Toast";
@@ -20,6 +20,8 @@ import {
   convertImage,
   convertMedia,
   cropImage,
+  censorImage,
+  BlurRegion,
   compressImage,
   readQrCode,
   generateQrCode,
@@ -66,7 +68,8 @@ export function App() {
   });
 
   // Modals state
-  const [isCropOpen, setIsCropOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<ImageEditorMode>("crop");
   const [isCompressOpen, setIsCompressOpen] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
 
@@ -338,7 +341,17 @@ export function App() {
           addToast("error", "Görsel Seçilmedi", "Lütfen kırpılacak bir görsel seçin.");
           return;
         }
-        setIsCropOpen(true);
+        setEditorMode("crop");
+        setIsEditorOpen(true);
+        return;
+      } else if (actionId === "censor") {
+        if (selectedFiles.length === 0) {
+          addToast("error", "Görsel Seçilmedi", "Lütfen sansürlenecek bir görsel seçin.");
+          return;
+        }
+        setEditorMode("censor");
+        setIsEditorOpen(true);
+        return;
       } else if (actionId === "compress") {
         if (selectedFiles.length === 0) {
           addToast("error", "Görsel Seçilmedi", "Lütfen sıkıştırılacak bir görsel seçin.");
@@ -387,6 +400,7 @@ export function App() {
     y: number;
     width: number;
     height: number;
+    overwrite: boolean;
   }) => {
     if (selectedFiles.length === 0) return;
     try {
@@ -395,13 +409,45 @@ export function App() {
         cropData.x,
         cropData.y,
         cropData.width,
-        cropData.height
+        cropData.height,
+        cropData.overwrite
       );
       playSuccessChime();
-      addToast("success", "Görsel Kırpıldı", `${res.name} oluşturuldu.`, res.path);
+      addToast(
+        "success",
+        "Görsel Kırpıldı",
+        `${res.name} ${cropData.overwrite ? "üzerine kaydedildi." : "olarak oluşturuldu."}`,
+        res.path
+      );
       loadLibrary();
     } catch (err) {
       addToast("error", "Kırpma Hatası", `Kırpma işlemi tamamlanamadı: ${err}`);
+    }
+  };
+
+  const handleConfirmCensor = async (censorData: {
+    blurSigma: number;
+    regions: BlurRegion[] | null;
+    overwrite: boolean;
+  }) => {
+    if (selectedFiles.length === 0) return;
+    try {
+      const res = await censorImage(
+        selectedFiles[0].path,
+        censorData.blurSigma,
+        censorData.regions || undefined,
+        censorData.overwrite
+      );
+      playSuccessChime();
+      addToast(
+        "success",
+        "Görsel Sansürlendi",
+        `${res.name} ${censorData.overwrite ? "üzerine kaydedildi." : "olarak oluşturuldu."}`,
+        res.path
+      );
+      loadLibrary();
+    } catch (err) {
+      addToast("error", "Sansürleme Hatası", `Sansürleme tamamlanamadı: ${err}`);
     }
   };
 
@@ -617,11 +663,13 @@ export function App() {
       />
 
       {/* Visual Modals */}
-      <CropModal
-        isOpen={isCropOpen}
-        onClose={() => setIsCropOpen(false)}
+      <ImageEditorModal
+        isOpen={isEditorOpen}
+        initialMode={editorMode}
         file={selectedFiles[0] || null}
+        onClose={() => setIsEditorOpen(false)}
         onConfirmCrop={handleConfirmCrop}
+        onConfirmCensor={handleConfirmCensor}
       />
 
       <CompressModal
