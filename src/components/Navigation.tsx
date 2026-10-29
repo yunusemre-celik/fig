@@ -1,6 +1,7 @@
 import React from "react";
 import { TabType } from "../types";
-import { Home, FileText, Sliders, Library, Settings, Sparkles } from "lucide-react";
+import { Home, FileText, Sliders, Library, Settings } from "lucide-react";
+import { EarthLogo } from "./EarthLogo";
 import { useTranslation } from "../i18n/useTranslation";
 
 interface NavigationProps {
@@ -69,7 +70,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           onClick={onOpenWheel}
           className="apple-button-accent flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs shadow-sm transition-all"
         >
-          <Sparkles size={14} />
+          <EarthLogo size={16} />
           <span>{t("openWheelBtn")}</span>
         </button>
         <div className="tooltip top-full mt-2 right-0 px-3 py-1.5 flex items-center gap-2 pointer-events-none">

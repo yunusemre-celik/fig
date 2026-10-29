@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { WheelItem, WheelMode, WheelProfileId } from "../types";
 import { playSuccessChime, playWheelTick } from "../utils/sound";
 import { useTranslation } from "../i18n/useTranslation";
+import { EarthLogo } from "./EarthLogo";
 import {
   FileImage,
   Crop,
@@ -12,7 +13,6 @@ import {
   Copy,
   Info,
   FileText,
-  Sparkles,
   ChevronLeft,
   ChevronRight,
   Presentation,
@@ -254,21 +254,21 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         }}
       >
         <defs>
-          {/* Inactive slice frosted macOS glass background */}
+          {/* Canva Tech Deep Space Inactive slice gradient */}
           <linearGradient id="inactiveSliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1E1E22" stopOpacity="0.88" />
-            <stop offset="100%" stopColor="#141416" stopOpacity="0.92" />
+            <stop offset="0%" stopColor="#141933" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="#0B0F1C" stopOpacity="0.96" />
           </linearGradient>
 
-          {/* Active hovered slice Apple Accent Blue gradient */}
+          {/* Canva Tech Royal Cobalt to Electric Blue active slice gradient */}
           <linearGradient id="activeHoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0A84FF" stopOpacity="0.96" />
-            <stop offset="100%" stopColor="#0071E3" stopOpacity="0.98" />
+            <stop offset="0%" stopColor="#1D4ED8" stopOpacity="0.98" />
+            <stop offset="100%" stopColor="#2563EB" stopOpacity="0.98" />
           </linearGradient>
 
-          {/* Apple Accent glow drop shadow */}
+          {/* Electric Cyan glow */}
           <filter id="activeGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#0A84FF" floodOpacity="0.45" />
+            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#38BDF8" floodOpacity="0.55" />
           </filter>
         </defs>
 
@@ -347,7 +347,7 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
               <path
                 d={pathData}
                 fill={isHovered ? "url(#activeHoverGrad)" : "url(#inactiveSliceGrad)"}
-                stroke={isHovered ? "#64D2FF" : "rgba(255, 255, 255, 0.12)"}
+                stroke={isHovered ? "#38BDF8" : "rgba(255, 255, 255, 0.08)"}
                 strokeWidth={isHovered ? "2" : "1"}
                 filter={isHovered ? "url(#activeGlow)" : undefined}
                 className="transition-all duration-150"
@@ -382,11 +382,11 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         })}
       </svg>
 
-      {/* Central Split Hub: Apple Minimalist Neutral Glass with Left (<) and Right (>) navigation buttons */}
+      {/* Central Split Hub: Canva Tech Midnight Glass with Left (<) and Right (>) navigation buttons & Center Earth Logo */}
       <div
-        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-2xl border border-white/20 bg-[#16161A]/85 backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
+        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-2xl border border-white/20 bg-[#0B0F1C]/92 backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
           isDragOver
-            ? "border-[var(--apple-accent)] scale-105 bg-[var(--apple-accent)]/20"
+            ? "border-[#38BDF8] scale-105 bg-[#1D4ED8]/25"
             : ""
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -405,14 +405,16 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
             playWheelTick();
             onCycleProfile?.(-1);
           }}
-          className="flex-1 h-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer group pr-0.5"
+          className="flex-1 h-full flex items-center justify-start pl-3 text-neutral-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer group"
           title="Previous (Shift+Tab)"
         >
-          <ChevronLeft size={28} strokeWidth={2.2} className="group-hover:-translate-x-0.5 transition-transform" />
+          <ChevronLeft size={24} strokeWidth={2.2} className="group-hover:-translate-x-0.5 transition-transform" />
         </button>
 
-        {/* Subtle vertical divider down the middle */}
-        <div className="w-[1px] h-full bg-white/15 shrink-0" />
+        {/* Center Earth Logo indicator */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 flex items-center justify-center">
+          <EarthLogo size={36} />
+        </div>
 
         {/* Right Half: Next Profile / Category */}
         <button
@@ -422,24 +424,24 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
             playWheelTick();
             onCycleProfile?.(1);
           }}
-          className="flex-1 h-full flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer group pl-0.5"
+          className="flex-1 h-full flex items-center justify-end pr-3 text-neutral-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer group"
           title="Next (Tab)"
         >
-          <ChevronRight size={28} strokeWidth={2.2} className="group-hover:translate-x-0.5 transition-transform" />
+          <ChevronRight size={24} strokeWidth={2.2} className="group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
 
       {/* Floating Info Capsule below the wheel */}
       <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
         {hoveredItem ? (
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1C1C1E]/90 border border-white/15 backdrop-blur-2xl shadow-xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
-            <span className="font-bold text-[12px] text-[#64D2FF]">{getSliceText(hoveredItem).label}</span>
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B0F1C]/95 border border-[#38BDF8]/30 backdrop-blur-2xl shadow-xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
+            <span className="font-bold text-[12px] text-[#38BDF8]">{getSliceText(hoveredItem).label}</span>
             <span className="w-1 h-1 rounded-full bg-white/30" />
             <span className="text-[11px] text-neutral-300 max-w-[240px] truncate">{getSliceText(hoveredItem).desc}</span>
           </div>
         ) : profileName ? (
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1C1C1E]/80 border border-white/15 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
-            <Sparkles size={11} className="text-[var(--apple-accent)]" />
+          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0B0F1C]/85 border border-[#1D4ED8]/40 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
             <span>{profileName}</span>
             {selectedFileNames.length > 0 && (
               <span className="text-[10px] text-neutral-400">({selectedFileNames.length})</span>

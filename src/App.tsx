@@ -13,6 +13,7 @@ import { ImageEditorModal, ImageEditorMode } from "./components/modals/ImageEdit
 import { CompressModal } from "./components/modals/CompressModal";
 import { QrModal } from "./components/modals/QrModal";
 import { Toast, ToastMessage } from "./components/Toast";
+import { EarthLogo } from "./components/EarthLogo";
 import { FileInfo, LibraryEntry, TabType, WheelMode, WheelProfileId, WheelItem, AppTheme } from "./types";
 import { playSuccessChime } from "./utils/sound";
 import { useTranslation } from "./i18n/useTranslation";
@@ -36,7 +37,7 @@ import {
   showWheelAtCursor,
   pickFileDialog,
 } from "./services/api";
-import { Sparkles, FileImage, Crop, QrCode, FileText } from "lucide-react";
+import { FileImage, Crop, QrCode, FileText } from "lucide-react";
 
 const isWheelWindow =
   typeof window !== "undefined" && window.location.search.includes("window=wheel");
@@ -539,27 +540,23 @@ export function App() {
       {/* Brand Top Header */}
       <div className="h-10 w-full flex items-center justify-between px-5 apple-header border-x-0 border-t-0 select-none text-xs z-30">
         <div className="flex items-center gap-2.5">
-          <div className="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm">
-            <span className="text-black font-black text-[11px] leading-none">F</span>
-          </div>
+          <EarthLogo size={22} />
           <span className="font-bold text-[var(--apple-text-primary)] tracking-wide text-xs">Fig</span>
-          <span className="text-[10px] text-[var(--apple-accent)] font-semibold px-2 py-0.5 rounded-full bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/20">
-            Apple Minimal · Sequoia
+          <span className="text-[10px] text-[#38BDF8] font-mono font-semibold px-2 py-0.5 rounded-full bg-[#1D4ED8]/15 border border-[#38BDF8]/20">
+            v0.3.1 · Tech Core
           </span>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-[var(--apple-text-secondary)]">
           <div className="flex items-center gap-1.5">
             <span>{t("activeWheel")}</span>
-            <span className="text-[var(--apple-accent)] font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
+            <span className="text-[#38BDF8] font-semibold">{PRESET_PROFILES[activeProfile]?.name}</span>
           </div>
           <span className="text-[var(--apple-border)]">•</span>
-          <div className="has-tooltip flex items-center gap-1.5 cursor-pointer" onClick={handleTriggerWheel}>
+          <div className="has-tooltip flex items-center gap-1.5 cursor-pointer text-[var(--apple-text-secondary)] hover:text-white" onClick={handleTriggerWheel}>
             <span>{t("quickWheelHint")}</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-[var(--apple-bg-control)] border border-[var(--apple-border)] font-mono text-[10px]">
-              Ctrl + Space
-            </kbd>
+            <span className="text-[10px] text-[#38BDF8] font-semibold">● Active</span>
             <div className="tooltip top-full mt-2 right-0 px-2.5 py-1 text-[11px] pointer-events-none">
-              Ctrl + Space
+              <kbd>Ctrl + Space</kbd>
             </div>
           </div>
         </div>
@@ -577,17 +574,21 @@ export function App() {
       <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         {activeTab === "home" && (
           <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center max-w-4xl w-full mx-auto">
-            {/* Hero Brand Card */}
+            {/* Hero Brand Card — Canva Tech Editorial Style */}
             <div className="w-full text-center my-3 animate-in fade-in duration-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--apple-accent-light)] border border-[var(--apple-accent)]/25 text-[var(--apple-accent)] text-xs font-semibold mb-2 shadow-sm">
-                <Sparkles size={13} />
-                <span>{t("heroBadge")}</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1D4ED8]/15 border border-[#38BDF8]/25 text-[#38BDF8] text-xs font-semibold mb-2.5 shadow-sm">
+                <span>{language === "tr" ? "Yerel ve Güvenli Dosya Motoru" : "Native & Secure File Engine"}</span>
               </div>
               <h1 className="text-3xl font-black text-[var(--apple-text-primary)] tracking-tight">
-                {t("heroTitle1")} <span className="text-[var(--apple-accent)]">{t("heroTitle2")}</span>
+                {language === "tr" ? "Dosyalarınızı" : "Leave the heavy lifting"}{" "}
+                <span className="text-[#38BDF8]">
+                  {language === "tr" ? "zahmetsizce dönüştürün." : "to us."}
+                </span>
               </h1>
               <p className="text-xs text-[var(--apple-text-secondary)] mt-1.5 max-w-md mx-auto leading-relaxed">
-                {t("heroDesc")}
+                {language === "tr"
+                  ? "Dosyalarınızı sürükleyin veya fare imlecinizin ucundaki çark ile anında işleyin. %100 yerel ve özel."
+                  : "Drop files to convert instantly, or trigger the radial wheel right at your cursor with Ctrl + Space."}
               </p>
             </div>
 
@@ -613,14 +614,14 @@ export function App() {
               />
             </div>
 
-            {/* Quick Action Apple Cards */}
+            {/* Quick Action Tech Cards */}
             <div className="w-full max-w-2xl mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button
                 type="button"
                 onClick={() => handleDirectConvert("webp")}
-                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
+                className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
                   <FileImage size={16} />
                 </div>
                 <div>
@@ -632,9 +633,9 @@ export function App() {
               <button
                 type="button"
                 onClick={() => handleDirectConvert("pdf")}
-                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
+                className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
                   <FileText size={16} />
                 </div>
                 <div>
@@ -646,9 +647,9 @@ export function App() {
               <button
                 type="button"
                 onClick={() => handleAction("crop", "tools")}
-                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
+                className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
                   <Crop size={16} />
                 </div>
                 <div>
@@ -660,9 +661,9 @@ export function App() {
               <button
                 type="button"
                 onClick={() => handleAction("qr", "tools")}
-                className="apple-card p-4 rounded-2xl text-left group flex flex-col justify-between h-24 hover:border-[var(--apple-accent)]/50 transition-all cursor-pointer"
+                className="tech-card-editorial p-4 text-left group flex flex-col justify-between h-24 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 rounded-xl bg-[#1D4ED8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] group-hover:scale-105 transition-transform">
                   <QrCode size={16} />
                 </div>
                 <div>
