@@ -51,8 +51,16 @@ export const FloatingWheelWindow: React.FC = () => {
       }
     };
 
+    const handleBlur = () => {
+      hideWheel().catch(console.error);
+    };
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("blur", handleBlur);
+    };
   }, []);
 
   const handleClose = async () => {

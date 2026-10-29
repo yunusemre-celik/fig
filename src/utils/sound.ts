@@ -13,29 +13,10 @@ function getAudioContext(): AudioContext {
 }
 
 /**
- * Subtle tactile mechanical click when hovering wheel segments
+ * Silenced per user request: "çarkı taşırken ses çıkmasın"
  */
 export function playHoverTick() {
-  try {
-    const ctx = getAudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.03);
-
-    gain.gain.setValueAtTime(0.04, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.03);
-  } catch {
-    // Ignore audio failures if browser restricts audio
-  }
+  // Silent - no clicking sound while moving or dragging over wheel
 }
 
 /**

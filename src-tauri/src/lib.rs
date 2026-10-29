@@ -114,6 +114,20 @@ pub fn run() {
 
             Ok(())
         })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                if window.label() == "main" {
+                    let _ = window.hide();
+                    api.prevent_close();
+                }
+            }
+            tauri::WindowEvent::Focused(false) => {
+                if window.label() == "wheel" {
+                    let _ = window.hide();
+                }
+            }
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![
             commands::show_wheel_at_cursor,
             commands::hide_wheel,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { WheelItem, WheelMode } from "../types";
-import { playHoverTick, playSuccessChime } from "../utils/sound";
+import { playSuccessChime } from "../utils/sound";
 import {
   FileImage,
   Crop,
@@ -74,13 +74,11 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         const nextIndex = (selectedIndex + 1) % currentItems.length;
         setSelectedIndex(nextIndex);
         setHoveredItem(currentItems[nextIndex]);
-        playHoverTick();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         const prevIndex = (selectedIndex - 1 + currentItems.length) % currentItems.length;
         setSelectedIndex(prevIndex);
         setHoveredItem(currentItems[prevIndex]);
-        playHoverTick();
       } else if (e.key === "Enter") {
         if (hoveredItem) {
           playSuccessChime();
@@ -144,6 +142,11 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
   const svgWheel = (
     <div
       className="relative w-[400px] h-[400px] flex items-center justify-center select-none"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
       onDragOver={(e) => {
         e.preventDefault();
         setIsDragOver(true);
@@ -151,7 +154,14 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
     >
-      <svg className="w-full h-full transform -rotate-90 filter drop-shadow-[0_16px_50px_rgba(0,0,0,0.85)]">
+      <svg
+        className="w-full h-full transform -rotate-90 filter drop-shadow-[0_16px_50px_rgba(0,0,0,0.85)]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
         <defs>
           <linearGradient id="sliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1E2838" stopOpacity="0.94" />
@@ -205,9 +215,9 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
               onMouseEnter={() => {
                 setHoveredItem(item);
                 setSelectedIndex(index);
-                playHoverTick();
               }}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 playSuccessChime();
                 onSelectAction(item.id, item.category);
                 onClose();
@@ -246,9 +256,10 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         })}
       </svg>
 
-      {/* Central Information Hub */}
+      {/* Central Information Hub with Native Drag Handle */}
       <div
-        className={`absolute w-[142px] h-[142px] rounded-full glass-panel flex flex-col items-center justify-center p-3 text-center pointer-events-none shadow-2xl transition-all duration-200 ${
+        data-tauri-drag-region
+        className={`absolute w-[142px] h-[142px] rounded-full glass-panel flex flex-col items-center justify-center p-3 text-center shadow-2xl transition-all duration-200 pointer-events-auto cursor-grab active:cursor-grabbing ${
           isDragOver
             ? "border-amber-400 scale-105 bg-amber-950/60"
             : "border-white/[0.16] bg-[#0E1522]/95"
@@ -303,29 +314,37 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
   // Standalone floating window mode: Absolutely ZERO rectangular background or boxes!
   if (isStandalone) {
     return (
-      <div className="w-[460px] h-[460px] flex items-center justify-center relative bg-transparent overflow-hidden select-none">
-        {/* Transparent click to dismiss outside the circle */}
+      <div
+        className="w-[460px] h-[460px] flex items-center justify-center relative bg-transparent overflow-hidden select-none cursor-default"
+        onClick={onClose}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          onClose();
+        }}
+      >
+        {/* Transparent click-to-dismiss layer outside the wheel */}
         <div
-          className="absolute inset-0 cursor-default bg-transparent"
+          className="absolute inset-0 cursor-default bg-transparent z-0"
           onClick={onClose}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            onClose();
-          }}
         />
-        {svgWheel}
+        <div className="relative z-10">
+          {svgWheel}
+        </div>
       </div>
     );
   }
 
   // In-app modal wheel mode:
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative z-10 flex flex-col items-center">
         {svgWheel}
         <div className="mt-2 text-[11px] text-neutral-400 font-medium">
-          Kapatmak için <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-neutral-300 font-mono text-[10px]">Esc</kbd>
+          Kapatmak için <kbd>Esc</kbd>
         </div>
       </div>
     </div>
