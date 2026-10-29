@@ -18,7 +18,11 @@ src-tauri/gen/
 
 # Binary executables in root
 *.exe
+!docs/Fig.exe
 *.dll
+
+# Superpowers local ledger & scratch
+.superpowers/
 
 # Editor directories and files
 .vscode/*

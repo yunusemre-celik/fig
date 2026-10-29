@@ -1,95 +1,120 @@
-# Fig (İncir) 🍇
+# Fig 🍇
 
 <p align="center">
-  <strong>Your files, a little sweeter. · Dosyaların için tatlı bir kolaylık.</strong><br>
-  <em>Tangerine ve Nashi ilhamıyla geliştirilen, Windows 11 için bağımsız ve açık kaynaklı masaüstü dosya araç kiti.</em>
+  <strong>Your files, simply effortless. · Dosyaların için tatlı bir kolaylık.</strong><br>
+  <em>An Apple-inspired minimalist radial file toolkit for Windows. Fast, 100% offline, and portable.</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows%2011-0078D4?logo=windows11&logoColor=white" alt="Windows 11" />
-  <img src="https://img.shields.io/badge/Stack-Tauri%20v2%20%2B%20Rust-FFC83D?logo=tauri&logoColor=black" alt="Tauri v2" />
-  <img src="https://img.shields.io/badge/Frontend-React%2019%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
+  <a href="https://yunusemremre.github.io/fig/"><img src="https://img.shields.io/badge/Website-GitHub%20Pages-0A84FF?style=for-the-badge&logo=safari&logoColor=white" alt="Landing Page" /></a>
+  <a href="https://github.com/yunusemremre/fig/releases"><img src="https://img.shields.io/badge/Download-Portable%20.exe-30D158?style=for-the-badge&logo=windows11&logoColor=white" alt="Download" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2011%20%2F%2010-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
 
 ---
 
-## ✨ Özellikler (Features)
+## 🌐 1-Click Download Website / İndirme Sayfası
 
-- **🎡 İkonik İşlem Çarkı (Radial Wheel):** `Ctrl+Space` kısayoluyla veya dosya sürüklerken anında açılan, 360° dairesel pie menü.
-  - **Dönüştürme Çarkı:** PNG, JPG, WebP, BMP, PDF
-  - **Araçlar Çarkı:** Kırp & Düzenle, Sıkıştır, QR Kod, Dosya Meta Verisi
-  - **İşlemler Çarkı:** Dosya Yolunu Kopyala, Dosya Gezgini'nde Göster, Terminalde Aç (PowerShell)
-- **🪟 Windows 11 Modern Arayüzü:** Akıcı mika/cam efektleri, koyu tema uyumu, özel başlık çubuğu ve pencere kontrolleri.
-- **📥 Sürükle-Bırak & Pano Entegrasyonu:** Dosyaları doğrudan pencereye bırakın veya `Ctrl+V` ile panodaki görselleri/dosyaları içeri aktarın.
-- **✂️ Görsel Kırpma & Boyutlandırma:** Serbest, 1:1 Kare, 16:9, 4:3 ve 9:16 oranlarında hassas piksel kırpma.
-- **⚡ Görsel Sıkıştırma:** Kalite ve ölçek ayarlarıyla gözle fark edilmeyecek kayıpla %70'e varan dosya boyutu tasarrufu.
-- **📱 QR Kod Okuyucu & Oluşturucu:** Görsellerdeki QR kodları anında metne dökün veya bağlantılardan yüksek çözünürlüklü QR PNG oluşturun.
-- **📑 Çoklu Görselden PDF Oluşturma:** Seçilen görselleri tek tıkla standart uyumlu çok sayfalı PDF belgesine dönüştürün.
-- **📚 Kütüphane & Geçmiş:** Son işlemlerinizin geçmişi (%LOCALAPPDATA%/Fig/library.json), dosya boyutu kazançları ve hızlı gezinme.
-- **🔔 Sistem Tepsisi (Tray):** Arka planda sessizce bekler, sağ tık menüsü ile hızlı erişim sağlar.
+You can download and start using Fig immediately from the standalone GitHub Pages site:
+👉 **[Launch Fig Website & 1-Click Download](https://yunusemremre.github.io/fig/)**
+
+- **Zero installer:** Single standalone portable executable (`Fig.exe`, ~16 MB).
+- **Zero cloud telemetry:** 100% offline, local Rust engine.
+- **5 Languages:** English, Türkçe, Español, Deutsch, Français.
 
 ---
 
-## ⌨️ Kısayol Tuşları (Shortcuts)
+## ✨ Features (Özellikler)
 
-| Kısayol | İşlev |
-| :--- | :--- |
-| `Ctrl + Space` | Hızlı İşlem Çarkını (Radial Wheel) açar/kapatır |
-| `Ctrl + 1` | Ana Sayfa sekmesine geçer |
-| `Ctrl + 2` | Kütüphane sekmesine geçer |
-| `Ctrl + ,` | Ayarlar sekmesine geçer |
-| `Ctrl + O` | Dosya seçici iletişim kutusunu açar |
-| `Ctrl + V` | Panodaki dosya veya görseli içeri aktarır |
-| `Ctrl + F` | Kütüphane içi arama çubuğunu odaklar |
-| `Tab` / `Yön Tuşları` | Çark dilimleri arasında gezinir |
-| `Enter` | Seçili çark işlemini çalıştırır |
-| `Esc` | Açık olan çarkı veya modalı kapatır |
+### 🎯 1. Instant Cursor Radial Wheel (`Ctrl + Space`)
+Trigger an Apple-inspired radial action menu right around your mouse cursor with `Ctrl + Space` anywhere in Windows:
+- **Intelligent Contextual Slices:** Fig detects what file is currently selected in File Explorer or on your Desktop:
+  - **Photos & Images:** WebP, PNG, JPG, ICO, Interactive Crop, Regional Censor/Blur, Image-to-PDF.
+  - **Office Documents:** Word (`.docx`), PowerPoint (`.pptx`), Excel (`.xlsx`) to PDF in 1 click.
+  - **PDF Documents:** PDF to Excel (`.xlsx`), PDF to Word (`.docx`), Extract images & text.
+  - **Videos & Media:** Video to MP3 extraction, Video to high-quality animated GIF, MP4, WebM, WAV, FLAC.
+- **Split Hub Navigation:** Click `‹` or `›` or use your mouse wheel / Tab key to cycle through wheel profiles (Office, Design, Media, Developer, Custom).
+
+### 🎨 2. Apple Minimalist Design (macOS Sequoia & Windows 11)
+- Clean, distraction-free aesthetic with subtle borders, frosted glass vibrancy, and adaptive light/dark mode.
+- **Automatic System Theme:** Syncs automatically with Windows light/dark system themes, or choose your preference in Settings.
+
+### 🖼️ 3. Visual Crop & Regional Censor Studio
+- **Precision Crop:** Fixed aspect presets (`Free`, `1:1`, `16:9`, `4:3`, `9:16`).
+- **Selective Censor / Blur:** Drag a region over sensitive personal data, faces, or credentials to blur with selectable intensity (`Light`, `Standard`, `Heavy`).
+- **Customizable Save Options:** Choose between saving as a separate numbered copy (`(1 of N)`) or overwriting the original file, with an option to remember your choice.
+
+### 🌍 4. Comprehensive 5-Language Support (i18n)
+Full localization across both the App and the Web Landing Page:
+- 🇬🇧 English (`en`)
+- 🇹🇷 Türkçe (`tr`)
+- 🇪🇸 Español (`es`)
+- 🇩🇪 Deutsch (`de`)
+- 🇫🇷 Français (`fr`)
 
 ---
 
-## 🛠️ Mimari (Architecture)
+## ⌨️ Keyboard Shortcuts (Kısayol Tuşları)
 
-Fig, modern çapraz platform ve hafif masaüstü mimarisi standartlarına uygun olarak tasarlanmıştır:
-- **Arka Uç (Backend):** Rust (Tauri v2) ile yerel, yüksek performanslı ve güvenli işlem motoru (`image`, `qrcode`, `rqrr`).
-- **Ön Yüz (Frontend):** React 19, TypeScript, Tailwind CSS, Lucide Icons ve Web Audio API dokunsal ses motoru.
-- **Paketleme:** Küçük boyutlu, bağımsız `.exe` çıktısı.
+| Shortcut | Description (EN) | Açıklama (TR) |
+| :--- | :--- | :--- |
+| `Ctrl + Space` | Trigger Radial Wheel at mouse cursor (Global) | İmleç ucunda hızlı çarkı aç/kapat (Global) |
+| `Tab` / `Shift + Tab` | Cycle wheel profiles (Office, Design, Media, etc.) | Çark profilleri arasında geçiş yap |
+| `←` / `→` or `Scroll` | Rotate & select slices on the wheel | Çark dilimlerini döndür ve seç |
+| `Enter` | Execute selected slice action | Seçili çark işlemini çalıştır |
+| `Ctrl + 1` | Switch to **Home** tab | Ana Sayfa sekmesine geç |
+| `Ctrl + 2` | Switch to **Documents** tab | Belgeler sekmesine geç |
+| `Ctrl + 3` | Switch to **Wheel Studio** | Çark Stüdyosu sekmesine geç |
+| `Ctrl + 4` | Switch to **History / Library** | İşlem Geçmişi sekmesine geç |
+| `Ctrl + ,` | Switch to **Settings** | Ayarlar sekmesine geç |
+| `Ctrl + V` | Paste image / screenshot from clipboard | Panodaki görseli doğrudan yapıştır |
+| `Esc` | Close floating wheel or open modal | Açık çarkı veya modalı kapat |
 
 ---
 
-## 🚀 Geliştirme ve Derleme (Build)
+## 🛠️ Tech Stack & Architecture
 
-### Gereksinimler:
-- Node.js (v20+) ve npm
-- Rust & Cargo (1.80+)
+- **Backend Core:** [Rust](https://www.rust-lang.org/) + [Tauri v2](https://v2.tauri.app/)
+  - Native Windows global hotkey hook (`Ctrl + Space`)
+  - Windows Explorer active selection parser (COM / UIAutomation)
+  - Pure local processing using `image-rs`, `pdf-extract`, `calamine`, `docx-rs`, `lopdf`, and embedded `ffmpeg`
+- **Frontend UI:** [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Tailwind CSS v4](https://tailwindcss.com/)
+- **Design Language:** Apple macOS Sequoia minimalism + Windows 11 Mica & Acrylic vibrancy
+- **Distribution:** Standalone single binary (`Fig.exe`), zero dependencies
 
-### Adımlar:
+---
+
+## 🚀 Development & Building from Source
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [Rust & Cargo](https://rustup.rs/) (latest stable)
+- Visual Studio 2022 C++ Build Tools (on Windows)
+
+### Setup & Run in Development
 ```bash
-# Bağımlılıkları yükleyin
+# Clone the repository
+git clone https://github.com/yunusemremre/fig.git
+cd fig
+
+# Install frontend dependencies
 npm install
 
-# Geliştirme modunda başlatın
+# Run in development mode (hot-reloading React + Tauri backend)
 npm run tauri dev
-
-# Üretim (Release) derlemesi oluşturun
-npm run build
-cd src-tauri
-cargo build --release
 ```
 
+### Production Build
+```bash
+# Build the standalone Windows release executable
+npm run build
+npx tauri build --no-bundle
+```
+The compiled binary will be generated at `src-tauri/target/release/fig.exe`.
+
 ---
 
-## 📌 Yol Haritası (Roadmap & Open Issues)
+## 📄 License
 
-- [ ] **Issue #1: FFmpeg Entegrasyonu (Video & Ses Araçları):** Video kırpma (trim), ses çıkarma, video sıkıştırma ve hız değiştirme.
-- [ ] **Issue #2: Yüzen Raf (Float Shelf Window):** Ekran kenarına yapışabilen, sürüklenen dosyaları geçici olarak depolayan Dropover/Yoink benzeri mini pencere.
-- [ ] **Issue #3: Web Medya İndirici:** YouTube ve açık web bağlantılarından medya indirme desteği.
-- [ ] **Issue #4: Office & Belge Dönüştürme:** DOCX, PPTX ve XLSX dosyalarından PDF oluşturma desteği.
-
----
-
-## 📄 Lisans & Teşekkürler
-
-Fig, [MIT Lisansı](LICENSE) altında açık kaynak olarak dağıtılmaktadır.
-Bu proje, macOS ekosistemindeki [Tangerine](https://tangerineformac.com/) ve Orkun Işıtmak'ın [nashi-app](https://github.com/orkunisitmak/nashi-app) projelerinden ilham almıştır.
+This project is licensed under the [MIT License](LICENSE). Free for personal and commercial use.
