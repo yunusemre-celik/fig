@@ -1,0 +1,29 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#202A4B" />
+      <stop offset="65%" stop-color="#0F1324" />
+    </linearGradient>
+    <linearGradient id="fruit" x1="280" y1="260" x2="740" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8493FF" />
+      <stop offset="55%" stop-color="#5257DC" />
+      <stop offset="100%" stop-color="#3539A1" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8493FF" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#8493FF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="280" fill="url(#bg)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="24" />
+  <rect x="76" y="76" width="872" height="872" rx="236" stroke="rgba(255, 255, 255, 0.08)" stroke-width="16" fill="none" />
+  <circle cx="512" cy="512" r="380" fill="url(#glow)" />
+  <g transform="matrix(24 0 0 24 56 56)">
+    <g transform="rotate(-4 19 19)">
+      <path d="M19 10C14.5 10 10.5 13.5 10.5 19C10.5 24.5 14 28 19 28C24 28 27.5 24.5 27.5 19C27.5 13.5 23.5 10 19 10Z" fill="url(#fruit)" />
+      <path d="M19 10.5C20 8 23 7 25 7C25.5 8.5 24.5 10 22 10.8" fill="#9BB0FF" />
+      <circle cx="16" cy="18" r="1.3" fill="white" fill-opacity="0.9" />
+      <circle cx="21" cy="19.5" r="1.3" fill="white" fill-opacity="0.9" />
+      <circle cx="17.5" cy="22.5" r="1.3" fill="white" fill-opacity="0.9" />
+    </g>
+  </g>
+</svg>
