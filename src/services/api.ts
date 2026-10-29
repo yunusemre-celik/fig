@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { FileInfo, LibraryEntry } from "../types";
+import { FileInfo, LibraryEntry, AppSettings } from "../types";
 
 const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
@@ -82,6 +82,28 @@ export async function convertMedia(
     path: `C:\\Users\\Mock\\${targetFormat}\\${customName || `media.${targetFormat}`}`,
     size: 1048576,
     formatted_size: "1.0 MB",
+    extension: targetFormat,
+    modified: "Şimdi",
+  };
+}
+
+export async function convertPdf(
+  inputPath: string,
+  targetFormat: string,
+  customName?: string
+): Promise<FileInfo> {
+  if (isTauri) {
+    return await invoke<FileInfo>("convert_pdf", {
+      inputPath,
+      targetFormat,
+      customName,
+    });
+  }
+  return {
+    name: customName || `converted.${targetFormat}`,
+    path: `C:\\Users\\Mock\\${targetFormat}\\${customName || `document.${targetFormat}`}`,
+    size: 204800,
+    formatted_size: "200 KB",
     extension: targetFormat,
     modified: "Şimdi",
   };
@@ -220,10 +242,38 @@ export async function setAutostart(enabled: boolean): Promise<void> {
   }
 }
 
+export async function showWheelWindow(mode?: string): Promise<void> {
+  if (isTauri) {
+    await invoke("show_wheel_window", { mode: mode || null });
+  }
+}
+
 export async function showWheelAtCursor(): Promise<void> {
   if (isTauri) {
     await invoke("show_wheel_at_cursor");
   }
+}
+
+export async function getAppSettings(): Promise<AppSettings> {
+  if (isTauri) {
+    return await invoke<AppSettings>("get_app_settings");
+  }
+  return {
+    wheel_display_mode: (localStorage.getItem("fig_wheel_display_mode") as "center" | "cursor") || "center",
+    save_as_separate: localStorage.getItem("fig_save_separate") !== "false",
+    output_destination: (localStorage.getItem("fig_output_destination") as "source" | "desktop" | "downloads") || "source",
+    vibrancy_effect: localStorage.getItem("fig_vibrancy") || "mica",
+  };
+}
+
+export async function saveAppSettings(settings: AppSettings): Promise<void> {
+  if (isTauri) {
+    await invoke("save_app_settings", { settings });
+  }
+  localStorage.setItem("fig_wheel_display_mode", settings.wheel_display_mode);
+  localStorage.setItem("fig_save_separate", settings.save_as_separate ? "true" : "false");
+  localStorage.setItem("fig_output_destination", settings.output_destination);
+  localStorage.setItem("fig_vibrancy", settings.vibrancy_effect);
 }
 
 export async function hideWheel(): Promise<void> {

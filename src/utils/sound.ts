@@ -12,11 +12,42 @@ function getAudioContext(): AudioContext {
   return audioCtx;
 }
 
+let lastTickTime = 0;
+
 /**
- * Silenced per user request: "çarkı taşırken ses çıkmasın"
+ * Tactile mechanical wheel rotation tick sound (Apple Watch Digital Crown / precision dial haptic)
  */
+export function playWheelTick() {
+  const nowMs = performance.now();
+  if (nowMs - lastTickTime < 40) return; // Debounce so rapid movement doesn't sound muddy
+  lastTickTime = nowMs;
+
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(2200, now);
+    osc.frequency.exponentialRampToValueAtTime(450, now + 0.015);
+
+    gain.gain.setValueAtTime(0.045, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.015);
+  } catch {
+    // Ignore audio failures
+  }
+}
+
 export function playHoverTick() {
-  // Silent - no clicking sound while moving or dragging over wheel
+  playWheelTick();
 }
 
 /**

@@ -75,6 +75,55 @@ pub fn write_library_to_path(entries: &[LibraryEntry], path: &Path) -> Result<()
     std::fs::write(path, json).map_err(|e| e.to_string())
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppSettings {
+    pub wheel_display_mode: String,  // "center" (default) or "cursor"
+    pub save_as_separate: bool,      // true (default)
+    pub output_destination: String,  // "source" (default), "desktop", "downloads"
+    pub vibrancy_effect: String,     // "mica" (default)
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            wheel_display_mode: "center".to_string(),
+            save_as_separate: true,
+            output_destination: "source".to_string(),
+            vibrancy_effect: "mica".to_string(),
+        }
+    }
+}
+
+pub fn get_settings_file_path() -> PathBuf {
+    if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
+        PathBuf::from(local_app_data).join("Fig").join("settings.json")
+    } else if let Some(dir) = dirs::data_local_dir() {
+        dir.join("Fig").join("settings.json")
+    } else {
+        PathBuf::from(".").join("Fig").join("settings.json")
+    }
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn get_app_settings() -> Result<AppSettings, String> {
+    let p = get_settings_file_path();
+    if !p.exists() {
+        return Ok(AppSettings::default());
+    }
+    let data = std::fs::read_to_string(&p).map_err(|e| e.to_string())?;
+    serde_json::from_str(&data).map_err(|e| e.to_string())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn save_app_settings(settings: AppSettings) -> Result<(), String> {
+    let p = get_settings_file_path();
+    if let Some(parent) = p.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    let json = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
+    std::fs::write(&p, json).map_err(|e| e.to_string())
+}
+
 pub fn record_library_action(
     original_path: &str,
     output_path: &str,
@@ -99,6 +148,17 @@ pub fn record_library_action(
     };
 
     let _ = add_to_library(entry);
+
+    // Notify Windows Explorer and Desktop to refresh immediately
+    #[cfg(target_os = "windows")]
+    unsafe {
+        windows_sys::Win32::UI::Shell::SHChangeNotify(
+            windows_sys::Win32::UI::Shell::SHCNE_ASSOCCHANGED as i32,
+            windows_sys::Win32::UI::Shell::SHCNF_IDLIST,
+            std::ptr::null(),
+            std::ptr::null(),
+        );
+    }
 }
 
 // 1. get_file_info
@@ -1083,6 +1143,90 @@ pub fn convert_media(
     get_file_info(out_str)
 }
 
+// 10c. convert_pdf (PDF to Excel, PDF to Word, PDF to Text, PDF to Images via python scripts)
+#[cfg_attr(not(test), tauri::command)]
+pub fn convert_pdf(
+    input_path: String,
+    target_format: String,
+    custom_name: Option<String>,
+) -> Result<FileInfo, String> {
+    let in_path = Path::new(&input_path);
+    if !in_path.exists() {
+        return Err(format!("Girdi PDF dosyası bulunamadı: {}", input_path));
+    }
+
+    let size_before = std::fs::metadata(in_path).map(|m| m.len()).unwrap_or(0);
+    let stem = in_path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "document".to_string());
+
+    let settings = get_app_settings().unwrap_or_default();
+    let parent_dir: PathBuf = match settings.output_destination.as_str() {
+        "desktop" => dirs::desktop_dir().unwrap_or_else(|| in_path.parent().unwrap_or(Path::new(".")).to_path_buf()),
+        "downloads" => dirs::download_dir().unwrap_or_else(|| in_path.parent().unwrap_or(Path::new(".")).to_path_buf()),
+        _ => in_path.parent().unwrap_or(Path::new(".")).to_path_buf(),
+    };
+
+    let target_lower = target_format.to_lowercase();
+    let (py_cmd, out_ext) = match target_lower.as_str() {
+        "xlsx" | "excel" | "pdf_excel" => ("to_excel", "xlsx"),
+        "docx" | "word" | "pdf_word" => ("to_docx", "docx"),
+        "txt" | "text" | "pdf_txt" => ("to_text", "txt"),
+        "images" | "png" | "pdf_images" => ("to_images", "png"),
+        other => return Err(format!("Desteklenmeyen PDF hedef formatı: {}", other)),
+    };
+
+    let out_name = match &custom_name {
+        Some(name) => name.clone(),
+        None => format!("{}_converted.{}", stem, out_ext),
+    };
+
+    let out_path = parent_dir.join(&out_name);
+    let out_str = out_path.to_string_lossy().to_string();
+
+    let app_data_script = get_settings_file_path().parent().unwrap_or(Path::new(".")).join("scripts").join("pdf_converter.py");
+    let script_path = if Path::new("src-tauri/scripts/pdf_converter.py").exists() {
+        PathBuf::from("src-tauri/scripts/pdf_converter.py")
+    } else if Path::new("scripts/pdf_converter.py").exists() {
+        PathBuf::from("scripts/pdf_converter.py")
+    } else if app_data_script.exists() {
+        app_data_script
+    } else {
+        if let Some(parent) = app_data_script.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let script_code = include_str!("../scripts/pdf_converter.py");
+        let _ = std::fs::write(&app_data_script, script_code);
+        app_data_script
+    };
+
+    let mut cmd = std::process::Command::new("python");
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000);
+    }
+
+    cmd.arg(&script_path);
+    cmd.arg(py_cmd);
+    cmd.arg(&input_path);
+    cmd.arg(&out_str);
+
+    let output = cmd.output().map_err(|e| format!("Python PDF dönüştürücü çalıştırılamadı: {}", e))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        return Err(format!("PDF dönüştürme hatası: {} {}", stdout, stderr));
+    }
+
+    let size_after = std::fs::metadata(&out_path).map(|m| m.len()).unwrap_or(0);
+    let action = format!("PDF to {}", out_ext.to_uppercase());
+    record_library_action(&input_path, &out_str, &action, size_before, size_after);
+
+    get_file_info(out_str)
+}
+
 #[cfg_attr(not(test), tauri::command)]
 pub fn get_autostart() -> Result<bool, String> {
     #[cfg(target_os = "windows")]
@@ -1138,25 +1282,47 @@ pub fn set_autostart(enabled: bool) -> Result<(), String> {
 }
 
 #[cfg_attr(not(test), tauri::command)]
-pub fn show_wheel_at_cursor(_app: tauri::AppHandle) -> Result<(), String> {
+pub fn show_wheel_window(_app: tauri::AppHandle, mode: Option<String>) -> Result<(), String> {
     #[cfg(not(test))]
     {
         use tauri::Manager;
         if let Some(wheel_window) = _app.get_webview_window("wheel") {
-            #[cfg(target_os = "windows")]
-            unsafe {
-                let mut point = windows_sys::Win32::Foundation::POINT { x: 0, y: 0 };
-                if windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut point) != 0 {
-                    let x = point.x - 230;
-                    let y = point.y - 230;
-                    let _ = wheel_window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
+            let settings = get_app_settings().unwrap_or_default();
+            let effective_mode = mode.unwrap_or(settings.wheel_display_mode);
+
+            if effective_mode == "cursor" {
+                #[cfg(target_os = "windows")]
+                unsafe {
+                    let mut point = windows_sys::Win32::Foundation::POINT { x: 0, y: 0 };
+                    if windows_sys::Win32::UI::WindowsAndMessaging::GetCursorPos(&mut point) != 0 {
+                        let _ = wheel_window.set_size(tauri::Size::Physical(tauri::PhysicalSize { width: 460, height: 460 }));
+                        let x = point.x - 230;
+                        let y = point.y - 230;
+                        let _ = wheel_window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
+                    }
+                }
+            } else {
+                // "center" mode (Default): Covers monitor dimensions so full frosted blurred backdrop renders!
+                if let Ok(Some(monitor)) = wheel_window.current_monitor() {
+                    let size = monitor.size();
+                    let pos = monitor.position();
+                    let _ = wheel_window.set_position(tauri::Position::Physical(*pos));
+                    let _ = wheel_window.set_size(tauri::Size::Physical(*size));
+                } else {
+                    let _ = wheel_window.center();
                 }
             }
+
             let _ = wheel_window.show();
             let _ = wheel_window.set_focus();
         }
     }
     Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn show_wheel_at_cursor(_app: tauri::AppHandle) -> Result<(), String> {
+    show_wheel_window(_app, None)
 }
 
 #[cfg_attr(not(test), tauri::command)]

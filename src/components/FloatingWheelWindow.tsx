@@ -8,6 +8,7 @@ import {
   convertImage,
   convertDocument,
   convertMedia,
+  convertPdf,
   createPdfFromImages,
   revealInExplorer,
   openInTerminal,
@@ -15,14 +16,19 @@ import {
   pickFileDialog,
   openFile,
   getSelectedExplorerFiles,
+  getAppSettings,
 } from "../services/api";
 import { playSuccessChime } from "../utils/sound";
 import confetti from "canvas-confetti";
-import { FolderOpen, ExternalLink, Files } from "lucide-react";
+import { FolderOpen, ExternalLink, Files, Check, X } from "lucide-react";
 
 export const FloatingWheelWindow: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<WheelProfileId>(() => {
     return (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
+  });
+
+  const [wheelDisplayMode, setWheelDisplayMode] = useState<"center" | "cursor">(() => {
+    return (localStorage.getItem("fig_wheel_display_mode") as "center" | "cursor") || "center";
   });
 
   const [customSlices, setCustomSlices] = useState<WheelItem[]>(() => {
@@ -38,6 +44,15 @@ export const FloatingWheelWindow: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [lastOutputPath, setLastOutputPath] = useState<string | null>(null);
+  const [lastOutputName, setLastOutputName] = useState<string | null>(null);
+
+  // Sync settings
+  useEffect(() => {
+    getAppSettings().then((s) => {
+      setWheelDisplayMode(s.wheel_display_mode);
+      localStorage.setItem("fig_wheel_display_mode", s.wheel_display_mode);
+    }).catch(() => {});
+  }, []);
 
   // Auto-detect currently selected files in Windows Explorer or on the Desktop
   const refreshExplorerSelection = useCallback(async () => {
@@ -66,26 +81,6 @@ export const FloatingWheelWindow: React.FC = () => {
         } else {
           setStatusMessage(`${infoList.length} Dosya Seçili`);
         }
-
-        // Contextual auto-profile selection based on detected file types
-        const exts = infoList.map((f) => f.extension.toLowerCase());
-        const isMedia = exts.some((e) =>
-          ["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv", "mp3", "wav", "flac", "aac", "ogg", "m4a", "3gp", "opus"].includes(e)
-        );
-        const isDoc = exts.some((e) =>
-          ["docx", "doc", "pptx", "ppt", "xlsx", "xls", "txt", "md", "rtf", "odt", "odp", "ods"].includes(e)
-        );
-        const isImg = exts.some((e) =>
-          ["png", "jpg", "jpeg", "webp", "bmp", "ico", "gif", "tif", "tiff", "psd", "svg"].includes(e)
-        );
-
-        if (isMedia) {
-          setActiveProfile("media");
-        } else if (isDoc) {
-          setActiveProfile("office");
-        } else if (isImg) {
-          setActiveProfile("design");
-        }
       } else {
         setSelectedFiles([]);
         setStatusMessage(null);
@@ -102,12 +97,13 @@ export const FloatingWheelWindow: React.FC = () => {
     document.documentElement.style.backgroundColor = "transparent";
     document.body.style.backgroundColor = "transparent";
 
-    // Immediate check for selected explorer files on popup
     refreshExplorerSelection();
 
     const handleStorage = () => {
       const p = (localStorage.getItem("fig_active_profile") as WheelProfileId) || "office";
       setActiveProfile(p);
+      const m = (localStorage.getItem("fig_wheel_display_mode") as "center" | "cursor") || "center";
+      setWheelDisplayMode(m);
       const s = localStorage.getItem("fig_custom_slices");
       if (s) {
         try {
@@ -116,7 +112,6 @@ export const FloatingWheelWindow: React.FC = () => {
       }
     };
 
-    // Clipboard paste listener (Ctrl + V)
     const handlePaste = (e: ClipboardEvent) => {
       if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
         handleFileDrop(e.clipboardData.files[0]);
@@ -142,6 +137,7 @@ export const FloatingWheelWindow: React.FC = () => {
       await hideWheel();
       setStatusMessage(null);
       setLastOutputPath(null);
+      setLastOutputName(null);
       setSelectedFiles([]);
     } catch (err) {
       console.error("Failed to hide wheel:", err);
@@ -184,7 +180,158 @@ export const FloatingWheelWindow: React.FC = () => {
     }
   };
 
+  // Smart Contextual Slices Generator
+  const getDynamicSlices = (): { profileTitle: string; items: WheelItem[] } => {
+    if (selectedFiles.length === 1) {
+      const ext = selectedFiles[0].extension.toLowerCase();
+
+      // 1. PDF File Contextual Slices
+      if (ext === "pdf") {
+        return {
+          profileTitle: "PDF Akıllı Araçları",
+          items: [
+            { id: "pdf_excel", label: "PDF → Excel", description: "Tablo ve verileri XLSX elektronik tablo yap", icon: "xls", color: "#10B981", category: "convert" },
+            { id: "pdf_docx", label: "PDF → Word", description: "Düzenlenebilir DOCX formatına çevir", icon: "doc", color: "#2563EB", category: "convert" },
+            { id: "pdf_txt", label: "PDF → Metin", description: "Tüm metin içeriğini TXT olarak dışa aktar", icon: "txt", color: "#64748B", category: "convert" },
+            { id: "pdf_images", label: "Görsellere Ayır", description: "Sayfalardaki görselleri PNG olarak çıkar", icon: "image", color: "#EC4899", category: "convert" },
+            { id: "copy_path", label: "Yolu Kopyala", description: "Dosya yolunu panoya kopyala", icon: "copy", color: "#06B6D4", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Dosyayı klasöründe vurgula", icon: "folder", color: "#F59E0B", category: "actions" },
+          ],
+        };
+      }
+
+      // 2. Word Document Contextual Slices
+      if (["docx", "doc", "odt", "rtf"].includes(ext)) {
+        return {
+          profileTitle: "Word & Metin Belgesi",
+          items: [
+            { id: "docx_pdf", label: "Word → PDF", description: "Belgeyi PDF formatına dönüştür", icon: "pdf", color: "#EF4444", category: "documents" },
+            { id: "copy_path", label: "Yolu Kopyala", description: "Dosya yolunu panoya kopyala", icon: "copy", color: "#10B981", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Dosyayı klasöründe göster", icon: "folder", color: "#F59E0B", category: "actions" },
+            { id: "terminal", label: "Terminalde Aç", description: "PowerShell aç", icon: "terminal", color: "#3B82F6", category: "actions" },
+            { id: "info", label: "Dosya Bilgisi", description: "Boyut ve detaylar", icon: "info", color: "#8B5CF6", category: "tools" },
+            { id: "qr", label: "QR Kod", description: "QR üret", icon: "qr", color: "#06B6D4", category: "tools" },
+          ],
+        };
+      }
+
+      // 3. Excel Spreadsheet Contextual Slices
+      if (["xlsx", "xls", "ods", "csv"].includes(ext)) {
+        return {
+          profileTitle: "Elektronik Tablo",
+          items: [
+            { id: "xlsx_pdf", label: "Excel → PDF", description: "Tabloyu PDF formatına aktar", icon: "pdf", color: "#EF4444", category: "documents" },
+            { id: "copy_path", label: "Yolu Kopyala", description: "Dosya yolunu panoya kopyala", icon: "copy", color: "#10B981", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Dosyayı klasöründe göster", icon: "folder", color: "#F59E0B", category: "actions" },
+            { id: "terminal", label: "Terminalde Aç", description: "PowerShell aç", icon: "terminal", color: "#3B82F6", category: "actions" },
+            { id: "info", label: "Dosya Bilgisi", description: "Boyut ve detaylar", icon: "info", color: "#8B5CF6", category: "tools" },
+            { id: "qr", label: "QR Kod", description: "QR üret", icon: "qr", color: "#06B6D4", category: "tools" },
+          ],
+        };
+      }
+
+      // 4. PowerPoint Presentation Contextual Slices
+      if (["pptx", "ppt", "odp"].includes(ext)) {
+        return {
+          profileTitle: "Sunum Dosyası",
+          items: [
+            { id: "pptx_pdf", label: "PPT → PDF", description: "PowerPoint sunumunu PDF yap", icon: "pdf", color: "#EF4444", category: "documents" },
+            { id: "copy_path", label: "Yolu Kopyala", description: "Dosya yolunu panoya kopyala", icon: "copy", color: "#10B981", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Dosyayı klasöründe göster", icon: "folder", color: "#F59E0B", category: "actions" },
+            { id: "terminal", label: "Terminalde Aç", description: "PowerShell aç", icon: "terminal", color: "#3B82F6", category: "actions" },
+            { id: "info", label: "Dosya Bilgisi", description: "Boyut ve detaylar", icon: "info", color: "#8B5CF6", category: "tools" },
+            { id: "qr", label: "QR Kod", description: "QR üret", icon: "qr", color: "#06B6D4", category: "tools" },
+          ],
+        };
+      }
+
+      // 5. Image Contextual Slices
+      if (["png", "jpg", "jpeg", "webp", "bmp", "ico", "gif", "tiff"].includes(ext)) {
+        return {
+          profileTitle: "Görsel & Fotoğraf",
+          items: [
+            { id: "webp", label: "WebP", description: "Hızlı & modern web formatı", icon: "image", color: "#10B981", category: "convert" },
+            { id: "png", label: "PNG", description: "Kayıpsız şeffaf görsel", icon: "image", color: "#3B82F6", category: "convert" },
+            { id: "jpg", label: "JPG", description: "Optimize web fotoğrafı", icon: "image", color: "#F59E0B", category: "convert" },
+            { id: "ico", label: "ICO İkon", description: "256x256 Windows simgesi", icon: "image", color: "#6366F1", category: "convert" },
+            { id: "img_pdf", label: "Görselden PDF", description: "PDF belgesine dönüştür", icon: "pdf", color: "#EF4444", category: "convert" },
+            { id: "crop", label: "Kırp & Düzenle", description: "Görseli kırp ve düzenle", icon: "crop", color: "#EC4899", category: "tools" },
+          ],
+        };
+      }
+
+      // 6. Video Contextual Slices
+      if (["mp4", "mkv", "avi", "mov", "webm", "flv", "wmv"].includes(ext)) {
+        return {
+          profileTitle: "Video Dönüştürücü",
+          items: [
+            { id: "extract_audio", label: "Sesi Ayıkla (MP3)", description: "Videodan ses parçasını MP3 çıkar", icon: "music", color: "#F59E0B", category: "convert" },
+            { id: "video_gif", label: "Videodan GIF", description: "Videoyu kaliteli GIF yap", icon: "film", color: "#EC4899", category: "convert" },
+            { id: "video_mp4", label: "MP4 Video", description: "H.264 evrensel video formatı", icon: "film", color: "#3B82F6", category: "convert" },
+            { id: "video_webm", label: "WebM Video", description: "Web için optimize video", icon: "film", color: "#10B981", category: "convert" },
+            { id: "audio_wav", label: "WAV Ses Çıkar", description: "Sıkıştırmasız PCM stüdyo ses", icon: "music", color: "#8B5CF6", category: "convert" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Dosyayı klasöründe vurgula", icon: "folder", color: "#06B6D4", category: "actions" },
+          ],
+        };
+      }
+
+      // 7. Audio Contextual Slices
+      if (["mp3", "wav", "flac", "aac", "ogg", "m4a"].includes(ext)) {
+        return {
+          profileTitle: "Ses Dönüştürücü",
+          items: [
+            { id: "extract_audio", label: "MP3 Ses", description: "Evrensel MP3 formatı", icon: "music", color: "#F59E0B", category: "convert" },
+            { id: "audio_wav", label: "WAV Ses", description: "Kayıpsız stüdyo kalitesi", icon: "music", color: "#3B82F6", category: "convert" },
+            { id: "audio_flac", label: "FLAC Ses", description: "Kayıpsız sıkıştırılmış stüdyo ses", icon: "music", color: "#10B981", category: "convert" },
+            { id: "audio_aac", label: "AAC Ses", description: "Apple & modern cihaz formatı", icon: "music", color: "#8B5CF6", category: "convert" },
+            { id: "copy_path", label: "Yolu Kopyala", description: "Ses yolunu panoya kopyala", icon: "copy", color: "#06B6D4", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Klasörde göster", icon: "folder", color: "#EC4899", category: "actions" },
+          ],
+        };
+      }
+    }
+
+    // 8. Multiple Files Contextual Slices
+    if (selectedFiles.length > 1) {
+      const allImages = selectedFiles.every((f) =>
+        ["png", "jpg", "jpeg", "webp", "bmp", "ico", "gif", "tiff"].includes(f.extension.toLowerCase())
+      );
+      if (allImages) {
+        return {
+          profileTitle: `${selectedFiles.length} Görsel Seçili`,
+          items: [
+            { id: "img_pdf", label: "Tek PDF Olarak Birleştir", description: "Tüm görselleri tek bir çok sayfalı PDF yap", icon: "pdf", color: "#EF4444", category: "convert" },
+            { id: "webp", label: "Toplu WebP Yap", description: "Tümünü WebP formatına dönüştür", icon: "image", color: "#10B981", category: "convert" },
+            { id: "png", label: "Toplu PNG Yap", description: "Tümünü PNG formatına dönüştür", icon: "image", color: "#3B82F6", category: "convert" },
+            { id: "jpg", label: "Toplu JPG Yap", description: "Tümünü JPG formatına dönüştür", icon: "image", color: "#F59E0B", category: "convert" },
+            { id: "copy_path", label: "Yolları Kopyala", description: "Tüm dosya yollarını panoya aktar", icon: "copy", color: "#06B6D4", category: "actions" },
+            { id: "reveal", label: "Explorer'da Aç", description: "Klasörde göster", icon: "folder", color: "#8B5CF6", category: "actions" },
+          ],
+        };
+      }
+      return {
+        profileTitle: `${selectedFiles.length} Dosya Seçili`,
+        items: [
+          { id: "all_pdf", label: "Tümünü PDF Yap", description: "Seçili tüm belgeleri PDF'e dönüştür", icon: "pdf", color: "#EF4444", category: "documents" },
+          { id: "copy_path", label: "Tüm Yolları Kopyala", description: "Yolları panoya aktar", icon: "copy", color: "#10B981", category: "actions" },
+          { id: "reveal", label: "Explorer'da Aç", description: "Dosyaları klasöründe göster", icon: "folder", color: "#F59E0B", category: "actions" },
+          { id: "terminal", label: "Terminalde Aç", description: "PowerShell aç", icon: "terminal", color: "#3B82F6", category: "actions" },
+          { id: "info", label: "Dosya Bilgisi", description: "Detaylar", icon: "info", color: "#8B5CF6", category: "tools" },
+          { id: "qr", label: "QR Kod", description: "QR üret", icon: "qr", color: "#06B6D4", category: "tools" },
+        ],
+      };
+    }
+
+    // Standard Profile fallback when no files selected
+    const preset = PRESET_PROFILES[activeProfile] || PRESET_PROFILES.office;
+    return {
+      profileTitle: preset.name,
+      items: activeProfile === "custom" ? customSlices : preset.items,
+    };
+  };
+
   const getFilterForAction = (id: string): string => {
+    if (id.startsWith("pdf_") || id === "pdf") return "doc";
     if (id.includes("docx") || id.includes("doc")) return "doc";
     if (id.includes("pptx") || id.includes("ppt")) return "ppt";
     if (id.includes("xlsx") || id.includes("xls")) return "xls";
@@ -195,7 +342,6 @@ export const FloatingWheelWindow: React.FC = () => {
   };
 
   const handleSelectAction = async (actionId: string, _category: WheelMode) => {
-    // 1. Terminal action
     if (actionId === "terminal") {
       const folderPath = selectedFiles.length > 0 ? selectedFiles[0].path : "";
       await openInTerminal(folderPath);
@@ -203,7 +349,6 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    // 2. Ensure target files: use selectedFiles from Windows Explorer, or prompt file picker
     let files = selectedFiles;
     if (files.length === 0) {
       setStatusMessage("Dosya Seçin...");
@@ -232,13 +377,12 @@ export const FloatingWheelWindow: React.FC = () => {
 
     if (files.length === 0) return;
 
-    // 3. Simple utility actions
     if (actionId === "copy_path") {
       const pathsJoined = files.map((f) => f.path).join("\n");
       await navigator.clipboard.writeText(pathsJoined);
       playSuccessChime();
       setStatusMessage(files.length === 1 ? "Yol Kopyalandı!" : `${files.length} Yol Kopyalandı!`);
-      setTimeout(handleClose, 900);
+      setTimeout(handleClose, 1200);
       return;
     }
 
@@ -248,14 +392,41 @@ export const FloatingWheelWindow: React.FC = () => {
       return;
     }
 
-    // 4. Modals (Crop, Compress, QR, Info) -> open main dashboard with files
     if (actionId === "crop" || actionId === "compress" || actionId === "qr" || actionId === "info") {
       await showMainWindow();
       await handleClose();
       return;
     }
 
-    // 5. Image to PDF / Multi-image Combine into 1 PDF
+    // 1. PDF conversions (PDF -> Excel, PDF -> Word, PDF -> Text, PDF -> Images)
+    if (actionId === "pdf_excel" || actionId === "pdf_docx" || actionId === "pdf_txt" || actionId === "pdf_images") {
+      const targetMap: Record<string, string> = {
+        pdf_excel: "xlsx",
+        pdf_docx: "docx",
+        pdf_txt: "txt",
+        pdf_images: "images",
+      };
+      const targetExt = targetMap[actionId] || "xlsx";
+      try {
+        setStatusMessage("PDF Dönüştürülüyor...");
+        let lastRes: FileInfo | null = null;
+        for (const file of files) {
+          lastRes = await convertPdf(file.path, targetExt);
+        }
+        playSuccessChime();
+        confetti({ particleCount: 55, spread: 70, origin: { y: 0.55 } });
+        if (lastRes) {
+          setStatusMessage(`Hazır: ${lastRes.name}`);
+          setLastOutputPath(lastRes.path);
+          setLastOutputName(lastRes.name);
+        }
+      } catch (err) {
+        setStatusMessage(`Hata: ${err}`);
+      }
+      return;
+    }
+
+    // 2. Image to PDF / Multi-image Combine into 1 PDF
     if (actionId === "img_pdf" || (actionId === "pdf" && files.every((f) => ["png", "jpg", "jpeg", "webp", "bmp"].includes(f.extension.toLowerCase())))) {
       try {
         setStatusMessage(files.length > 1 ? `${files.length} Görsel PDF Yapılıyor...` : "PDF Yapılıyor...");
@@ -264,19 +435,20 @@ export const FloatingWheelWindow: React.FC = () => {
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
         setStatusMessage(`Hazır: ${res.name}`);
         setLastOutputPath(res.path);
-        setTimeout(handleClose, 1600);
+        setLastOutputName(res.name);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
       return;
     }
 
-    // 6. Document Conversions (Word, PPT, Excel -> PDF)
+    // 3. Document Conversions (Word, PPT, Excel -> PDF)
     if (
       actionId === "docx_pdf" ||
       actionId === "pptx_pdf" ||
       actionId === "xlsx_pdf" ||
       actionId === "txt_pdf" ||
+      actionId === "all_pdf" ||
       actionId === "pdf"
     ) {
       try {
@@ -290,15 +462,15 @@ export const FloatingWheelWindow: React.FC = () => {
         if (lastRes) {
           setStatusMessage(files.length > 1 ? `${files.length} Belge PDF Yapıldı!` : `Hazır: ${lastRes.name}`);
           setLastOutputPath(lastRes.path);
+          setLastOutputName(lastRes.name);
         }
-        setTimeout(handleClose, 1600);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
       return;
     }
 
-    // 7. Media Conversions (Audio extraction, Video to GIF, MP4, WAV, FLAC, WebM via FFmpeg)
+    // 4. Media Conversions (Audio extraction, Video to GIF, MP4, WAV, FLAC, WebM via FFmpeg)
     if (
       actionId === "extract_audio" ||
       actionId === "video_gif" ||
@@ -331,15 +503,15 @@ export const FloatingWheelWindow: React.FC = () => {
         if (lastRes) {
           setStatusMessage(files.length > 1 ? `${files.length} Medya Dönüştürüldü!` : `Hazır: ${lastRes.name}`);
           setLastOutputPath(lastRes.path);
+          setLastOutputName(lastRes.name);
         }
-        setTimeout(handleClose, 1600);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
       return;
     }
 
-    // 8. Image Conversions (WebP, PNG, JPG, BMP, ICO, GIF, TIFF)
+    // 5. Image Conversions (WebP, PNG, JPG, BMP, ICO, GIF, TIFF)
     if (["webp", "png", "jpg", "bmp", "ico", "gif", "tiff"].includes(actionId)) {
       try {
         setStatusMessage(files.length > 1 ? `${files.length} Dosya ${actionId.toUpperCase()} Yapılıyor...` : `${actionId.toUpperCase()} Yapılıyor...`);
@@ -352,68 +524,102 @@ export const FloatingWheelWindow: React.FC = () => {
         if (lastRes) {
           setStatusMessage(files.length > 1 ? `${files.length} Dosya Dönüştürüldü!` : `Hazır: ${lastRes.name}`);
           setLastOutputPath(lastRes.path);
+          setLastOutputName(lastRes.name);
         }
-        setTimeout(handleClose, 1600);
       } catch (err) {
         setStatusMessage(`Hata: ${err}`);
       }
       return;
     }
 
-    // Fallback: show main window
     await showMainWindow();
     await handleClose();
   };
 
-  const activeItems =
-    activeProfile === "custom"
-      ? customSlices
-      : PRESET_PROFILES[activeProfile]?.items || PRESET_PROFILES.office.items;
+  const dynamic = getDynamicSlices();
 
-  const profileDisplayName = PRESET_PROFILES[activeProfile]?.name || "Ofis & Belgeler";
+  const isCenterMode = wheelDisplayMode === "center";
 
   return (
-    <div className="w-[460px] h-[460px] flex items-center justify-center bg-transparent select-none overflow-hidden relative">
-      {/* Floating Status Notification Pill */}
-      {statusMessage && (
-        <div className="absolute top-2 z-50 px-3.5 py-1.5 rounded-full glass-panel border border-amber-400/40 text-amber-300 text-[11px] font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in flex items-center gap-2">
-          {selectedFiles.length > 1 && <Files size={12} className="text-amber-400" />}
+    <div
+      className={
+        isCenterMode
+          ? "fixed inset-0 w-screen h-screen flex flex-col items-center justify-center bg-black/45 backdrop-blur-md select-none overflow-hidden relative transition-all duration-300"
+          : "w-[460px] h-[460px] flex items-center justify-center bg-transparent select-none overflow-hidden relative"
+      }
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
+    >
+      {/* Top Status Notification Pill */}
+      {statusMessage && !lastOutputPath && (
+        <div className="absolute top-4 z-50 px-4 py-2 rounded-full glass-panel border border-amber-400/40 text-amber-300 text-xs font-bold shadow-2xl backdrop-blur-2xl animate-in fade-in flex items-center gap-2">
+          {selectedFiles.length > 1 && <Files size={13} className="text-amber-400" />}
           <span>{statusMessage}</span>
-          {lastOutputPath && (
-            <div className="flex items-center gap-1.5 ml-1 border-l border-white/20 pl-2">
-              <button
-                type="button"
-                onClick={() => revealInExplorer(lastOutputPath)}
-                className="hover:text-white p-0.5"
-                title="Klasörde Göster"
-              >
-                <FolderOpen size={12} />
-              </button>
-              <button
-                type="button"
-                onClick={() => openFile(lastOutputPath)}
-                className="hover:text-white p-0.5"
-                title="Dosyayı Aç"
-              >
-                <ExternalLink size={12} />
-              </button>
-            </div>
-          )}
         </div>
       )}
 
+      {/* Main Radial Wheel */}
       <RadialWheel
         isOpen={true}
         onClose={handleClose}
         onSelectAction={handleSelectAction}
         selectedFileNames={selectedFiles.map((f) => f.name)}
-        customItems={activeItems}
+        customItems={dynamic.items}
         isStandalone={true}
-        profileName={profileDisplayName}
+        profileName={dynamic.profileTitle}
         onCycleProfile={handleCycleProfile}
         onSelectProfile={handleSelectProfile}
         onFileDrop={handleFileDrop}
       />
+
+      {/* Prominent Success & Action Bar (Doesn't disappear immediately!) */}
+      {lastOutputPath && (
+        <div className="absolute bottom-6 z-50 px-5 py-3 rounded-2xl glass-panel border border-emerald-400/50 text-white shadow-2xl backdrop-blur-2xl animate-in slide-in-from-bottom-4 duration-300 flex items-center gap-4 max-w-lg">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 flex items-center justify-center shrink-0">
+            <Check size={18} strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+              <span>Dönüştürme Tamamlandı!</span>
+              <span className="text-white font-normal truncate">({lastOutputName})</span>
+            </div>
+            <div className="text-[10px] text-neutral-400 truncate font-mono mt-0.5" title={lastOutputPath}>
+              {lastOutputPath}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => revealInExplorer(lastOutputPath)}
+              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+              title="Windows Explorer'da Göster"
+            >
+              <FolderOpen size={14} />
+              <span>Klasörde Göster</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => openFile(lastOutputPath)}
+              className="px-3 py-1.5 rounded-xl bg-white/[0.1] hover:bg-white/[0.2] text-white border border-white/[0.2] text-xs font-bold flex items-center gap-1.5 transition-all shadow-md"
+              title="Dosyayı Doğrudan Aç"
+            >
+              <ExternalLink size={14} />
+              <span>Aç</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
+              title="Kapat"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

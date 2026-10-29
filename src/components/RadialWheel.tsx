@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { WheelItem, WheelMode, WheelProfileId } from "../types";
-import { playSuccessChime } from "../utils/sound";
+import { playSuccessChime, playWheelTick } from "../utils/sound";
 import {
   FileImage,
   Crop,
@@ -79,14 +79,17 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         onClose();
       } else if (e.key === "Tab") {
         e.preventDefault();
+        playWheelTick();
         onCycleProfile?.(e.shiftKey ? -1 : 1);
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
+        playWheelTick();
         const nextIndex = (selectedIndex + 1) % currentItems.length;
         setSelectedIndex(nextIndex);
         setHoveredItem(currentItems[nextIndex]);
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
+        playWheelTick();
         const prevIndex = (selectedIndex - 1 + currentItems.length) % currentItems.length;
         setSelectedIndex(prevIndex);
         setHoveredItem(currentItems[prevIndex]);
@@ -97,14 +100,19 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
           onClose();
         }
       } else if (e.key === "1") {
+        playWheelTick();
         onSelectProfile?.("office");
       } else if (e.key === "2") {
+        playWheelTick();
         onSelectProfile?.("design");
       } else if (e.key === "3") {
+        playWheelTick();
         onSelectProfile?.("media");
       } else if (e.key === "4") {
+        playWheelTick();
         onSelectProfile?.("dev");
       } else if (e.key === "5") {
+        playWheelTick();
         onSelectProfile?.("custom");
       }
     };
@@ -178,6 +186,19 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       }}
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
+      onWheel={(e) => {
+        e.preventDefault();
+        playWheelTick();
+        if (e.deltaY > 0) {
+          const next = (selectedIndex + 1) % currentItems.length;
+          setSelectedIndex(next);
+          setHoveredItem(currentItems[next]);
+        } else {
+          const prev = (selectedIndex - 1 + currentItems.length) % currentItems.length;
+          setSelectedIndex(prev);
+          setHoveredItem(currentItems[prev]);
+        }
+      }}
     >
       <svg
         className="w-full h-full transform -rotate-90 filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
@@ -266,6 +287,9 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
               key={`${item.id}-${index}`}
               className="cursor-pointer transition-all duration-150"
               onMouseEnter={() => {
+                if (selectedIndex !== index) {
+                  playWheelTick();
+                }
                 setHoveredItem(item);
                 setSelectedIndex(index);
               }}

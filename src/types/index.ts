@@ -42,3 +42,10 @@ export interface WheelProfile {
   icon: string;
   items: WheelItem[];
 }
+
+export interface AppSettings {
+  wheel_display_mode: "center" | "cursor";
+  save_as_separate: boolean;
+  output_destination: "source" | "desktop" | "downloads";
+  vibrancy_effect: string;
+}

@@ -129,6 +129,7 @@ pub fn run() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
+            commands::show_wheel_window,
             commands::show_wheel_at_cursor,
             commands::hide_wheel,
             commands::show_main_window,
@@ -144,6 +145,9 @@ pub fn run() {
             commands::create_pdf_from_images,
             commands::convert_document,
             commands::convert_media,
+            commands::convert_pdf,
+            commands::get_app_settings,
+            commands::save_app_settings,
             commands::get_autostart,
             commands::set_autostart,
             commands::reveal_in_explorer,
