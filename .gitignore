@@ -16,6 +16,10 @@ dist-ssr
 src-tauri/target/
 src-tauri/gen/
 
+# Binary executables in root
+*.exe
+*.dll
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
