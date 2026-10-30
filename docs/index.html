@@ -381,221 +381,553 @@
     }
 
     /* ============================================================
-       Desktop Scene Mockup
+       Living Dynamic Background & Aurora Glow Engine
        ============================================================ */
-    .desktop-scene {
-      width: 1120px;
-      height: 544px;
-      position: relative;
-      margin: 80px auto 0;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      overflow: hidden;
-      background: linear-gradient(140deg, rgba(26, 31, 51, 0.95), rgba(10, 13, 24, 0.97));
-      box-shadow: 0 60px 100px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 100px rgba(69, 78, 190, 0.1);
-      text-align: left;
-      transform: perspective(1300px) rotateX(1deg);
-      z-index: 5;
-    }
-    .desktop-scene::before {
-      content: "";
-      position: absolute;
+    .living-bg {
+      position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 62% 48%, rgba(83, 91, 214, 0.18), transparent 33%), linear-gradient(90deg, transparent 49.8%, rgba(255, 255, 255, 0.015) 50%);
-      background-size: auto, 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(130px);
+      will-change: transform, opacity;
       pointer-events: none;
     }
-    .scene-topbar {
-      height: 48px;
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      background: rgba(8, 10, 17, 0.46);
+    .orb-indigo {
+      width: 680px;
+      height: 680px;
+      top: -120px;
+      left: 10%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.28) 0%, rgba(79, 70, 229, 0.1) 50%, transparent 75%);
+      animation: floatIndigo 20s ease-in-out infinite alternate;
     }
-    .scene-brand {
-      width: 180px;
-      padding-left: 18px;
-      font-size: 11.5px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .orb-violet {
+      width: 620px;
+      height: 620px;
+      top: 240px;
+      right: 8%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(139, 92, 246, 0.08) 55%, transparent 75%);
+      animation: floatViolet 24s ease-in-out infinite alternate;
     }
-    .mini-logo {
-      width: 20px;
-      height: 20px;
-      display: grid;
-      place-items: center;
-      background: #5D62D9;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
+    .orb-cyan {
+      width: 560px;
+      height: 560px;
+      bottom: 8%;
+      left: 18%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, rgba(37, 99, 235, 0.06) 60%, transparent 75%);
+      animation: floatCyan 26s ease-in-out infinite alternate;
     }
-    .scene-breadcrumb {
-      flex: 1;
-      display: flex;
-      gap: 8px;
-      font-size: 11px;
-      color: #626A7C;
+    .orb-rose {
+      width: 500px;
+      height: 500px;
+      top: 55%;
+      right: 22%;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.16) 0%, rgba(168, 85, 247, 0.05) 60%, transparent 75%);
+      animation: floatRose 28s ease-in-out infinite alternate;
     }
-    .scene-breadcrumb strong {
-      color: #B6BBCA;
-      font-weight: 500;
+
+    @keyframes floatIndigo {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+      50% { transform: translate(140px, 90px) scale(1.18); opacity: 1; }
+      100% { transform: translate(-90px, 130px) scale(0.92); opacity: 0.75; }
     }
-    .scene-tools {
-      display: flex;
-      gap: 16px;
-      padding-right: 18px;
-      color: #5E6576;
-      font-size: 12px;
+    @keyframes floatViolet {
+      0% { transform: translate(0, 0) scale(1.1); opacity: 0.65; }
+      50% { transform: translate(-130px, 100px) scale(0.88); opacity: 0.95; }
+      100% { transform: translate(70px, -80px) scale(1.2); opacity: 0.7; }
     }
-    .scene-sidebar {
+    @keyframes floatCyan {
+      0% { transform: translate(0, 0) scale(0.95); opacity: 0.6; }
+      50% { transform: translate(110px, -90px) scale(1.22); opacity: 0.9; }
+      100% { transform: translate(-80px, 70px) scale(1.02); opacity: 0.65; }
+    }
+    @keyframes floatRose {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+      50% { transform: translate(-100px, -70px) scale(1.15); opacity: 0.85; }
+      100% { transform: translate(120px, 50px) scale(0.9); opacity: 0.6; }
+    }
+
+    .cyber-grid {
       position: absolute;
-      top: 48px;
-      bottom: 0;
-      width: 62px;
-      border-right: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      padding-top: 26px;
-      background: rgba(8, 10, 17, 0.25);
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at 50% 35%, black 25%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at 50% 35%, black 25%, transparent 75%);
+      animation: cyberPulse 12s ease-in-out infinite alternate;
     }
-    .side-dot {
-      width: 19px;
-      height: 19px;
-      border-radius: 5px;
-      background: #24283A;
-      position: relative;
+    @keyframes cyberPulse {
+      0% { opacity: 0.35; transform: translateY(0); }
+      100% { opacity: 0.75; transform: translateY(8px); }
     }
-    .side-dot::after {
-      content: "";
+
+    #particles-canvas {
       position: absolute;
-      inset: 6px;
-      background: #5A6175;
-      border-radius: 2px;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
     }
-    .side-dot.active {
-      background: #353B78;
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
-    }
-    .side-dot.active::after {
-      background: #9298FF;
-    }
-    .scene-content {
-      position: absolute;
-      left: 90px;
-      top: 80px;
-      width: 380px;
-    }
-    .file-row {
-      height: 58px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 14px;
-      margin-bottom: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.055);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 9px;
-      color: #51596D;
-      transition: all 0.2s;
-    }
-    .file-row.selected {
-      color: #8790FA;
-      border-color: rgba(107, 113, 255, 0.25);
-      background: rgba(86, 92, 190, 0.1);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-    }
-    .file-row div {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .file-row strong {
-      font-size: 11px;
-      color: #AAB0C2;
-      font-weight: 500;
-    }
-    .file-row span {
-      font-size: 9px;
-      color: #596175;
-    }
-    .file-row .file-time {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 9px;
-    }
-    .shortcut-badge {
-      position: absolute;
-      z-index: 3;
-      left: 400px;
-      bottom: 82px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #747C90;
-      font-size: 9px;
-      font-family: var(--font-mono);
-    }
-    .shortcut-badge span {
-      padding: 5px 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      background: #161A28;
-      color: #ADB3C4;
-    }
-    .hero-wheel {
-      position: absolute;
-      left: 630px;
-      top: 88px;
-    }
-    .scene-toast {
-      position: absolute;
-      right: 22px;
-      bottom: 20px;
-      width: 220px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 14px;
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      background: rgba(16, 20, 33, 0.88);
-      backdrop-filter: blur(12px);
-      border-radius: 11px;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-    }
-    .toast-icon {
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      color: #B0B5FF;
-      background: #292E58;
-    }
-    .scene-toast div {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .scene-toast small {
-      font-family: var(--font-mono);
-      font-size: 7.5px;
-      color: #6F7790;
-      letter-spacing: 0.1em;
-    }
-    .scene-toast strong {
-      font-size: 11px;
-      font-weight: 500;
-      color: #C2C6D3;
+
+    .cursor-glow {
+      position: fixed;
+      width: 650px;
+      height: 650px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.09) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: opacity 0.4s ease;
+      z-index: 1;
+      opacity: 0.8;
     }
 
     /* ============================================================
+       Interactive Live Stage (Single Dedicated Playground - No Photos)
+       ============================================================ */
+    .interactive-stage {
+      width: 1120px;
+      height: 520px;
+      position: relative;
+      margin: 64px auto 0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, rgba(28, 34, 58, 0.5) 0%, rgba(10, 12, 22, 0.88) 100%);
+      box-shadow: 
+        0 40px 100px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 0 90px rgba(99, 102, 241, 0.12);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      text-align: left;
+      z-index: 5;
+      user-select: none;
+    }
+
+    .stage-topbar {
+      height: 48px;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(8, 10, 18, 0.65);
+      backdrop-filter: blur(12px);
+    }
+
+    .stage-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      font-family: var(--font-mono);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+      color: #6EE7B7;
+    }
+    .stage-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulseGreenDot 2s infinite ease-in-out;
+    }
+    @keyframes pulseGreenDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .stage-status-text {
+      font-size: 12px;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 450;
+      transition: color 0.2s;
+    }
+    .stage-status-text.highlight {
+      color: #C7D2FE;
+    }
+
+    .stage-meta-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748B;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .stage-shortcut-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #CBD5E1;
+      font-size: 10px;
+    }
+    .stage-shortcut-badge kbd {
+      color: #F8FAFC;
+      font-weight: 600;
+    }
+
+    .stage-meta-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stage-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #94A3B8;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .stage-btn:hover {
+      color: #F1F5F9;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .stage-btn.active {
+      color: #818CF8;
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .stage-btn.primary {
+      color: #FFFFFF;
+      background: rgba(99, 102, 241, 0.25);
+      border-color: rgba(99, 102, 241, 0.45);
+    }
+    .stage-btn.primary:hover {
+      background: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Arena click canvas area */
+    .stage-arena {
+      position: absolute;
+      top: 48px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      cursor: crosshair;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arena-grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: auto, 40px 40px, 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Center prompt when wheel is hidden */
+    .arena-prompt {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .arena-prompt.hidden {
+      opacity: 0;
+      transform: scale(0.92);
+      pointer-events: none;
+    }
+    .arena-target-circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 1px dashed rgba(129, 140, 248, 0.35);
+      display: grid;
+      place-items: center;
+      position: relative;
+      background: rgba(99, 102, 241, 0.05);
+      box-shadow: 0 0 35px rgba(99, 102, 241, 0.1);
+      animation: targetPulse 3s infinite ease-in-out;
+    }
+    @keyframes targetPulse {
+      0%, 100% { transform: scale(1); border-color: rgba(129, 140, 248, 0.35); }
+      50% { transform: scale(1.08); border-color: rgba(129, 140, 248, 0.65); box-shadow: 0 0 50px rgba(99, 102, 241, 0.22); }
+    }
+    .arena-target-circle::after {
+      content: "";
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .target-crosshair {
+      width: 14px;
+      height: 14px;
+      position: relative;
+    }
+    .target-crosshair::before, .target-crosshair::after {
+      content: "";
+      position: absolute;
+      background: #818CF8;
+    }
+    .target-crosshair::before {
+      top: 6px; left: 0; width: 14px; height: 2px;
+    }
+    .target-crosshair::after {
+      left: 6px; top: 0; width: 2px; height: 14px;
+    }
+    .arena-prompt-title {
+      font-size: 15px;
+      font-weight: 550;
+      color: #E2E8F0;
+      letter-spacing: -0.01em;
+    }
+    .arena-prompt-sub {
+      font-size: 12px;
+      color: #64748B;
+      max-width: 380px;
+      line-height: 1.5;
+    }
+
+    /* Spawn Ripple Effect */
+    .spawn-ripple {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      border: 2px solid rgba(129, 140, 248, 0.7);
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0.2);
+      pointer-events: none;
+      animation: rippleAnim 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+      z-index: 12;
+    }
+    @keyframes rippleAnim {
+      0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+    }
+
+    /* Interactive Wheel Container in Arena */
+    .arena-wheel-anchor {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      cursor: default;
+      transition: opacity 0.22s ease;
+    }
+    .arena-wheel-anchor.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.4);
+    }
+    .arena-wheel-anchor.visible {
+      opacity: 1;
+      pointer-events: auto;
+      animation: wheelPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes wheelPop {
+      0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    .arena-wheel-anchor.closing {
+      animation: wheelDismiss 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+    @keyframes wheelDismiss {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+    }
+
+    .stage-bottom-hint {
+      position: absolute;
+      bottom: 14px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #64748B;
+      font-family: var(--font-mono);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .stage-bottom-hint span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stage-bottom-hint kbd {
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #CBD5E1;
+    }
+
+    /* Spark burst animation */
+    .spark-burst {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    .spark-dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #8493FF;
+      box-shadow: 0 0 8px #6366F1;
+      animation: sparkFly 0.45s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    }
+    @keyframes sparkFly {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ============================================================
+       Radial Geometry Technical Showcase (Bento Card 1)
+       ============================================================ */
+    .radial-geometry-visual {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      margin-top: 20px;
+      display: grid;
+      place-items: center;
+    }
+    .geo-orbit {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .outer-orbit {
+      width: 220px;
+      height: 220px;
+      border: 1px dashed rgba(129, 140, 248, 0.25);
+      animation: orbitRotate 40s linear infinite;
+    }
+    .inner-orbit {
+      width: 130px;
+      height: 130px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+    }
+    @keyframes orbitRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .geo-core {
+      position: absolute;
+      z-index: 3;
+    }
+    .geo-node {
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 8px;
+      background: rgba(15, 18, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .geo-node span {
+      font-size: 7.5px;
+      color: #6366F1;
+    }
+    .geo-node strong {
+      font-size: 9px;
+      color: #E2E8F0;
+      font-weight: 550;
+    }
+    .node-0 { top: 12px; }
+    .node-1 { top: 48px; right: 38px; }
+    .node-2 { bottom: 48px; right: 38px; }
+    .node-3 { bottom: 12px; }
+    .node-4 { bottom: 48px; left: 38px; }
+    .node-5 { top: 48px; left: 38px; }
+
+    .geo-measure-badge {
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: #818CF8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .geo-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      position: relative;
+      z-index: 2;
+    }
+    .geo-metrics div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .geo-metrics strong {
+      font-size: 15px;
+      font-weight: 700;
+      color: #F8FAFC;
+      font-family: var(--font-mono);
+    }
+    .geo-metrics span {
+      font-size: 8px;
+      color: #64748B;
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+    }/* ============================================================
        Radial Action Wheel Mockup
        ============================================================ */
     .radial-wrap {
@@ -825,43 +1157,7 @@
       z-index: 2;
     }
 
-    .mini-profile {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-top: 24px;
-      padding: 5px;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      position: relative;
-      z-index: 4;
-    }
-    .mini-profile > span {
-      font-size: 8.5px;
-      color: #5E6678;
-      padding: 0 8px;
-      margin-right: auto;
-    }
-    .mini-profile .profile-btn {
-      font-size: 8.5px;
-      color: #656D80;
-      padding: 6px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .mini-profile .profile-btn.selected {
-      background: #292E51;
-      color: #C5C9FF;
-      box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
-    }
-    .card-wheel {
-      position: absolute;
-      bottom: -25px;
-      left: 32px;
-      transform: scale(0.8);
-      transform-origin: bottom center;
-    }
+    
 
     /* Image Demo Mockup */
     .image-demo {
@@ -1550,6 +1846,17 @@
 <body>
   <div class="noise"></div>
 
+  <!-- Living Dynamic Background (Aurora Orbs + Cyber Grid + Floating Particles + Cursor Glow) -->
+  <div class="living-bg" aria-hidden="true">
+    <div class="ambient-orb orb-indigo"></div>
+    <div class="ambient-orb orb-violet"></div>
+    <div class="ambient-orb orb-cyan"></div>
+    <div class="ambient-orb orb-rose"></div>
+    <div class="cyber-grid"></div>
+    <canvas id="particles-canvas"></canvas>
+    <div class="cursor-glow" id="cursorGlow"></div>
+  </div>
+
   <!-- Header / Navigation Bar -->
   <header class="nav-shell">
     <div class="nav-inner">
@@ -1583,8 +1890,7 @@
   <!-- Hero Section -->
   <main>
     <section class="hero">
-      <div class="ambient ambient-one"></div>
-      <div class="ambient ambient-two"></div>
+      
 
       <div class="eyebrow">
         <span class="eyebrow-orb"></span>
@@ -1620,92 +1926,104 @@
         <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg> <span>Windows 10 / 11</span></span>
       </div>
 
-      <!-- Desktop Scene Mockup -->
-      <div class="desktop-scene" id="wheel">
-        <div class="scene-topbar">
-          <div class="scene-brand"><span class="mini-logo">F</span> Fig Workspace</div>
-          <div class="scene-breadcrumb"><span>Desktop</span><span>/</span><strong>Incoming files</strong></div>
-          <div class="scene-tools"><span>—</span><span>□</span><span>×</span></div>
-        </div>
-        <div class="scene-sidebar">
-          <span class="side-dot active"></span>
-          <span class="side-dot"></span>
-          <span class="side-dot"></span>
-          <span class="side-dot"></span>
-        </div>
-        <div class="scene-content">
-          <div class="file-row selected">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 15-4.5-4.5L7 20"/></svg>
-            <div><strong>campaign-cover.png</strong><span>PNG · 4.8 MB</span></div>
-            <span class="file-time">Just now</span>
+      <!-- Single Interactive Radial Wheel Stage (No Photos, Pure Sound & Cursor Interaction) -->
+      <div class="interactive-stage" id="wheel">
+        <div class="stage-topbar">
+          <div class="stage-meta-left">
+            <span class="stage-pill">
+              <span class="stage-pill-dot"></span>
+              <span data-i18n="demoPill">LIVE STAGE</span>
+            </span>
+            <span class="stage-status-text" id="stageStatusText" data-i18n="demoStatusReady">
+              ✨ Ready · Click anywhere in the arena or press Ctrl + Space
+            </span>
           </div>
-          <div class="file-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M10 13h5m-5 4h5"/></svg>
-            <div><strong>annual-report.docx</strong><span>DOCX · 2.1 MB</span></div>
-            <span class="file-time">2 min</span>
-          </div>
-          <div class="file-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg>
-            <div><strong>product-demo.mp4</strong><span>MP4 · 84.2 MB</span></div>
-            <span class="file-time">Yesterday</span>
-          </div>
-        </div>
-        <div class="shortcut-badge"><span>CTRL</span><b>+</b><span>SPACE</span></div>
 
-        <!-- Wheel Center Visual -->
-        <div class="hero-wheel">
-          <div class="radial-wrap">
-            <div class="radial-glow"></div>
-            <div class="radial-ring">
-              <div class="wheel-action wheel-action-0 active" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 15-4.5-4.5L7 20"/></svg></span>
-                <span class="wheel-copy"><strong>Image</strong><small>Studio</small></span>
-              </div>
-              <div class="wheel-action wheel-action-1" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M10 13h5m-5 4h5"/></svg></span>
-                <span class="wheel-copy"><strong>PDF</strong><small>Tools</small></span>
-              </div>
-              <div class="wheel-action wheel-action-2" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
-                <span class="wheel-copy"><strong>Media</strong><small>Convert</small></span>
-              </div>
-              <div class="wheel-action wheel-action-3" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M5 7l1 14h12l1-14M3 3h18v4H3z"/><path d="M10 11h4"/></svg></span>
-                <span class="wheel-copy"><strong>Archive</strong><small>Extract</small></span>
-              </div>
-              <div class="wheel-action wheel-action-4" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg></span>
-                <span class="wheel-copy"><strong>Quick</strong><small>Actions</small></span>
-              </div>
-              <div class="wheel-action wheel-action-5" onclick="activateSlice(this)">
-                <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
-                <span class="wheel-copy"><strong>Office</strong><small>Convert</small></span>
-              </div>
-              <div class="wheel-center">
-                <div class="brand-mark brand-mark-small">
-                  <div class="fig-fruit">
-                    <div class="fig-leaf"></div>
-                    <div class="fig-seed seed-one"></div>
-                    <div class="fig-seed seed-two"></div>
-                    <div class="fig-seed seed-three"></div>
-                  </div>
+          <div class="stage-meta-center">
+            <span class="stage-shortcut-badge">
+              <kbd>Ctrl</kbd> + <kbd>Space</kbd>
+            </span>
+            <span data-i18n="demoShortcutHint">Global Hotkey</span>
+          </div>
+
+          <div class="stage-meta-right">
+            <button id="audioToggleBtn" class="stage-btn active" onclick="toggleAudio(event)" title="Toggle Sound FX">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="audioIcon">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+              <span id="audioStatusText" data-i18n="demoAudioOn">Sound FX: ON</span>
+            </button>
+            <button class="stage-btn primary" onclick="summonWheelCenter(event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg>
+              <span data-i18n="demoSummonBtn">Summon Wheel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- The Arena Canvas -->
+        <div class="stage-arena" id="stageArena" onclick="handleArenaClick(event)">
+          <div class="arena-grid-lines"></div>
+
+          <!-- Ambient prompt when wheel is hidden -->
+          <div class="arena-prompt" id="arenaPrompt">
+            <div class="arena-target-circle">
+              <div class="target-crosshair"></div>
+            </div>
+            <div>
+              <div class="arena-prompt-title" data-i18n="arenaPromptTitle">Click anywhere or press Ctrl + Space</div>
+              <div class="arena-prompt-sub" data-i18n="arenaPromptSub">Spawn the radial menu directly at your cursor coordinates with zero lag and tactile audio feedback.</div>
+            </div>
+          </div>
+
+          <!-- Wheel Anchor Container -->
+          <div class="arena-wheel-anchor hidden" id="arenaWheelAnchor" onclick="event.stopPropagation()">
+            <div class="radial-wrap">
+              <div class="radial-glow"></div>
+              <div class="radial-ring">
+                <div class="wheel-action wheel-action-0 active" onmouseenter="handleSliceHover(0, 'Image Studio')" onclick="handleSliceSelect(event, 0, 'Image Studio')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 15-4.5-4.5L7 20"/></svg></span>
+                  <span class="wheel-copy"><strong>Image</strong><small>Studio</small></span>
                 </div>
-                <span>Fig</span>
+                <div class="wheel-action wheel-action-1" onmouseenter="handleSliceHover(1, 'PDF Tools')" onclick="handleSliceSelect(event, 1, 'PDF Tools')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M10 13h5m-5 4h5"/></svg></span>
+                  <span class="wheel-copy"><strong>PDF</strong><small>Tools</small></span>
+                </div>
+                <div class="wheel-action wheel-action-2" onmouseenter="handleSliceHover(2, 'Media Convert')" onclick="handleSliceSelect(event, 2, 'Media Convert')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
+                  <span class="wheel-copy"><strong>Media</strong><small>Convert</small></span>
+                </div>
+                <div class="wheel-action wheel-action-3" onmouseenter="handleSliceHover(3, 'Archive Extract')" onclick="handleSliceSelect(event, 3, 'Archive Extract')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M5 7l1 14h12l1-14M3 3h18v4H3z"/><path d="M10 11h4"/></svg></span>
+                  <span class="wheel-copy"><strong>Archive</strong><small>Extract</small></span>
+                </div>
+                <div class="wheel-action wheel-action-4" onmouseenter="handleSliceHover(4, 'Quick Actions')" onclick="handleSliceSelect(event, 4, 'Quick Actions')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg></span>
+                  <span class="wheel-copy"><strong>Quick</strong><small>Actions</small></span>
+                </div>
+                <div class="wheel-action wheel-action-5" onmouseenter="handleSliceHover(5, 'Office Convert')" onclick="handleSliceSelect(event, 5, 'Office Convert')">
+                  <span class="wheel-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+                  <span class="wheel-copy"><strong>Office</strong><small>Convert</small></span>
+                </div>
+                <div class="wheel-center" onclick="dismissWheel(event)" title="Click to dismiss">
+                  <div class="brand-mark brand-mark-small">
+                    <div class="fig-fruit">
+                      <div class="fig-leaf"></div>
+                      <div class="fig-seed seed-one"></div>
+                      <div class="fig-seed seed-two"></div>
+                      <div class="fig-seed seed-three"></div>
+                    </div>
+                  </div>
+                  <span>Fig</span>
+                </div>
               </div>
             </div>
-            <div class="cursor-pointer">
-              <svg viewBox="0 0 24 30" fill="none"><path d="M2 2v21l5.2-5.3 3.5 8.6 4.2-1.8-3.6-8.2H19L2 2Z" fill="#FFF" stroke="#0A0C14" stroke-width="1.8"/></svg>
-            </div>
           </div>
-        </div>
 
-        <div class="scene-toast">
-          <span class="toast-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg>
-          </span>
-          <div>
-            <small data-i18n="toastReady">FIG IS READY</small>
-            <strong data-i18n="toastChoose">Choose an instant action</strong>
+          <div class="stage-bottom-hint">
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18M3 12h18"/></svg> <span data-i18n="demoClickAnywhere">Click anywhere on the arena to position wheel at cursor</span></span>
+            <span><kbd>Esc</kbd> <span data-i18n="demoDismiss">or click outside to dismiss</span></span>
           </div>
         </div>
       </div>
@@ -1724,33 +2042,42 @@
       </div>
 
       <div class="bento-grid">
-        <!-- Card 1: Instant Cursor Wheel -->
+        <!-- Card 1: Precision Radial Geometry (Showcase, Not duplicate demo) -->
         <div class="bento-card wheel-card">
           <div class="card-header">
             <span class="icon-chip blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg></span>
-            <span class="mono-tag">CTRL + SPACE</span>
+            <span class="mono-tag" data-i18n="bento1Tag">SUB-12MS RESPONSE</span>
           </div>
-          <h3 class="card-title" data-i18n="bento1Title">Instant Cursor Wheel</h3>
-          <p class="card-copy" data-i18n="bento1Desc">Six contextual actions appear exactly where you are. No hunting through nested context menus.</p>
-          <div class="mini-profile">
-            <span data-i18n="profileActive">Active profile</span>
-            <span class="profile-btn selected" onclick="switchProfile(this, 'Smart')">Smart</span>
-            <span class="profile-btn" onclick="switchProfile(this, 'Design')">Design</span>
-            <span class="profile-btn" onclick="switchProfile(this, 'Media')">Media</span>
-          </div>
-          <div class="card-wheel">
-            <div class="radial-wrap" style="transform: scale(0.75);">
-              <div class="radial-ring">
-                <div class="wheel-center">
-                  <div class="brand-mark brand-mark-small">
-                    <div class="fig-fruit">
-                      <div class="fig-leaf"></div>
-                      <div class="fig-seed seed-one"></div>
-                      <div class="fig-seed seed-two"></div>
-                    </div>
-                  </div>
+          <h3 class="card-title" data-i18n="bento1Title">Precision Radial Geometry</h3>
+          <p class="card-copy" data-i18n="bento1Desc">Every action is equidistant (146px) from your cursor center. Fitts's Law perfected: zero travel distance, muscle memory execution in under 12 milliseconds.</p>
+          
+          <div class="radial-geometry-visual">
+            <div class="geo-orbit outer-orbit"></div>
+            <div class="geo-orbit inner-orbit"></div>
+            <div class="geo-core">
+              <div class="brand-mark brand-mark-small">
+                <div class="fig-fruit">
+                  <div class="fig-leaf"></div>
+                  <div class="fig-seed seed-one"></div>
+                  <div class="fig-seed seed-two"></div>
                 </div>
               </div>
+            </div>
+            <div class="geo-node node-0"><span>0°</span><strong>Image</strong></div>
+            <div class="geo-node node-1"><span>60°</span><strong>PDF</strong></div>
+            <div class="geo-node node-2"><span>120°</span><strong>Media</strong></div>
+            <div class="geo-node node-3"><span>180°</span><strong>Archive</strong></div>
+            <div class="geo-node node-4"><span>240°</span><strong>Quick</strong></div>
+            <div class="geo-node node-5"><span>300°</span><strong>Office</strong></div>
+            <div class="geo-measure-badge">r = 146px · 360°</div>
+          </div>
+
+          <div class="geo-metrics">
+            <div><strong>12ms</strong><span data-i18n="geoMetric1">SUMMON SPEED</span></div>
+            <div><strong>6</strong><span data-i18n="geoMetric2">ACTIONS / 1 CLICK</span></div>
+            <div><strong>0px</strong><span data-i18n="geoMetric3">TRAVEL DISTANCE</span></div>
+          </div>
+        </div>
             </div>
           </div>
         </div>
@@ -2052,7 +2379,7 @@
     </div>
   </footer>
 
-  <!-- 5-Language Localization Dictionary & Interactive Script -->
+  <!-- 5-Language Localization Dictionary & Interactive Script with Web Audio -->
   <script>
     const i18n = {
       en: {
@@ -2069,14 +2396,25 @@
         heroGithubBtn: "Explore GitHub",
         trustNoInstall: "No installation",
         trustNoSignup: "No sign-up",
-        toastReady: "FIG IS READY",
-        toastChoose: "Choose an instant action",
+        demoPill: "LIVE STAGE",
+        demoStatusReady: "✨ Ready · Click anywhere in the arena or press Ctrl + Space",
+        demoShortcutHint: "Global Hotkey",
+        demoAudioOn: "Sound FX: ON",
+        demoAudioOff: "Sound FX: MUTED",
+        demoSummonBtn: "Summon Wheel",
+        arenaPromptTitle: "Click anywhere or press Ctrl + Space",
+        arenaPromptSub: "Spawn the radial menu directly at your cursor coordinates with zero lag and tactile audio feedback.",
+        demoClickAnywhere: "Click anywhere on the arena to position wheel at cursor",
+        demoDismiss: "or click outside to dismiss",
         bentoKicker: "EVERYTHING YOU NEED. NOTHING YOU DON'T.",
         bentoTitle: "One tiny tool. <span>Dozens of superpowers.</span>",
         bentoCopy: "Purpose-built for people who live in their files. Fast, private, and always one shortcut away.",
-        bento1Title: "Instant Cursor Wheel",
-        bento1Desc: "Six contextual actions appear exactly where you are. No hunting through nested context menus.",
-        profileActive: "Active profile",
+        bento1Tag: "SUB-12MS RESPONSE",
+        bento1Title: "Precision Radial Geometry",
+        bento1Desc: "Every action is equidistant (146px) from your cursor center. Fitts's Law perfected: zero travel distance, muscle memory execution in under 12 milliseconds.",
+        geoMetric1: "SUMMON SPEED",
+        geoMetric2: "ACTIONS / 1 CLICK",
+        geoMetric3: "TRAVEL DISTANCE",
         bento2Title: "Image Studio & Censor Blur",
         bento2Desc: "Crop, compress, convert, and selectively blur sensitive regions and faces in seconds.",
         censorTag: "Private region",
@@ -2135,14 +2473,25 @@
         heroGithubBtn: "GitHub'ı Keşfet",
         trustNoInstall: "Kurulum gerektirmez",
         trustNoSignup: "Kayıt yok",
-        toastReady: "FIG HAZIR",
-        toastChoose: "Hızlı bir işlem seçin",
+        demoPill: "CANLI DENEYİN",
+        demoStatusReady: "✨ Hazır · Sahneye tıklayın veya Ctrl + Space tuşlayın",
+        demoShortcutHint: "Global Kısayol",
+        demoAudioOn: "Ses Efekti: AÇIK",
+        demoAudioOff: "Ses Efekti: KAPALI",
+        demoSummonBtn: "Çarkı Aç",
+        arenaPromptTitle: "Sahneye tıklayın veya Ctrl + Space tuşlayın",
+        arenaPromptSub: "Sıfır gecikme ve dokunsal ses efektleriyle radyal menüyü doğrudan imlecinizin koordinatlarında açın.",
+        demoClickAnywhere: "Çarkı imleçte açmak için sahnenin herhangi bir yerine tıklayın",
+        demoDismiss: "veya kapatmak için dışarıya tıklayın",
         bentoKicker: "İHTİYACIN OLAN HER ŞEY. FAZLALIKLARDAN ARINMIŞ.",
         bentoTitle: "Tek bir minik araç. <span>Düzinelerce süper güç.</span>",
         bentoCopy: "Dosyalarıyla yaşayanlar için özel tasarlandı. Hızlı, gizli ve daima tek bir kısayol mesafesinde.",
-        bento1Title: "İmleç Ucunda Radyal Çark",
-        bento1Desc: "Ctrl + Space ile tam imlecinizin etrafında 6 bağlamsal işlem açılır. Karmaşık menülerde kaybolmaya son.",
-        profileActive: "Aktif profil",
+        bento1Tag: "12MS ALTINDA TEPKİ",
+        bento1Title: "Kusursuz Radyal Geometri",
+        bento1Desc: "Her işlem imlecinizden eşit mesafededir (146px). Fitts Kanunu'nun zirvesi: sıfır mesafe kaybı, 12 milisaniyenin altında kas hafızasıyla çalıştırma.",
+        geoMetric1: "AÇILMA HIZI",
+        geoMetric2: "1 TIKLA 6 EYLEM",
+        geoMetric3: "MESAFE KAYBI",
         bento2Title: "Görsel Stüdyosu & Sansür/Bulanıklık",
         bento2Desc: "Fotoğrafları kırpın, sıkıştırın ve kimlik veya yüz gibi hassas alanları saniyeler içinde bulanıklaştırın.",
         censorTag: "Gizli alan",
@@ -2201,33 +2550,44 @@
         heroGithubBtn: "Explorar GitHub",
         trustNoInstall: "Sin instalación",
         trustNoSignup: "Sin registro",
-        toastReady: "FIG ESTÁ LISTO",
-        toastChoose: "Elige una acción instantánea",
-        bentoKicker: "TODO LO QUE NECESITAS. NADA QUE SOBRE.",
-        bentoTitle: "Una herramienta pequeña. <span>Docenas de superpoderes.</span>",
-        bentoCopy: "Diseñado para quienes viven entre archivos. Rápido, privado y siempre a un atajo de distancia.",
-        bento1Title: "Rueda Radial en el Cursor",
-        bento1Desc: "Seis acciones contextuales aparecen exactamente donde estás con Ctrl + Espacio.",
-        profileActive: "Perfil activo",
-        bento2Title: "Estudio de Imagen y Censura",
+        demoPill: "EN VIVO",
+        demoStatusReady: "✨ Listo · Haz clic o pulsa Ctrl + Space",
+        demoShortcutHint: "Atajo Global",
+        demoAudioOn: "Sonido: ON",
+        demoAudioOff: "Sonido: SILENCIO",
+        demoSummonBtn: "Abrir Rueda",
+        arenaPromptTitle: "Haz clic dentro o pulsa Ctrl + Space",
+        arenaPromptSub: "Abre la rueda radial en las coordenadas exactas de tu cursor con sonido táctil.",
+        demoClickAnywhere: "Haz clic para situar la rueda en el cursor",
+        demoDismiss: "o pulsa Esc para cerrar",
+        bentoKicker: "TODO LO QUE NECESITAS. NADA MÁS.",
+        bentoTitle: "Una pequeña herramienta. <span>Docenas de poderes.</span>",
+        bentoCopy: "Diseñado para quienes viven entre archivos. Rápido, privado y a un atajo de distancia.",
+        bento1Tag: "RESPUESTA < 12MS",
+        bento1Title: "Geometría Radial de Precisión",
+        bento1Desc: "Cada acción es equidistante a tu cursor. Ley de Fitts: cero distancia, memoria muscular pura.",
+        geoMetric1: "VELOCIDAD",
+        geoMetric2: "ACCIONES EN 1 CLIC",
+        geoMetric3: "DISTANCIA",
+        bento2Title: "Estudio de Imagen y Desenfoque",
         bento2Desc: "Recorta, comprime y desenfoca zonas sensibles en segundos.",
         censorTag: "Zona privada",
         bento3Title: "Motor Universal de Documentos",
-        bento3Desc: "Conversión de Office y PDF sin subir nada a la nube.",
-        convertDone: "Convertido localmente en 0.8s",
-        offlinePill: "DESCONECTADO",
+        bento3Desc: "Conversión de Office y PDF sin subir datos a la nube.",
+        convertDone: "Convertido en 0.8s localmente",
+        offlinePill: "OFFLINE",
         bento4Title: "Cero Telemetría en la Nube",
-        bento4Desc: "Tus archivos nunca salen de tu ordenador. Desarrollado con Rust ultra rápido.",
+        bento4Desc: "Tus archivos nunca salen de tu PC. Núcleo Rust ultrarrápido y seguro.",
         metricNetwork: "LLAMADAS DE RED",
         metricPortable: "EXE PORTÁTIL",
         bento5Title: "Atajos Globales Nativos",
-        bento5Desc: "Ejecuta acciones en cualquier parte de Windows sin perder la concentración.",
+        bento5Desc: "Opera tus archivos desde cualquier parte de Windows.",
         scRadial: "Abrir rueda radial",
         scConvert: "Conversión rápida",
-        scPaste: "Pegar del portapapeles",
-        appKicker: "EL CENTRO DE CONTROL DE TUS ARCHIVOS",
-        appTitle: "Compacto cuando lo necesitas. <span>Invisible cuando no.</span>",
-        localWorkspace: "Espacio de trabajo 100% local",
+        scPaste: "Pegar portapapeles",
+        appKicker: "CENTRO DE COMANDO",
+        appTitle: "Compacto cuando se necesita. <span>Invisible después.</span>",
+        localWorkspace: "Espacio 100% local",
         menuWorkspace: "ESPACIO DE TRABAJO",
         menuQuick: "Conversión Rápida",
         menuImage: "Estudio de Imagen",
@@ -2236,130 +2596,152 @@
         menuPrefs: "PREFERENCIAS",
         menuShortcuts: "Atajos",
         menuSettings: "Ajustes",
-        footerLocalMsg: "Todo el procesamiento es local",
-        footerOfflineActive: "Modo desconectado activo",
+        footerLocalMsg: "Procesamiento totalmente local",
+        footerOfflineActive: "Modo offline activo",
         dropEyebrow: "CONVERSIÓN RÁPIDA",
         dropQuestion: "¿En qué archivo trabajamos?",
         dropPrompt: "Arrastra archivos aquí",
-        dropSub: "o haz clic para explorar en tu equipo",
+        dropSub: "o haz clic para explorar",
         recentTitle: "Trabajos recientes",
-        recentViewAll: "Ver todos",
-        finalTitle: "Tu flujo de trabajo más rápido <span>empieza aquí.</span>",
-        finalCopy: "Un único ejecutable ligero. Cada acción esencial. Sin cuentas, sin nube.",
+        recentViewAll: "Ver todo",
+        finalTitle: "Tu flujo más rápido <span>empieza aquí.</span>",
+        finalCopy: "Un único ejecutable ligero. Sin cuenta, sin nube.",
         finalBtn: "Descargar Fig para Windows",
-        footerTagline: "Kit radial de archivos para Windows.<br>Hecho para la velocidad y la calma.",
+        footerTagline: "Kit de archivos radial para Windows.<br>Velocidad y calma en tu trabajo.",
         colProduct: "PRODUCTO",
         colResources: "RECURSOS",
         colCompat: "COMPATIBILIDAD",
-        sysStatus: "SISTEMAS OPERATIVOS"
+        sysStatus: "TODOS LOS SISTEMAS ACTIVOS"
       },
       de: {
         navFeatures: "Funktionen",
         navWheel: "Radialrad",
         navShortcuts: "Tastenkombinationen",
         navSpecs: "Spezifikationen",
-        navDownload: "Herunterladen .exe",
+        navDownload: ".exe Herunterladen",
         heroBadge: "APPLE-MINIMALISMUS TRIFFT WINDOWS-PRODUKTIVITÄT",
-        heroTitle: "Ihre Dateien, einfach mühelos.<br><span>Sofortige Radaktionen</span> an Ihrem Zeiger.",
-        heroSubtitle: "Dokumente konvertieren, Bilder zensieren und Medien mit 1 Klick transformieren. 100% offline, 16 MB portable Datei.",
-        heroDownloadBtn: "Fig für Windows herunterladen",
+        heroTitle: "Dateien mühelos im Griff.<br>Sofortige <span>radiale Aktionen am Cursor.</span>",
+        heroSubtitle: "Dokumente konvertieren, sensible Bilder zensieren und PDFs mit 1 Klick transformieren. 100% offline, 16 MB portable .exe.",
+        heroDownloadBtn: "Fig für Windows laden",
         heroDownloadFree: "Kostenlos & Portabel",
-        heroGithubBtn: "GitHub Erkunden",
+        heroGithubBtn: "GitHub ansehen",
         trustNoInstall: "Keine Installation",
-        trustNoSignup: "Keine Anmeldung",
-        toastReady: "FIG IST BEREIT",
-        toastChoose: "Sofortaktion wählen",
-        bentoKicker: "ALLES WAS SIE BRAUCHEN. KEIN BALLAST.",
+        trustNoSignup: "Keine Registrierung",
+        demoPill: "LIVE-TEST",
+        demoStatusReady: "✨ Bereit · Klicken oder Strg + Leertaste drücken",
+        demoShortcutHint: "Globaler Hotkey",
+        demoAudioOn: "Sound: EIN",
+        demoAudioOff: "Sound: AUS",
+        demoSummonBtn: "Rad öffnen",
+        arenaPromptTitle: "Hier klicken oder Strg + Leertaste drücken",
+        arenaPromptSub: "Öffnen Sie das Radialmenü direkt an den Cursorkoordinaten mit taktilem Sound.",
+        demoClickAnywhere: "Klicken Sie auf die Fläche für Cursor-Positionierung",
+        demoDismiss: "oder außerhalb klicken zum Schließen",
+        bentoKicker: "ALLES WAS SIE BRAUCHEN.",
         bentoTitle: "Ein winziges Tool. <span>Dutzende Superkräfte.</span>",
-        bentoCopy: "Für Menschen entwickelt, die in ihren Dateien leben. Schnell, privat und immer einen Klick entfernt.",
-        bento1Title: "Zeigerrad bei Klick",
-        bento1Desc: "Sechs Kontextaktionen erscheinen direkt an Ihrem Zeiger mit Strg + Leertaste.",
-        profileActive: "Aktives Profil",
+        bentoCopy: "Konzipiert für Menschen, die täglich mit Dateien arbeiten. Schnell, privat und immer griffbereit.",
+        bento1Tag: "UNTER 12MS REAKTION",
+        bento1Title: "Präzise Radiale Geometrie",
+        bento1Desc: "Jede Aktion liegt im gleichen Abstand (146px) zum Cursor. Fitts' Gesetz perfektioniert: null Wegzeit.",
+        geoMetric1: "GESCHWINDIGKEIT",
+        geoMetric2: "6 AKTIONEN / 1 KLICK",
+        geoMetric3: "WEGZEIT",
         bento2Title: "Bildstudio & Zensur-Weichzeichner",
-        bento2Desc: "Bilder zuschneiden, komprimieren und sensible Daten in Sekunden unkenntlich machen.",
-        censorTag: "Sensibler Bereich",
+        bento2Desc: "Bilder zuschneiden, komprimieren und sensible Bereiche in Sekunden weichzeichnen.",
+        censorTag: "Privater Bereich",
         bento3Title: "Universelle Dokumenten-Engine",
-        bento3Desc: "Zuverlässige Office- und PDF-Konvertierung ohne fremde Cloud-Server.",
-        convertDone: "Lokal konvertiert in 0.8s",
+        bento3Desc: "Zuverlässige Office- und PDF-Konvertierung ohne fremde Cloud-Uploads.",
+        convertDone: "Lokal in 0,8 s konvertiert",
         offlinePill: "OFFLINE",
-        bento4Title: "Keine Cloud-Telemetrie",
-        bento4Desc: "Ihre Dateien verlassen niemals Ihren PC. Angetrieben von einem sicheren Rust-Kern.",
+        bento4Title: "Null Cloud-Telemetrie",
+        bento4Desc: "Ihre Dateien verlassen niemals Ihren PC. Angetrieben von einem Rust-Kern.",
         metricNetwork: "NETZWERKAUFRUFE",
         metricPortable: "PORTABLE EXE",
-        bento5Title: "Globale Windows-Tastenkürzel",
-        bento5Desc: "Tägliche Dateioperationen überall in Windows ohne Ablenkung ausführen.",
+        bento5Title: "Native Globale Shortcuts",
+        bento5Desc: "Dateivorgänge überall in Windows ohne Fokusverlust ausführen.",
         scRadial: "Radialrad öffnen",
-        scConvert: "Schnell konvertieren",
+        scConvert: "Schnellkonvertierung",
         scPaste: "Aus Zwischenablage einfügen",
-        appKicker: "DIE KOMMANDOZENTRALE FÜR IHRE DATEIEN",
-        appTitle: "Kompakt wenn gebraucht. <span>Unsichtbar wenn nicht.</span>",
+        appKicker: "DIE DATEI-SCHALTZENTRALE",
+        appTitle: "Kompakt bei Bedarf. <span>Unsichtbar wenn fertig.</span>",
         localWorkspace: "100% lokaler Arbeitsbereich",
         menuWorkspace: "ARBEITSBEREICH",
         menuQuick: "Schnellkonvertierung",
         menuImage: "Bildstudio",
-        menuPdf: "PDF-Tools",
+        menuPdf: "PDF-Werkzeuge",
         menuMedia: "Medien",
         menuPrefs: "EINSTELLUNGEN",
-        menuShortcuts: "Kürzel",
+        menuShortcuts: "Tastenkürzel",
         menuSettings: "Optionen",
-        footerLocalMsg: "Verarbeitung erfolgt ausschließlich lokal",
+        footerLocalMsg: "Verarbeitung rein lokal",
         footerOfflineActive: "Offline-Modus aktiv",
         dropEyebrow: "SCHNELLKONVERTIERUNG",
-        dropQuestion: "Woran arbeiten wir gerade?",
+        dropQuestion: "Woran arbeiten wir?",
         dropPrompt: "Dateien hier ablegen",
-        dropSub: "oder klicken zum Durchsuchen",
-        recentTitle: "Letzte Vorgänge",
-        recentViewAll: "Alle ansehen",
-        finalTitle: "Ihr schnellster Workflow <span>beginnt genau hier.</span>",
-        finalCopy: "Eine einzige schlanke Datei. Jede wichtige Dateiaktion. Kein Konto, keine Cloud.",
-        finalBtn: "Fig für Windows herunterladen",
-        footerTagline: "Minimalistisches Radial-Toolkit für Windows.<br>Gebaut für Geschwindigkeit und Ruhe.",
+        dropSub: "oder klicken zum Auswählen",
+        recentTitle: "Letzte Aufgaben",
+        recentViewAll: "Alle anzeigen",
+        finalTitle: "Ihr schnellster Workflow <span>beginnt hier.</span>",
+        finalCopy: "Eine einzige leichte Datei. Ohne Konto, ohne Cloud.",
+        finalBtn: "Fig für Windows laden",
+        footerTagline: "Minimalistisches radiales Datei-Toolkit für Windows.<br>Entworfen für Schnelligkeit und Ruhe.",
         colProduct: "PRODUKT",
         colResources: "RESSOURCEN",
         colCompat: "KOMPATIBILITÄT",
-        sysStatus: "ALLE SYSTEME BEREIT"
+        sysStatus: "ALLE SYSTEME BETRIEBSBEREIT"
       },
       fr: {
-        navFeatures: "Fonctionnalités",
+        navFeatures: "Fonctions",
         navWheel: "Roue Radiale",
         navShortcuts: "Raccourcis",
         navSpecs: "Spécifications",
         navDownload: "Télécharger .exe",
-        heroBadge: "LE MINIMALISME APPLE AU SERVICE DE WINDOWS",
-        heroTitle: "Vos fichiers, tout simplement faciles.<br><span>Actions radiales instantanées</span> à votre curseur.",
-        heroSubtitle: "Convertissez des documents, floutez des images sensibles et traitez vos fichiers en 1 clic. 100% hors-ligne, exécutable portable de 16 Mo.",
+        heroBadge: "MINIMALISME APPLE ET PRODUCTIVITÉ WINDOWS",
+        heroTitle: "Vos fichiers, sans effort.<br>Actions radiales <span>instantanées au curseur.</span>",
+        heroSubtitle: "Convertissez des documents, floutez des images et traitez vos médias en 1 clic. 100% hors-ligne, exécutable portable de 16 Mo.",
         heroDownloadBtn: "Télécharger Fig pour Windows",
         heroDownloadFree: "Gratuit & Portable",
         heroGithubBtn: "Explorer GitHub",
-        trustNoInstall: "Aucune installation",
-        trustNoSignup: "Aucune inscription",
-        toastReady: "FIG EST PRÊT",
-        toastChoose: "Choisissez une action",
+        trustNoInstall: "Sans installation",
+        trustNoSignup: "Sans inscription",
+        demoPill: "EN DIRECT",
+        demoStatusReady: "✨ Prêt · Cliquez ou tapez Ctrl + Espace",
+        demoShortcutHint: "Raccourci Global",
+        demoAudioOn: "Son: ACTIVÉ",
+        demoAudioOff: "Son: COUPÉ",
+        demoSummonBtn: "Ouvrir la Roue",
+        arenaPromptTitle: "Cliquez ici ou tapez Ctrl + Espace",
+        arenaPromptSub: "Faites apparaître le menu radial directement aux coordonnées du curseur avec son haptique.",
+        demoClickAnywhere: "Cliquez n'importe où pour positionner la roue",
+        demoDismiss: "ou cliquez dehors pour fermer",
         bentoKicker: "TOUT CE DONT VOUS AVEZ BESOIN.",
-        bentoTitle: "Un outil minuscule. <span>Des dizaines de superpouvoirs.</span>",
-        bentoCopy: "Conçu pour les personnes qui travaillent avec des fichiers. Rapide, privé et accessible d'un raccourci.",
-        bento1Title: "Roue Radiale au Curseur",
-        bento1Desc: "Six actions contextuelles apparaissent exactement là où vous vous trouvez avec Ctrl + Espace.",
-        profileActive: "Profil actif",
-        bento2Title: "Studio d'Images & Censure",
-        bento2Desc: "Rognez, compressez et floutez les zones confidentielles en quelques secondes.",
+        bentoTitle: "Un outil minuscule. <span>Des dizaines de pouvoirs.</span>",
+        bentoCopy: "Conçu pour ceux qui vivent dans leurs fichiers. Rapide, privé et à un raccourci.",
+        bento1Tag: "RÉPONSE < 12MS",
+        bento1Title: "Géométrie Radiale de Précision",
+        bento1Desc: "Chaque action est à égale distance (146px) de votre curseur. Loi de Fitts : zéro distance perdue.",
+        geoMetric1: "VITESSE",
+        geoMetric2: "6 ACTIONS / 1 CLIC",
+        geoMetric3: "DISTANCE",
+        bento2Title: "Studio d'Images & Floutage",
+        bento2Desc: "Rognez, compressez et floutez les zones sensibles en quelques secondes.",
         censorTag: "Zone privée",
         bento3Title: "Moteur Universel de Documents",
-        bento3Desc: "Conversion Office et PDF sans aucun envoi vers des serveurs distants.",
-        convertDone: "Converti localement en 0.8s",
+        bento3Desc: "Conversion Office et PDF fiable sans téléversement sur le cloud.",
+        convertDone: "Converti en 0,8 s localement",
         offlinePill: "HORS-LIGNE",
         bento4Title: "Zéro Télémétrie Cloud",
         bento4Desc: "Vos fichiers ne quittent jamais votre PC. Propulsé par un moteur Rust ultra-rapide.",
         metricNetwork: "APPELS RÉSEAU",
         metricPortable: "EXE PORTABLE",
         bento5Title: "Raccourcis Globaux Natifs",
-        bento5Desc: "Exécutez vos opérations quotidiennes partout dans Windows sans couper votre élan.",
+        bento5Desc: "Exécutez vos opérations partout dans Windows sans couper votre élan.",
         scRadial: "Ouvrir la roue radiale",
         scConvert: "Conversion rapide",
         scPaste: "Coller depuis le presse-papiers",
-        appKicker: "LE CENTRE DE CONTRÔLE DE VOS FICHIERS",
+        appKicker: "LE CENTRE DE CONTRÔLE",
         appTitle: "Compact quand vous en avez besoin. <span>Invisible sinon.</span>",
-        localWorkspace: "Espace de travail 100% local",
+        localWorkspace: "Espace 100% local",
         menuWorkspace: "ESPACE DE TRAVAIL",
         menuQuick: "Conversion Rapide",
         menuImage: "Studio d'Images",
@@ -2376,10 +2758,10 @@
         dropSub: "ou cliquez pour parcourir votre ordinateur",
         recentTitle: "Tâches récentes",
         recentViewAll: "Tout afficher",
-        finalTitle: "Votre flux de travail le plus rapide <span>commence ici.</span>",
+        finalTitle: "Votre flux de travail <span>commence ici.</span>",
         finalCopy: "Un seul fichier léger. Chaque action essentielle. Sans compte, sans cloud.",
         finalBtn: "Télécharger Fig pour Windows",
-        footerTagline: "Boîte à outils de fichiers radiale pour Windows.<br>Conçue pour la vitesse et la sérénité.",
+        footerTagline: "Boîte à outils radiale pour Windows.<br>Conçue pour la vitesse et la sérénité.",
         colProduct: "PRODUIT",
         colResources: "RESSOURCES",
         colCompat: "COMPATIBILITÉ",
@@ -2387,8 +2769,11 @@
       }
     };
 
+    let currentLang = "en";
+
     function switchLang(lang) {
       if (!i18n[lang]) lang = "en";
+      currentLang = lang;
 
       document.querySelectorAll(".lang-btn").forEach(btn => {
         btn.classList.toggle("active", btn.textContent.toLowerCase() === lang);
@@ -2405,15 +2790,353 @@
       document.documentElement.lang = lang;
     }
 
-    function switchProfile(el, profile) {
-      document.querySelectorAll(".profile-btn").forEach(btn => btn.classList.remove("selected"));
-      el.classList.add("selected");
+    /* ============================================================
+       Web Audio API Sound Synthesizer (100% Offline & Instant)
+       ============================================================ */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
     }
 
-    function activateSlice(el) {
-      document.querySelectorAll(".wheel-action").forEach(slice => slice.classList.remove("active"));
-      el.classList.add("active");
+    function toggleAudio(e) {
+      if (e) e.stopPropagation();
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById("audioToggleBtn");
+      const text = document.getElementById("audioStatusText");
+      if (soundEnabled) {
+        btn.classList.add("active");
+        text.textContent = i18n[currentLang]?.demoAudioOn || "Sound FX: ON";
+        playHoverSound();
+      } else {
+        btn.classList.remove("active");
+        text.textContent = i18n[currentLang]?.demoAudioOff || "Sound FX: MUTED";
+      }
+      localStorage.setItem("fig_sound_fx", soundEnabled ? "1" : "0");
     }
+
+    // 1. Wheel Open Sound: Crisp futuristic shimmer & chime
+    function playOpenSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(440, now);
+        osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain1.gain.setValueAtTime(0.001, now);
+        gain1.gain.linearRampToValueAtTime(0.18, now + 0.02);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.22);
+
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = "triangle";
+        osc2.frequency.setValueAtTime(260, now);
+        osc2.frequency.exponentialRampToValueAtTime(520, now + 0.09);
+        gain2.gain.setValueAtTime(0.001, now);
+        gain2.gain.linearRampToValueAtTime(0.12, now + 0.015);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.16);
+      } catch (err) {}
+    }
+
+    // 2. Slice Hover Sound: Delicate micro-tick
+    function playHoverSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1040, now);
+        osc.frequency.exponentialRampToValueAtTime(1320, now + 0.04);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.04, now + 0.005);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } catch (err) {}
+    }
+
+    // 3. Slice Select / Click Sound: Punchy two-tone confirmation
+    function playSelectSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        [659.25, 880].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.03);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.03);
+          gain.gain.linearRampToValueAtTime(0.14, now + idx * 0.03 + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.03 + 0.18);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.03);
+          osc.stop(now + idx * 0.03 + 0.2);
+        });
+      } catch (err) {}
+    }
+
+    // 4. Close Sound: Soft gentle descent
+    function playCloseSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(540, now);
+        osc.frequency.exponentialRampToValueAtTime(280, now + 0.08);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      } catch (err) {}
+    }
+
+    /* ============================================================
+       Interactive Arena & Radial Wheel Controller
+       ============================================================ */
+    const stageArena = document.getElementById("stageArena");
+    const arenaPrompt = document.getElementById("arenaPrompt");
+    const arenaWheelAnchor = document.getElementById("arenaWheelAnchor");
+    const stageStatusText = document.getElementById("stageStatusText");
+
+    let isWheelVisible = false;
+
+    function updateStatus(msg, isHighlight = false) {
+      if (!stageStatusText) return;
+      stageStatusText.textContent = msg;
+      if (isHighlight) {
+        stageStatusText.classList.add("highlight");
+        setTimeout(() => stageStatusText.classList.remove("highlight"), 1200);
+      }
+    }
+
+    function spawnRippleAt(x, y) {
+      if (!stageArena) return;
+      const ripple = document.createElement("div");
+      ripple.className = "spawn-ripple";
+      ripple.style.left = x + "px";
+      ripple.style.top = y + "px";
+      stageArena.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    }
+
+    function positionWheelAt(x, y) {
+      if (!stageArena || !arenaWheelAnchor) return;
+      const rect = stageArena.getBoundingClientRect();
+      // Ensure wheel (radius 160) stays within boundaries
+      const clampedX = Math.max(165, Math.min(rect.width - 165, x));
+      const clampedY = Math.max(165, Math.min(rect.height - 165, y));
+
+      arenaWheelAnchor.style.left = clampedX + "px";
+      arenaWheelAnchor.style.top = clampedY + "px";
+
+      spawnRippleAt(clampedX, clampedY);
+      arenaWheelAnchor.classList.remove("hidden", "closing");
+      arenaWheelAnchor.classList.add("visible");
+      arenaPrompt.classList.add("hidden");
+      isWheelVisible = true;
+
+      playOpenSound();
+      const openMsg = currentLang === "tr" ? "🎯 Fig Çarkı imleçte açıldı · Bir işlem seçin" : "🎯 Fig Wheel active at cursor · Select an action";
+      updateStatus(openMsg, true);
+    }
+
+    function handleArenaClick(e) {
+      const rect = stageArena.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      positionWheelAt(x, y);
+    }
+
+    function summonWheelCenter(e) {
+      if (e) e.stopPropagation();
+      if (!stageArena) return;
+      const rect = stageArena.getBoundingClientRect();
+      positionWheelAt(rect.width / 2, rect.height / 2);
+    }
+
+    function dismissWheel(e) {
+      if (e) e.stopPropagation();
+      if (!isWheelVisible) return;
+      playCloseSound();
+      arenaWheelAnchor.classList.remove("visible");
+      arenaWheelAnchor.classList.add("closing");
+      setTimeout(() => {
+        arenaWheelAnchor.classList.remove("closing");
+        arenaWheelAnchor.classList.add("hidden");
+        arenaPrompt.classList.remove("hidden");
+        isWheelVisible = false;
+        const readyMsg = currentLang === "tr" ? "✨ Hazır · Sahneye tıklayın veya Ctrl + Space tuşlayın" : "✨ Ready · Click anywhere in the arena or press Ctrl + Space";
+        updateStatus(readyMsg);
+      }, 200);
+    }
+
+    function handleSliceHover(index, name) {
+      playHoverSound();
+      document.querySelectorAll(".interactive-stage .wheel-action").forEach((slice, idx) => {
+        slice.classList.toggle("active", idx === index);
+      });
+      const hoverMsg = currentLang === "tr" ? `${name} seçildi · Çalıştırmak için tıklayın` : `${name} active · Click to execute`;
+      updateStatus("⚡ " + hoverMsg);
+    }
+
+    function handleSliceSelect(e, index, name) {
+      if (e) e.stopPropagation();
+      playSelectSound();
+
+      // Spark burst
+      createSparkBurst(e.clientX, e.clientY);
+
+      const execMsg = currentLang === "tr" ? `✓ ${name} çalıştırıldı! (12ms)` : `✓ ${name} executed! (12ms)`;
+      updateStatus("🚀 " + execMsg, true);
+    }
+
+    function createSparkBurst(x, y) {
+      const burst = document.createElement("div");
+      burst.className = "spark-burst";
+      burst.style.left = x + "px";
+      burst.style.top = y + "px";
+      for (let i = 0; i < 14; i++) {
+        const dot = document.createElement("div");
+        dot.className = "spark-dot";
+        const angle = (Math.PI * 2 * i) / 14 + (Math.random() - 0.5) * 0.4;
+        const dist = 30 + Math.random() * 45;
+        dot.style.setProperty("--tx", Math.cos(angle) * dist + "px");
+        dot.style.setProperty("--ty", Math.sin(angle) * dist + "px");
+        burst.appendChild(dot);
+      }
+      document.body.appendChild(burst);
+      setTimeout(() => burst.remove(), 500);
+    }
+
+    // Keyboard shortcut handler
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.code === "Space" || e.key === " ")) {
+        e.preventDefault();
+        if (isWheelVisible) {
+          dismissWheel();
+        } else {
+          document.getElementById("wheel")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          summonWheelCenter();
+        }
+      } else if (e.key === "Escape" && isWheelVisible) {
+        dismissWheel();
+      }
+    });
+
+    // Close on click outside stage
+    document.addEventListener("click", (e) => {
+      if (isWheelVisible && !e.target.closest(".interactive-stage")) {
+        dismissWheel();
+      }
+    });
+
+    /* ============================================================
+       Ambient Stardust Particles & Smooth Mouse Glow
+       ============================================================ */
+    (function initLivingBackground() {
+      const canvas = document.getElementById("particles-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const count = Math.min(45, Math.floor(width / 32));
+      const particles = [];
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: -0.15 - Math.random() * 0.35,
+          size: 1 + Math.random() * 2,
+          alpha: 0.15 + Math.random() * 0.45,
+          pulse: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.02 + Math.random() * 0.02
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, width, height);
+        for (let p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.pulse += p.pulseSpeed;
+          if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+          if (p.x < -10) p.x = width + 10;
+          if (p.x > width + 10) p.x = -10;
+
+          const currentAlpha = Math.max(0.05, p.alpha + Math.sin(p.pulse) * 0.2);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(165, 180, 252, ${currentAlpha})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+
+      // Smooth cursor follower
+      const glow = document.getElementById("cursorGlow");
+      if (glow) {
+        let mouseX = width / 2;
+        let mouseY = height / 3;
+        let curX = mouseX;
+        let curY = mouseY;
+        window.addEventListener("mousemove", (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+        function animateGlow() {
+          curX += (mouseX - curX) * 0.08;
+          curY += (mouseY - curY) * 0.08;
+          glow.style.left = curX + "px";
+          glow.style.top = curY + "px";
+          requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+      }
+    })();
 
     let isDropped = false;
     function toggleDropState() {
@@ -2425,6 +3148,7 @@
         dropzone.classList.add("dropped");
         prompt.textContent = "3 items selected · 22.4 MB";
         sub.textContent = "Ready to transform into PDF, WebP or MP3";
+        playSelectSound();
       } else {
         dropzone.classList.remove("dropped");
         prompt.textContent = "Drop files anywhere";
@@ -2435,13 +3159,23 @@
     function toggleViewSwitch(el) {
       el.parentElement.querySelectorAll("span").forEach(s => s.classList.remove("active"));
       el.classList.add("active");
+      playHoverSound();
     }
 
     // Auto-detect browser language or read saved preference
     (function init() {
-      const saved = localStorage.getItem("fig_landing_lang");
-      if (saved && i18n[saved]) {
-        switchLang(saved);
+      const savedAudio = localStorage.getItem("fig_sound_fx");
+      if (savedAudio === "0") {
+        soundEnabled = false;
+        const btn = document.getElementById("audioToggleBtn");
+        const text = document.getElementById("audioStatusText");
+        if (btn) btn.classList.remove("active");
+        if (text) text.textContent = "Sound FX: MUTED";
+      }
+
+      const savedLang = localStorage.getItem("fig_landing_lang");
+      if (savedLang && i18n[savedLang]) {
+        switchLang(savedLang);
         return;
       }
       const navLang = (navigator.language || "en").substring(0, 2).toLowerCase();
