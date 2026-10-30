@@ -1217,7 +1217,7 @@ pub fn convert_media(
             cmd.args(["-vn", "-c:a", "libvorbis", "-q:a", "4"]);
         }
         "mp4" => {
-            cmd.args(["-c:v", "libx264", "-preset", "fast", "-crf", "22", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart"]);
+            cmd.args(["-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "fast", "-crf", "22", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart"]);
         }
         "webm" => {
             cmd.args(["-c:v", "libvpx-vp9", "-crf", "30", "-b:v", "0", "-c:a", "libopus"]);
