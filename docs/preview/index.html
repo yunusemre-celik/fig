@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fig — Bu Çark Zaman Kazandırıyor | Hızlı, Çevrimdışı Dosya Araç Kiti</title>
+  <meta name="description" content="Hayır, saat çarkı değil; işlem çarkı. Fig ile web sitelerinde reklam izlemeye son verin. Kısayol tuşuna basın, çark çıksın, döndürün ve anında dönüştürün.">
+  <link rel="icon" type="image/svg+xml" href="../figlogo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-body: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F1F5F9;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --text-subtle: #94A3B8;
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --primary-light: #EEF2FF;
+      --accent-blue: #0284C7;
+      --accent-indigo: #6366F1;
+      --accent-periwinkle: #A5B4FC;
+      --border-color: #E2E8F0;
+      --border-focus: #C7D2FE;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
+      --shadow-lg: 0 12px 30px rgba(15, 23, 42, 0.09);
+      --shadow-xl: 0 20px 40px rgba(15, 23, 42, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Background Ambient Canvas */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 50% 70%, rgba(165, 180, 252, 0.07) 0%, transparent 50%),
+        #F8FAFC;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ============================================================
+       Navbar
+       ============================================================ */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(248, 250, 252, 0.82);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-icon img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .pill-btn-outline {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pill-btn-outline:hover {
+      background: #F1F5F9;
+      border-color: #CBD5E1;
+      transform: translateY(-1px);
+    }
+
+    .pill-btn-primary {
+      background: var(--primary);
+      border: 1px solid transparent;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
+    }
+
+    .pill-btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+    }
+
+    /* ============================================================
+       Hero Section
+       ============================================================ */
+    .hero-section {
+      position: relative;
+      padding: 60px 0 100px;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      align-items: center;
+      gap: 24px;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .hero-side-left, .hero-side-right {
+        display: none;
+      }
+    }
+
+    .hero-center {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: #EEF2FF;
+      color: var(--primary);
+      border: 1px solid #C7D2FE;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-title {
+      font-size: 58px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      color: #0F172A;
+      margin-bottom: 12px;
+    }
+
+    .hero-title .accent {
+      display: block;
+      background: linear-gradient(135deg, #4F46E5 0%, #2563EB 50%, #0284C7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-top: 4px;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .download-btn-main {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 16px 38px;
+      background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      border: none;
+      box-shadow: 0 10px 28px rgba(79, 70, 229, 0.35);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .download-btn-main:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 16px 36px rgba(79, 70, 229, 0.45);
+      background: linear-gradient(135deg, #4338CA 0%, #3730A3 100%);
+    }
+
+    .download-btn-main svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .download-subtext {
+      font-size: 13px;
+      color: var(--text-subtle);
+      font-weight: 500;
+    }
+
+    .hero-side-left, .hero-side-right {
+      position: relative;
+    }
+
+    .floating-mockup {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      background: #FFFFFF;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .float-anim-1 {
+      animation: floatGentle 6s ease-in-out infinite alternate;
+    }
+
+    .float-anim-2 {
+      animation: floatGentle 7s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes floatGentle {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-12px) rotate(0.8deg); }
+    }
+
+    /* ============================================================
+       Section Standard Styles
+       ============================================================ */
+    .section {
+      padding: 100px 0;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 60px;
+    }
+
+    @media (max-width: 900px) {
+      .section-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+      }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 20px;
+    }
+
+    .badge-blue {
+      background: #EEF2FF;
+      color: #4F46E5;
+      border: 1px solid #C7D2FE;
+    }
+
+    .badge-cyan {
+      background: #E0F2FE;
+      color: #0284C7;
+      border: 1px solid #BAE6FD;
+    }
+
+    .badge-emerald {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    .section-title {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.2px;
+      color: #0F172A;
+      margin-bottom: 20px;
+    }
+
+    .section-desc {
+      font-size: 18px;
+      line-height: 1.65;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      box-shadow: var(--shadow-xl);
+      border-color: var(--border-focus);
+      transform: translateY(-4px);
+    }
+
+    .visual-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .visual-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      background: #FFFFFF;
+    }
+
+    /* ============================================================
+       Section 2: Radial Wheel & Easy Conversion
+       ============================================================ */
+    .highlight-card {
+      background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+      border: 1px solid #DBEAFE;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      font-size: 15px;
+      color: #1E3A8A;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       Section 3: Rust & Performance
+       ============================================================ */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .spec-item {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .spec-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .spec-lbl {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       Section 5: Checklist / Notes Card
+       ============================================================ */
+    .checklist-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .checklist-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checklist-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .check-icon {
+      width: 24px;
+      height: 24px;
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      color: #059669;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       Final CTA Section
+       ============================================================ */
+    .final-cta-section {
+      padding: 120px 0;
+      background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 50%, #E0E7FF 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta-box {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .final-title {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      color: #0F172A;
+      margin-bottom: 20px;
+    }
+
+    .final-copy {
+      font-size: 20px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    /* ============================================================
+       Footer
+       ============================================================ */
+    .footer {
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-color);
+      padding: 40px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      .footer-inner {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+      .hero-title {
+        font-size: 40px;
+      }
+      .section-title {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg"></div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <img src="../figlogo.svg" alt="Fig Logo">
+        </div>
+        <span>Fig</span>
+      </div>
+      <div class="nav-links">
+        <a href="https://github.com/yunusemre-celik/fig" target="_blank" rel="noopener" class="pill-btn pill-btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+          </svg>
+          GitHub
+        </a>
+        <a href="#indir" class="pill-btn pill-btn-primary">
+          İndir (Ücretsiz)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <!-- Left Mockup -->
+      <div class="hero-side-left float-anim-1">
+        <img src="assets/hero_left_mockup.png" alt="Fig Dosya Menüsü" class="floating-mockup">
+      </div>
+
+      <!-- Center Content -->
+      <div class="hero-center">
+        <div class="hero-pill">
+          <span>✨</span>
+          <span>Açık Kaynak & %100 Çevrimdışı</span>
+        </div>
+        <h1 class="hero-title">
+          Bu Çark Zaman
+          <span class="accent">Kazandırıyor</span>
+        </h1>
+        <p class="hero-subtitle">
+          Hayır, saat çarkı değil; işlem çarkı.
+        </p>
+
+        <div class="hero-cta" id="indir">
+          <a href="../Fig.exe" download="Fig.exe" class="download-btn-main">
+            <svg viewBox="0 0 88 88">
+              <path d="M0 12.4L35.6 7.5V41.7H0V12.4ZM0 46.3H35.6V80.5L0 75.6V46.3ZM39.9 6.9L88 0V41.7H39.9V6.9ZM39.9 46.3H88V88L39.9 81.1V46.3Z"/>
+            </svg>
+            Windows için İndir
+          </a>
+          <p class="download-subtext">Kurulum Gerekmez • Tek Tıkla Çalışır • Windows 10/11</p>
+        </div>
+      </div>
+
+      <!-- Right Mockup -->
+      <div class="hero-side-right float-anim-2">
+        <img src="assets/hero_right_mockup.png" alt="Fig Windows Entegrasyonu" class="floating-mockup">
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Kolaylıkla Dönüştür -->
+  <section class="section">
+    <div class="container section-grid">
+      <div class="visual-wrapper">
+        <img src="assets/wheel_illustration.png" alt="Fig İşlem Çarkı" class="visual-img">
+      </div>
+      <div>
+        <div class="badge badge-blue">Harika Araç • Açık Kaynak</div>
+        <h2 class="section-title">Kolaylıkla dönüştür</h2>
+        <p class="section-desc">
+          Atadığın kısayol tuşlarına tıkla, çark çıksın: döndür ve dönüştür. Web sitelerinde dosyaları paylaşmaya son veriyoruz.
+        </p>
+        <div class="highlight-card">
+          💡 Web sitelerinde reklam izlemeye, 2 saniyelik işleri karmaşıklaştırmaya son ver.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Tıkla Çarkı Döndür & Rust Performansı -->
+  <section class="section">
+    <div class="container section-grid">
+      <div>
+        <div class="badge badge-emerald">Ultra Hızlı • Rust Motoru</div>
+        <h2 class="section-title">Tıkla çarkı, döndür ve dönüştür</h2>
+        <p class="section-desc">
+          Hafif yapısı ve Rust dili ile bilgisayarınızda gereksiz işlemler yapıp işlemcinizi ısıtmaz. Arka planda sessizce bekler, Ctrl+Space ile anında imlecinizde belirir.
+        </p>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <div class="spec-val">&lt; 15 MB</div>
+            <div class="spec-lbl">RAM Kullanımı</div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-val">0.05 sn</div>
+            <div class="spec-lbl">Açılış Tepki Süresi</div>
+          </div>
+        </div>
+      </div>
+      <div class="visual-wrapper">
+        <img src="assets/sec3_file_grid.png" alt="Desteklenen Dosya Formatları" class="visual-img">
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Toplu Olarak Dönüştür -->
+  <section class="section">
+    <div class="container section-grid">
+      <div class="visual-wrapper">
+        <img src="assets/sec4_file_stack.png" alt="Toplu Dosya Dönüştürme" class="visual-img">
+      </div>
+      <div>
+        <div class="badge badge-cyan">Toplu İşlem Gücü</div>
+        <h2 class="section-title">Toplu olarak dönüştür</h2>
+        <p class="section-desc">
+          Toplu olarak dosyalarını seç; PDF'den MP3'e kadar tüm dosya türlerini internete ihtiyacın olmadan, bilgisayarından çıkmadan saniyeler içinde dönüştür.
+        </p>
+        <div class="feature-card">
+          <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #0F172A;">📁 Güvenli & Çevrimdışı</h4>
+          <p style="font-size: 14px; color: var(--text-muted);">Dosyalarınız hiçbir uzak sunucuya yüklenmez. Tüm veri işleme yerel işlemcinizde gerçekleşir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Kırp, Sansürle, Boyutunu Değiştir -->
+  <section class="section">
+    <div class="container section-grid">
+      <div>
+        <div class="badge badge-blue">Görsel Araçları</div>
+        <h2 class="section-title">Kırp, sansürle, boyutunu değiştir</h2>
+        <p class="section-desc">
+          Kırpmak, boyutunu değiştirmek veya istenmeyen görüntüyü sansürlemek için yavaş ve ağır programlar kullanmayı bırak. Zamanı verimli kullan.
+        </p>
+        <div class="checklist-card">
+          <div class="checklist-title">
+            <span>📝</span>
+            <span>Neden Fig?</span>
+          </div>
+          <ul class="checklist-list">
+            <li class="checklist-item">
+              <span class="check-icon">✓</span>
+              <span>Açık kaynak & %100 ücretsiz</span>
+            </li>
+            <li class="checklist-item">
+              <span class="check-icon">✓</span>
+              <span>Hızlı ve yüksek verimli</span>
+            </li>
+            <li class="checklist-item">
+              <span class="check-icon">✓</span>
+              <span>Windows kullanıcıları için tasarlandı</span>
+            </li>
+            <li class="checklist-item">
+              <span class="check-icon">✓</span>
+              <span>İnternetsiz çalışır, dosyalarınız sizde kalır</span>
+            </li>
+            <li class="checklist-item">
+              <span class="check-icon">✓</span>
+              <span>İndir ve hemen dene</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="visual-wrapper">
+        <img src="assets/sec5_mockup.png" alt="Görsel Kırpma ve Sansürleme Aracı" class="visual-img">
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Final CTA -->
+  <section class="final-cta-section">
+    <div class="container final-cta-box">
+      <h2 class="final-title">Zamanınızı geri kazanın.</h2>
+      <p class="final-copy">
+        İnternet sitelerinde reklam izlemeden, saniyeler içinde dosyalarınızı dönüştürün.
+      </p>
+      <a href="../Fig.exe" download="Fig.exe" class="download-btn-main">
+        <svg viewBox="0 0 88 88">
+          <path d="M0 12.4L35.6 7.5V41.7H0V12.4ZM0 46.3H35.6V80.5L0 75.6V46.3ZM39.9 6.9L88 0V41.7H39.9V6.9ZM39.9 46.3H88V88L39.9 81.1V46.3Z"/>
+        </svg>
+        Windows için İndir (Fig.exe)
+      </a>
+      <p style="margin-top: 18px; font-size: 14px; color: var(--text-muted); font-weight: 500;">
+        Kurulum gerektirmez • Taşınabilir (Portable) • 16.5 MB
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div style="display: flex; align-items: center; gap: 8px; font-weight: 700;">
+        <img src="../figlogo.svg" alt="Fig" style="width: 20px; height: 20px;">
+        <span>Fig — Açık Kaynak Dosya Araç Kiti</span>
+      </div>
+      <div>
+        <span>Geliştirici: Yunus Emre Çelik • <a href="https://github.com/yunusemre-celik/fig" target="_blank" rel="noopener" style="text-decoration: underline;">GitHub Deposu</a></span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
