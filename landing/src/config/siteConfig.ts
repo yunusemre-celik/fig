@@ -10,8 +10,8 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
-  // Fig project repo & direct download executable
-  downloadUrl: "Fig.exe",
+  // Fig project repo & direct GitHub Releases download package (Bypasses Chrome Safe Browsing warnings)
+  downloadUrl: "https://github.com/yunusemre-celik/fig/releases/latest/download/Fig-Windows-x64.zip",
   githubRepoUrl: "https://github.com/yunusemre-celik/fig",
 
   // Personal profiles

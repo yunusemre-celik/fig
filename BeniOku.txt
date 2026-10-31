@@ -1,0 +1,42 @@
+==================================================================
+  FIG - Akilli Masaustu & Dosya Hizli Islem Araci (Portable)
+==================================================================
+
+Fig'i tercih ettiginiz icin tesekkur ederiz!
+Fig, tamamen kurulumsuz (portable) calisan modern bir masaustu aracidir.
+Herhangi bir klasore cikarip hemen kullanmaya baslayabilirsiniz.
+
+------------------------------------------------------------------
+HIZLI BASLATMA:
+------------------------------------------------------------------
+1. ZIP icindeki dosyalari istediginiz bir klasore cikarin (orn: Masaustu veya Belgeler).
+2. "Fig.exe" dosyasina cift tiklayarak uygulamayi baslatin.
+
+------------------------------------------------------------------
+WINDOWS SMARTSCREEN BILGILENDIRMESI:
+------------------------------------------------------------------
+Fig, acik kaynakli ve bagimsiz yeni bir yazilim oldugu icin
+Windows SmartScreen ilk calistirmada bir koruma ekrani gosterebilir.
+
+Bu durum yeni ve bagimsiz Windows uygulamalarinda tamamen standarttir.
+Uygulamayi baslatmak icin:
+  1) Acilan mavi ekranda "Ek bilgi" (More info) linkine tiklayin.
+  2) Ardindan beliren "Yine de calistir" (Run anyway) butonuna basin.
+
+------------------------------------------------------------------
+TEMEL KULLANIM & KISAYOLLAR:
+------------------------------------------------------------------
+- Varsayilan Kisayol: Alt + Q
+- Masaustunde veya Dosya Gezgininde herhangi bir dosyayi sectikten
+  sonra Alt + Q tuslarina basarsaniz, Fig carki secili dosyalari
+  otomatik algilar ve o dosyalara ozel islemleri (Gorsel Islemleri,
+  PDF Donusturme, Boyutlandirma vb.) aninda karsiniza getirir.
+- Cark uzerinde bir islem secip tikladiginizda islem gerceklesir
+  ve cark ekrani otomatik olarak yumusak bir sekilde kapanir.
+
+------------------------------------------------------------------
+GELISTIRICI & ILETISIM:
+------------------------------------------------------------------
+Gelistirici: Yunus Emre Celik
+GitHub: https://github.com/yunusemre-celik/fig
+Web Sitesi: https://yunusemrecelik.dev

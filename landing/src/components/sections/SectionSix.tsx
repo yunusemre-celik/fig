@@ -55,15 +55,26 @@ export const SectionSix: React.FC = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: false, amount: 0.4 }}
-          className="relative"
+          className="flex flex-col items-center"
         >
           <a
             href={siteConfig.downloadUrl}
-            download="Fig.exe"
+            download="Fig-Windows-x64.zip"
             className="inline-flex items-center justify-center px-10 sm:px-14 py-4 sm:py-5 bg-[#61FF37] hover:bg-[#52e829] active:scale-95 text-neutral-950 rounded-full font-editorial text-3xl sm:text-4xl tracking-tight transition-all duration-300 shadow-2xl hover:shadow-[0_0_35px_rgba(97,255,55,0.6)] border border-black/10 hover:-translate-y-1"
           >
             <span>{t.sectionSix.ctaDownload}</span>
           </a>
+
+          {/* Security & Portable Info Pill */}
+          <div className="flex flex-col items-center gap-1.5 mt-5 max-w-lg">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/70 backdrop-blur-md rounded-full border border-black/5 text-[11px] md:text-xs font-mono text-neutral-700 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{t.sectionSix.portableTag}</span>
+            </div>
+            <div className="text-[11px] md:text-xs text-neutral-600/90 font-sans px-2">
+              🛡️ {t.sectionSix.smartScreenTip}
+            </div>
+          </div>
         </motion.div>
 
         {/* Social Media Channels Row */}

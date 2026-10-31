@@ -21,6 +21,13 @@ src-tauri/gen/
 !docs/Fig.exe
 *.dll
 
+# Release archives
+*.zip
+!docs/Fig-Windows-x64.zip
+!landing/public/Fig-Windows-x64.zip
+
+*.tsbuildinfo
+
 # Superpowers local ledger & scratch
 .superpowers/
 

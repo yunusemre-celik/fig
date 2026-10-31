@@ -17,6 +17,8 @@ export interface LandingTranslations {
     titlePart1: string;
     titlePart2: string;
     ctaDownload: string;
+    portableTag: string;
+    smartScreenTip: string;
     subtextPrefix: string;
     subtextWavy: string;
     subtextPill: string;
@@ -108,6 +110,8 @@ export interface LandingTranslations {
   };
   sectionSix: {
     ctaDownload: string;
+    portableTag: string;
+    smartScreenTip: string;
     badgeOpenSource: string;
     creatorTag: string;
     creatorBio: string;

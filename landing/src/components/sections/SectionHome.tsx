@@ -109,11 +109,11 @@ export const SectionHome: React.FC = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }}
-          className="relative mt-9 mb-6"
+          className="relative mt-8 mb-3"
         >
           <a
             href={siteConfig.downloadUrl}
-            download="Fig.exe"
+            download="Fig-Windows-x64.zip"
             className="group inline-flex items-center gap-3 px-8 md:px-11 py-3.5 md:py-4 bg-[#61FF37] hover:bg-[#52e829] active:scale-95 text-neutral-950 rounded-full font-editorial text-2xl md:text-3xl tracking-tight transition-all duration-200 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 border border-black/10"
           >
             <span>{t.sectionHome.ctaDownload}</span>
@@ -124,6 +124,22 @@ export const SectionHome: React.FC = () => {
             <svg className="w-8 h-8 md:w-9 md:h-9 drop-shadow-md fill-white stroke-neutral-900 stroke-[1.5]" viewBox="0 0 24 24">
               <path d="M4 3l15 9-7 1.5 4.5 7.5-2.5 1.5-4.5-7.5L4 18V3z" />
             </svg>
+          </div>
+        </motion.div>
+
+        {/* Security & Portable Info Pill */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          className="flex flex-col items-center gap-1.5 mb-5 max-w-lg"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/70 backdrop-blur-md rounded-full border border-black/5 text-[11px] md:text-xs font-mono text-neutral-700 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{t.sectionHome.portableTag}</span>
+          </div>
+          <div className="text-[11px] md:text-xs text-neutral-600/90 font-sans px-2">
+            🛡️ {t.sectionHome.smartScreenTip}
           </div>
         </motion.div>
 
