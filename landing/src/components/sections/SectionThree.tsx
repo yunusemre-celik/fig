@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -14,41 +14,134 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageContext';
 
+interface ScreenshotItem {
+  src: string;
+  title: string;
+  sub: string;
+}
+
+const screenshots: ScreenshotItem[] = [
+  {
+    src: './screenshots/01_Ana_Sayfa_Workspace.png',
+    title: 'Ana Sayfa Workspace',
+    sub: 'Hızlı dönüştürücü ve yerel çalışma alanı',
+  },
+  {
+    src: './screenshots/02_Fig_Menusu_Acik.png',
+    title: 'Fig Hızlı Menüsü',
+    sub: 'Tüm araçlara ve kısayollara tek noktadan erişim',
+  },
+  {
+    src: './screenshots/03_Fig_Menusu_CloseUp.png',
+    title: 'Menü Detayı',
+    sub: 'Çalışma alanları ve sistem kontrolleri',
+  },
+  {
+    src: './screenshots/04_Cark_Tetikleyici_Hover.png',
+    title: 'İşlem Çarkı Tetikleyici',
+    sub: 'Ctrl + Space ile fare ucunda anında işlem',
+  },
+  {
+    src: './screenshots/05_Cark_Ofis_Profili.png',
+    title: 'İşlem Çarkı • Ofis Profili',
+    sub: 'PDF, Word, Excel, PPT ve görselleri tek tıkla dönüştürün',
+  },
+  {
+    src: './screenshots/05b_Cark_Ofis_CloseUp.png',
+    title: 'Ofis Çarkı Yakın Plan',
+    sub: 'Radyal menü butonları ve ikonik tasarım',
+  },
+  {
+    src: './screenshots/06_Cark_Dilim_Hover_WebP.png',
+    title: 'Çark Dilimi • WebP Dönüştür',
+    sub: 'Ultra hızlı ve kayıpsız görsel optimizasyonu',
+  },
+  {
+    src: './screenshots/07_Cark_Dilim_Hover_PDF.png',
+    title: 'Çark Dilimi • PDF Eylemleri',
+    sub: 'Belgeleri tek tıkla PDF yapın',
+  },
+  {
+    src: './screenshots/07b_Cark_Dilim_Hover_CloseUp.png',
+    title: 'Dilim Seçimi Yakın Plan',
+    sub: 'Seçim animasyonu ve aktif dilim vurgusu',
+  },
+  {
+    src: './screenshots/08_Cark_Tasarim_Profili.png',
+    title: 'Tasarım & Fotoğraf Profili',
+    sub: 'Görsel dönüştürme, kırpma ve sansürleme araçları',
+  },
+  {
+    src: './screenshots/09_Cark_Gelistirici_Profili.png',
+    title: 'Geliştirici & Kod Profili',
+    sub: 'Dosya yolu, terminal, QR kod ve format araçları',
+  },
+  {
+    src: './screenshots/10_Cark_Ozel_Profil.png',
+    title: 'Kişisel Özel Profil',
+    sub: 'En sık kullandığınız araçları dilediğiniz gibi dizin',
+  },
+  {
+    src: './screenshots/11_Cark_Studyosu_Yonetimi.png',
+    title: 'Çark Stüdyosu Yönetimi',
+    sub: 'Dilimleri özelleştirin, sürükleyin ve profil oluşturun',
+  },
+  {
+    src: './screenshots/12_Belgeler_ve_PDF_Araclari.png',
+    title: 'Belgeler & PDF Araçları',
+    sub: 'Toplu dönüştürme ve belge yönetimi',
+  },
+  {
+    src: './screenshots/13_Ayarlar_Paneli.png',
+    title: 'Gelişmiş Ayarlar',
+    sub: 'Kısayol tuşları, tema ve yerel çalışma yapılandırması',
+  },
+  {
+    src: './screenshots/14_Bento_Hizli_Eylemler_CloseUp.png',
+    title: 'Bento Hızlı Eylemler',
+    sub: 'Tek tıkla sıkıştır, dönüştür ve paylaş',
+  },
+  {
+    src: './screenshots/15_Image_Studio_Kirpma_Modali.png',
+    title: 'Image Studio Kırpma & Düzenleme',
+    sub: 'Görselleri hassas şekilde kırpın ve boyutlandırın',
+  },
+  {
+    src: './screenshots/16_QR_Kod_Modali.png',
+    title: 'QR Kod Stüdyosu',
+    sub: 'Hızlı QR kod oluşturun ve okuyun',
+  },
+  {
+    src: './screenshots/17_Floating_Wheel_Standalone.png',
+    title: 'Bağımsız Yüzen Çark',
+    sub: 'İmlecinizin ucunda beliren hafif işlem çarkı',
+  },
+];
+
 export const SectionThree: React.FC = () => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const slides = [
-    {
-      title: t.sectionThree.slides.slide1.title,
-      sub: t.sectionThree.slides.slide1.sub,
-      actionTitle: t.sectionThree.slides.slide1.actionTitle,
-      shortcut: 'Alt + Q',
-      features: t.sectionThree.slides.slide1.features,
-    },
-    {
-      title: t.sectionThree.slides.slide2.title,
-      sub: t.sectionThree.slides.slide2.sub,
-      actionTitle: t.sectionThree.slides.slide2.actionTitle,
-      shortcut: 'F2',
-      features: t.sectionThree.slides.slide2.features,
-    },
-    {
-      title: t.sectionThree.slides.slide3.title,
-      sub: t.sectionThree.slides.slide3.sub,
-      actionTitle: t.sectionThree.slides.slide3.actionTitle,
-      shortcut: 'Ctrl + O',
-      features: t.sectionThree.slides.slide3.features,
-    },
-  ];
+  const handlePrev = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1));
+  }, []);
 
-  const handlePrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
+  const handleNext = useCallback(() => {
+    setCurrentSlide((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1));
+  }, []);
 
-  const handleNext = () => {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  };
+  // Keyboard navigation for carousel (Left / Right arrow keys)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlePrev, handleNext]);
 
   return (
     <section
@@ -81,15 +174,9 @@ export const SectionThree: React.FC = () => {
           <p className="text-base sm:text-lg text-neutral-700 leading-relaxed max-w-sm font-sans">
             {t.sectionThree.description}
           </p>
-
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-100/80 border border-orange-200 text-orange-800 text-xs font-semibold">
-            <span>🦀 Rust 1.82 Core Engine</span>
-            <span>•</span>
-            <span>&lt; 15 MB RAM</span>
-          </div>
         </motion.div>
 
-        {/* Center: Interactive Desktop UI Window with Carousel */}
+        {/* Center: Frameless Screenshots Carousel */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -100,81 +187,52 @@ export const SectionThree: React.FC = () => {
           {/* Left Arrow Button */}
           <button
             onClick={handlePrev}
-            className="absolute -left-3 md:-left-6 z-30 w-10 h-10 md:w-11 md:h-11 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-90 text-white flex items-center justify-center shadow-lg transition-all"
-            aria-label="Previous"
+            className="absolute -left-3 md:-left-6 z-30 w-10 h-10 md:w-11 md:h-11 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-90 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
+            aria-label="Previous screenshot"
             type="button"
           >
             <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
-          {/* Desktop App Window Mockup */}
-          <div className="w-full max-w-lg bg-[#0E121B] text-white rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-            {/* Title Bar */}
-            <div className="bg-[#161B26] px-4 py-2.5 flex items-center justify-between border-b border-white/5 text-xs text-neutral-400 select-none">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-400/80" />
-                <span className="font-medium text-white/90">Fig - File Toolkit</span>
-                <span className="text-[10px] text-white/40">v0.4.1</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/40">
-                <span>─</span>
-                <span>□</span>
-                <span className="hover:text-red-400 cursor-pointer">✕</span>
-              </div>
-            </div>
-
-            {/* Window Content (Animated Slide) */}
-            <div className="p-5 md:p-6 min-h-[300px] flex flex-col justify-between">
+          {/* Frameless Screenshot Display */}
+          <div className="w-full max-w-lg md:max-w-xl flex flex-col items-center">
+            {/* Visual stage with fixed height to prevent layout shifts */}
+            <div className="relative w-full h-[320px] sm:h-[360px] md:h-[400px] flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentSlide}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-4"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="w-full h-full flex items-center justify-center cursor-pointer select-none"
+                  onClick={handleNext}
+                  title="Sonraki görsel için tıklayın"
                 >
-                  <div className="text-center space-y-1">
-                    <h3 className="text-lg md:text-xl font-bold text-white/95">
-                      {slides[currentSlide].title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-neutral-400">
-                      {slides[currentSlide].sub}
-                    </p>
-                  </div>
-
-                  {/* Drop zone / Action button */}
-                  <div className="border border-dashed border-purple-500/30 rounded-xl p-6 bg-purple-950/10 text-center hover:border-purple-500/60 transition-colors cursor-pointer group">
-                    <div className="w-10 h-10 mx-auto rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                      ☁️
-                    </div>
-                    <div className="text-xs text-white/80 font-medium">{slides[currentSlide].actionTitle}</div>
-                    <div className="text-[10px] text-white/40 mt-1">PDF, DOCX, PNG, MP4, MP3 & more</div>
-                  </div>
-
-                  {/* Features Quick Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                    {slides[currentSlide].features.map((feat, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-white/5 border border-white/5 rounded-lg p-2 text-center text-[10px] text-white/80 hover:bg-white/10 transition-colors"
-                      >
-                        {feat}
-                      </div>
-                    ))}
-                  </div>
+                  <img
+                    src={screenshots[currentSlide].src}
+                    alt={screenshots[currentSlide].title}
+                    className="max-h-full max-w-full object-contain rounded-xl drop-shadow-2xl transition-all"
+                  />
                 </motion.div>
               </AnimatePresence>
+            </div>
 
-              {/* Window Footer Status */}
-              <div className="pt-4 mt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
-                <div className="flex items-center gap-1.5 text-emerald-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>100% Local Execution</span>
-                </div>
-                <div className="font-mono text-[10px] bg-white/5 px-2 py-0.5 rounded">
-                  {slides[currentSlide].shortcut}
-                </div>
+            {/* Slide Caption & Counter Bar */}
+            <div className="w-full mt-3 flex items-center justify-between px-2 text-xs">
+              <div className="flex items-center gap-2 truncate pr-2">
+                <span className="font-semibold text-neutral-900 truncate">
+                  {screenshots[currentSlide].title}
+                </span>
+                <span className="text-[11px] text-neutral-400 hidden sm:inline">•</span>
+                <span className="text-[11px] text-neutral-600 hidden sm:inline truncate">
+                  {screenshots[currentSlide].sub}
+                </span>
+              </div>
+              <div className="flex-shrink-0 flex items-center gap-1 font-mono text-[11px] font-semibold text-purple-700 bg-purple-100/80 px-2.5 py-0.5 rounded-full border border-purple-200">
+                <span>{currentSlide + 1}</span>
+                <span className="text-purple-400">/</span>
+                <span>{screenshots.length}</span>
               </div>
             </div>
           </div>
@@ -183,8 +241,8 @@ export const SectionThree: React.FC = () => {
           <div className="absolute -right-3 md:-right-6 z-30">
             <button
               onClick={handleNext}
-              className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-90 text-white flex items-center justify-center shadow-lg transition-all"
-              aria-label="Next"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-purple-600 hover:bg-purple-700 active:scale-90 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer"
+              aria-label="Next screenshot"
               type="button"
             >
               <ChevronRight className="w-6 h-6 stroke-[2.5]" />
