@@ -78,6 +78,8 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       video_webm: { label: t("sliceVideoWebm"), desc: t("sliceVideoWebm") },
       audio_wav: { label: t("sliceAudioWav"), desc: t("sliceAudioWav") },
       audio_flac: { label: t("sliceAudioFlac"), desc: t("sliceAudioFlac") },
+      pdf_png: { label: t("slicePdfPng"), desc: t("slicePdfPng") },
+      pdf_jpg: { label: t("slicePdfJpg"), desc: t("slicePdfJpg") },
       pdf_excel: { label: t("slicePdfExcel"), desc: t("slicePdfExcel") },
       pdf_docx: { label: t("slicePdfDocx"), desc: t("slicePdfDocx") },
       copy_path: { label: t("sliceCopyPath"), desc: t("sliceCopyPath") },
@@ -254,21 +256,21 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         }}
       >
         <defs>
-          {/* Canva Tech Deep Space Inactive slice gradient */}
+          {/* Frosted Glass Dark Smoky Inactive slice gradient */}
           <linearGradient id="inactiveSliceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#171C30" stopOpacity="0.92" />
-            <stop offset="100%" stopColor="#0B0D18" stopOpacity="0.96" />
+            <stop offset="0%" stopColor="#1C202A" stopOpacity="0.88" />
+            <stop offset="100%" stopColor="#0F1117" stopOpacity="0.94" />
           </linearGradient>
 
-          {/* Canva Tech Royal Cobalt to Electric Blue active slice gradient */}
+          {/* Frosted Specular Luminous active slice gradient */}
           <linearGradient id="activeHoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5257DC" stopOpacity="0.98" />
-            <stop offset="100%" stopColor="#8493FF" stopOpacity="0.98" />
+            <stop offset="0%" stopColor="#323846" stopOpacity="0.98" />
+            <stop offset="100%" stopColor="#1E232F" stopOpacity="0.98" />
           </linearGradient>
 
-          {/* Electric Cyan glow */}
+          {/* Frosted Specular White glow (Zero neon) */}
           <filter id="activeGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#6366F1" floodOpacity="0.55" />
+            <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#FFFFFF" floodOpacity="0.25" />
           </filter>
         </defs>
 
@@ -347,8 +349,8 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
               <path
                 d={pathData}
                 fill={isHovered ? "url(#activeHoverGrad)" : "url(#inactiveSliceGrad)"}
-                stroke={isHovered ? "#8493FF" : "rgba(255, 255, 255, 0.08)"}
-                strokeWidth={isHovered ? "2" : "1"}
+                stroke={isHovered ? "rgba(255, 255, 255, 0.45)" : "rgba(255, 255, 255, 0.1)"}
+                strokeWidth={isHovered ? "1.8" : "1"}
                 filter={isHovered ? "url(#activeGlow)" : undefined}
                 className="transition-all duration-150"
               />
@@ -382,11 +384,11 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
         })}
       </svg>
 
-      {/* Central Split Hub: Canva Tech Midnight Glass with Left (<) and Right (>) navigation buttons & Center Earth Logo */}
+      {/* Central Split Hub: Frosted Glass Disk with Left (<) and Right (>) navigation buttons & Center Fig Logo */}
       <div
-        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-2xl border border-white/20 bg-[#0C0F1D]/95 backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
+        className={`absolute w-[136px] h-[136px] rounded-full overflow-hidden flex items-stretch shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.25)] border border-white/20 bg-white/[0.08] backdrop-blur-2xl z-20 pointer-events-auto transition-all duration-200 ${
           isDragOver
-            ? "border-[#8493FF] scale-105 bg-[#6366F1]/25"
+            ? "border-white/50 scale-105 bg-white/[0.18]"
             : ""
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -434,14 +436,14 @@ export const RadialWheel: React.FC<RadialWheelProps> = ({
       {/* Floating Info Capsule below the wheel */}
       <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 pointer-events-none z-30 flex flex-col items-center gap-1">
         {hoveredItem ? (
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0E1120]/95 border border-[#8493FF]/30 backdrop-blur-2xl shadow-xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
-            <span className="font-bold text-[12px] text-[#8493FF]">{getSliceText(hoveredItem).label}</span>
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0A0C10]/90 border border-white/20 backdrop-blur-2xl shadow-2xl text-white whitespace-nowrap animate-in fade-in zoom-in-95 duration-100">
+            <span className="font-bold text-[12px] text-white">{getSliceText(hoveredItem).label}</span>
             <span className="w-1 h-1 rounded-full bg-white/30" />
             <span className="text-[11px] text-neutral-300 max-w-[240px] truncate">{getSliceText(hoveredItem).desc}</span>
           </div>
         ) : profileName ? (
-          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0E1120]/85 border border-[#6366F1]/40 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
-            <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
+          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#0A0C10]/85 border border-white/15 backdrop-blur-xl shadow-lg text-[11px] font-semibold text-neutral-200 whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span>{profileName}</span>
             {selectedFileNames.length > 0 && (
               <span className="text-[10px] text-neutral-400">({selectedFileNames.length})</span>

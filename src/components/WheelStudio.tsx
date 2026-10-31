@@ -196,12 +196,12 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
     <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto space-y-6 text-neutral-100">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-semibold mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300 text-xs font-semibold mb-2 backdrop-blur-md">
           <Sparkles size={13} />
           <span>Çark Stüdyosu</span>
         </div>
         <h2 className="text-xl font-bold text-white">İşlem Çarkınızı Özelleştirin</h2>
-        <p className="text-xs text-neutral-400 mt-1">
+        <p className="text-xs text-zinc-400 mt-1">
           `Ctrl + Space` ile fare imlecinizin ucunda açılacak dilimleri seçin veya hazır profillerden birini kullanın.
         </p>
       </div>
@@ -216,9 +216,9 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
             <button
               key={pid}
               onClick={() => onSelectProfile(pid)}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between h-32 ${
+              className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer ${
                 isSelected
-                  ? "bg-amber-500/20 border-amber-500/50 shadow-lg shadow-amber-500/15 scale-[1.02] backdrop-blur-xl"
+                  ? "bg-white/[0.1] border-white/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.4)] scale-[1.02] backdrop-blur-xl"
                   : "glass-card hover:border-white/[0.18]"
               }`}
             >
@@ -226,7 +226,7 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
                 <div
                   className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                     isSelected
-                      ? "bg-amber-500 text-black font-bold shadow-md shadow-amber-500/30"
+                      ? "bg-white text-black font-bold shadow-md"
                       : "bg-white/[0.08] text-neutral-300"
                   }`}
                 >
@@ -237,14 +237,14 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
                   {pid === "custom" && <Sliders size={16} />}
                 </div>
                 {isSelected && (
-                  <span className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center text-black">
+                  <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center text-black">
                     <Check size={12} strokeWidth={3} />
                   </span>
                 )}
               </div>
               <div>
                 <span className="font-bold text-xs text-white block">{p.name}</span>
-                <span className="text-[10px] text-neutral-400 line-clamp-2 mt-0.5">{p.description}</span>
+                <span className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">{p.description}</span>
               </div>
             </button>
           );
@@ -256,12 +256,12 @@ export const WheelStudio: React.FC<WheelStudioProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-white">Çarktaki Aktif Dilimler</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-zinc-200 border border-white/15">
               {activeItems.length} Dilim
             </span>
           </div>
           {currentProfile === "custom" && (
-            <span className="text-[11px] text-neutral-400">
+            <span className="text-[11px] text-zinc-400">
               Aşağıdaki listeden tıkla ve çarkına ekle/çıkar (Maks 8)
             </span>
           )}

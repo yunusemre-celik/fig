@@ -191,8 +191,8 @@ pub fn get_file_info(path: String) -> Result<FileInfo, String> {
         Err(_) => "Unknown".to_string(),
     };
 
-    let (width, height) = match image::open(p) {
-        Ok(img) => (Some(img.width()), Some(img.height())),
+    let (width, height) = match image::image_dimensions(p) {
+        Ok((w, h)) => (Some(w), Some(h)),
         Err(_) => (None, None),
     };
 
@@ -1260,7 +1260,7 @@ pub fn convert_media(
     get_file_info(out_str)
 }
 
-// 10c. convert_pdf (PDF to Excel, PDF to Word, PDF to Text, PDF to Images via python scripts)
+// 10c. convert_pdf (Native PDF to PNG, JPG, Word, Excel, Text)
 #[cfg_attr(not(test), tauri::command)]
 pub fn convert_pdf(
     input_path: String,
@@ -1286,22 +1286,125 @@ pub fn convert_pdf(
     };
 
     let target_lower = target_format.to_lowercase();
-    let (py_cmd, out_ext) = match target_lower.as_str() {
-        "xlsx" | "excel" | "pdf_excel" => ("to_excel", "xlsx"),
-        "docx" | "word" | "pdf_word" => ("to_docx", "docx"),
-        "txt" | "text" | "pdf_txt" => ("to_text", "txt"),
-        "images" | "png" | "pdf_images" => ("to_images", "png"),
+    let norm_target = match target_lower.as_str() {
+        "png" | "pdf_png" | "images" | "pdf_images" => "png",
+        "jpg" | "jpeg" | "pdf_jpg" => "jpg",
+        "docx" | "word" | "pdf_word" => "docx",
+        "xlsx" | "excel" | "pdf_excel" => "xlsx",
+        "txt" | "text" | "pdf_txt" => "txt",
         other => return Err(format!("Desteklenmeyen PDF hedef formatı: {}", other)),
     };
 
+    // If target is PNG or JPG: Run Native Windows.Data.Pdf renderer (Zero external dependency!)
+    if norm_target == "png" || norm_target == "jpg" {
+        let app_data_script = get_settings_file_path()
+            .parent()
+            .unwrap_or(Path::new("."))
+            .join("scripts")
+            .join("render_pdf.ps1");
+
+        let script_path = if Path::new("src-tauri/scripts/render_pdf.ps1").exists() {
+            PathBuf::from("src-tauri/scripts/render_pdf.ps1")
+        } else if Path::new("scripts/render_pdf.ps1").exists() {
+            PathBuf::from("scripts/render_pdf.ps1")
+        } else if app_data_script.exists() {
+            app_data_script
+        } else {
+            if let Some(parent) = app_data_script.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            let script_code = include_str!("../scripts/render_pdf.ps1");
+            let _ = std::fs::write(&app_data_script, script_code);
+            app_data_script
+        };
+
+        let mut cmd = std::process::Command::new("powershell");
+        #[cfg(target_os = "windows")]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        }
+
+        let base_name = custom_name.clone().unwrap_or_else(|| stem.clone());
+
+        cmd.args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+        ]);
+        cmd.arg(&script_path);
+        cmd.arg("-InputPdf").arg(&input_path);
+        cmd.arg("-OutputDir").arg(&parent_dir);
+        cmd.arg("-Format").arg(norm_target);
+        cmd.arg("-Scale").arg("2.0");
+        cmd.arg("-BaseName").arg(&base_name);
+
+        let output = cmd.output().map_err(|e| format!("PowerShell PDF renderer çalıştırılamadı: {}", e))?;
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            return Err(format!("PDF Görsel Dönüştürme Hatası: {} {}", stdout, stderr));
+        }
+
+        let stdout_str = String::from_utf8_lossy(&output.stdout);
+        // Find created files from "SUCCESS: file1;file2..."
+        let first_file = stdout_str
+            .lines()
+            .find(|line| line.starts_with("SUCCESS:"))
+            .and_then(|line| {
+                let paths_part = line.trim_start_matches("SUCCESS:").trim();
+                paths_part.split(';').next().map(|s| s.trim().to_string())
+            })
+            .unwrap_or_else(|| {
+                let ext = norm_target;
+                parent_dir.join(format!("{}.{}", base_name, ext)).to_string_lossy().to_string()
+            });
+
+        let out_file_path = PathBuf::from(&first_file);
+        let size_after = std::fs::metadata(&out_file_path).map(|m| m.len()).unwrap_or(0);
+        let action = format!("PDF to {}", norm_target.to_uppercase());
+        record_library_action(&input_path, &first_file, &action, size_before, size_after);
+
+        return get_file_info(first_file);
+    }
+
+    // For other document targets (Word, Excel, Text)
     let out_name = match &custom_name {
         Some(name) => name.clone(),
-        None => format!("{}_converted.{}", stem, out_ext),
+        None => format!("{}_converted.{}", stem, norm_target),
     };
-
     let out_path = parent_dir.join(&out_name);
     let out_str = out_path.to_string_lossy().to_string();
 
+    if norm_target == "docx" {
+        // Try MS Word COM automation (native Windows PDF reflow)
+        #[cfg(target_os = "windows")]
+        {
+            let ps_script = format!(
+                "$ErrorActionPreference='Stop'; $word=New-Object -ComObject Word.Application; $word.Visible=$false; try {{ $doc=$word.Documents.Open('{}'); $doc.SaveAs([ref]'{}', [ref]16); $doc.Close() }} finally {{ $word.Quit() }}",
+                in_path.display(),
+                out_path.display()
+            );
+            let mut cmd = std::process::Command::new("powershell");
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(0x08000000);
+            let output = cmd
+                .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+                .output();
+            if let Ok(out) = output {
+                if out.status.success() && out_path.exists() {
+                    let size_after = std::fs::metadata(&out_path).map(|m| m.len()).unwrap_or(0);
+                    let action = "PDF to DOCX".to_string();
+                    record_library_action(&input_path, &out_str, &action, size_before, size_after);
+                    return get_file_info(out_str);
+                }
+            }
+        }
+    }
+
+    // Fallback: If python is available, use python scripts
     let app_data_script = get_settings_file_path().parent().unwrap_or(Path::new(".")).join("scripts").join("pdf_converter.py");
     let script_path = if Path::new("src-tauri/scripts/pdf_converter.py").exists() {
         PathBuf::from("src-tauri/scripts/pdf_converter.py")
@@ -1318,6 +1421,13 @@ pub fn convert_pdf(
         app_data_script
     };
 
+    let py_cmd = match norm_target {
+        "xlsx" => "to_excel",
+        "docx" => "to_docx",
+        "txt" => "to_text",
+        _ => "to_text",
+    };
+
     let mut cmd = std::process::Command::new("python");
     #[cfg(target_os = "windows")]
     {
@@ -1330,7 +1440,7 @@ pub fn convert_pdf(
     cmd.arg(&input_path);
     cmd.arg(&out_str);
 
-    let output = cmd.output().map_err(|e| format!("Python PDF dönüştürücü çalıştırılamadı: {}", e))?;
+    let output = cmd.output().map_err(|e| format!("Dönüştürücü çalıştırılamadı (Python veya yerel motor bulunamadı): {}", e))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stdout = String::from_utf8_lossy(&output.stdout);
@@ -1338,7 +1448,7 @@ pub fn convert_pdf(
     }
 
     let size_after = std::fs::metadata(&out_path).map(|m| m.len()).unwrap_or(0);
-    let action = format!("PDF to {}", out_ext.to_uppercase());
+    let action = format!("PDF to {}", norm_target.to_uppercase());
     record_library_action(&input_path, &out_str, &action, size_before, size_after);
 
     get_file_info(out_str)
@@ -1399,10 +1509,42 @@ pub fn set_autostart(enabled: bool) -> Result<(), String> {
 }
 
 static PREV_FOREGROUND_HWND: std::sync::atomic::AtomicIsize = std::sync::atomic::AtomicIsize::new(0);
+static IS_DESKTOP_FOREGROUND: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub fn record_foreground_hwnd(hwnd: isize) {
-    if hwnd != 0 {
-        PREV_FOREGROUND_HWND.store(hwnd, std::sync::atomic::Ordering::SeqCst);
+    #[cfg(target_os = "windows")]
+    unsafe {
+        if hwnd == 0 {
+            return;
+        }
+
+        // 1. Ignore Fig's own windows (never overwrite explorer/desktop target with Fig itself)
+        let mut process_id = 0u32;
+        windows_sys::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId(hwnd as _, &mut process_id);
+        let my_pid = windows_sys::Win32::System::Threading::GetCurrentProcessId();
+        if process_id == my_pid {
+            return;
+        }
+
+        // 2. Resolve to root top-level window (e.g. CabinetWClass for Explorer)
+        let root = windows_sys::Win32::UI::WindowsAndMessaging::GetAncestor(
+            hwnd as _,
+            windows_sys::Win32::UI::WindowsAndMessaging::GA_ROOT,
+        );
+        let effective_hwnd = if !root.is_null() { root as isize } else { hwnd };
+
+        // 3. Detect if the foreground window is the Windows Desktop (Progman or WorkerW)
+        let mut class_buf = [0u16; 64];
+        let len = windows_sys::Win32::UI::WindowsAndMessaging::GetClassNameW(
+            effective_hwnd as _,
+            class_buf.as_mut_ptr(),
+            class_buf.len() as _,
+        );
+        let class_name = String::from_utf16_lossy(&class_buf[..len as usize]);
+        let is_desktop = class_name == "Progman" || class_name == "WorkerW";
+
+        IS_DESKTOP_FOREGROUND.store(is_desktop, std::sync::atomic::Ordering::SeqCst);
+        PREV_FOREGROUND_HWND.store(effective_hwnd, std::sync::atomic::Ordering::SeqCst);
     }
 }
 
@@ -1516,6 +1658,59 @@ pub fn show_main_window(_app: tauri::AppHandle) -> Result<(), String> {
             let _ = main_window.show();
             let _ = main_window.set_focus();
         }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn window_minimize(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(main_window) = _app.get_webview_window("main") {
+            let _ = main_window.minimize();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn window_toggle_maximize(_app: tauri::AppHandle) -> Result<bool, String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(main_window) = _app.get_webview_window("main") {
+            if let Ok(is_max) = main_window.is_maximized() {
+                if is_max {
+                    let _ = main_window.unmaximize();
+                    return Ok(false);
+                } else {
+                    let _ = main_window.maximize();
+                    return Ok(true);
+                }
+            }
+        }
+    }
+    Ok(false)
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn window_close(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        use tauri::Manager;
+        if let Some(main_window) = _app.get_webview_window("main") {
+            let _ = main_window.close();
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(not(test), tauri::command)]
+pub fn app_exit(_app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(not(test))]
+    {
+        _app.exit(0);
     }
     Ok(())
 }
@@ -1680,6 +1875,117 @@ fn decode_b64(input: &str) -> Option<String> {
     String::from_utf8(out).ok()
 }
 
+#[cfg(target_os = "windows")]
+fn get_selection_script_path() -> std::path::PathBuf {
+    let temp_file = std::env::temp_dir().join("fig_get_sel.js");
+    let script_content = r#"var targetHwnd = parseInt(WScript.Arguments.length > 0 ? WScript.Arguments(0) : 0);
+var isDesktop = (WScript.Arguments.length > 1 && WScript.Arguments(1) === '1');
+var shell = new ActiveXObject('Shell.Application');
+var paths = [];
+
+function getItems(doc) {
+    try {
+        if (!doc) return false;
+        var sel = doc.SelectedItems();
+        if (sel && sel.Count > 0) {
+            for (var i = 0; i < sel.Count; i++) {
+                var p = sel.Item(i).Path;
+                if (p) paths.push(p);
+            }
+            return true;
+        }
+    } catch(e) {}
+    return false;
+}
+
+var found = false;
+
+// 1. If Desktop was foreground, check Desktop first
+if (isDesktop) {
+    try {
+        var dw = shell.Windows().FindWindowSW(0, 0, 8, 0, 1);
+        if (dw && dw.Document) {
+            if (getItems(dw.Document)) {
+                found = true;
+            }
+        }
+    } catch(e) {}
+}
+
+// 2. If targetHwnd matches an Explorer window, check it
+if (!found && targetHwnd !== 0) {
+    var windows = shell.Windows();
+    for (var i = 0; i < windows.Count; i++) {
+        try {
+            var w = windows.Item(i);
+            if (w && w.HWND == targetHwnd) {
+                if (getItems(w.Document)) {
+                    found = true;
+                    break;
+                }
+            }
+        } catch(e) {}
+    }
+}
+
+// 3. Fallback: check any open Explorer window with a selection
+if (!found) {
+    var windows = shell.Windows();
+    for (var j = 0; j < windows.Count; j++) {
+        try {
+            var win = windows.Item(j);
+            if (win && getItems(win.Document)) {
+                found = true;
+                break;
+            }
+        } catch(e) {}
+    }
+}
+
+// 4. Fallback: check Desktop if not already checked
+if (!found && !isDesktop) {
+    try {
+        var dw = shell.Windows().FindWindowSW(0, 0, 8, 0, 1);
+        if (dw && dw.Document) {
+            getItems(dw.Document);
+        }
+    } catch(e) {}
+}
+
+try {
+    var xml = new ActiveXObject('Microsoft.XMLDOM');
+    var el = xml.createElement('tmp');
+    el.dataType = 'bin.base64';
+
+    var stm = new ActiveXObject('ADODB.Stream');
+    stm.Type = 2; // text
+    stm.Charset = 'utf-8';
+    stm.Open();
+
+    for (var k = 0; k < paths.length; k++) {
+        stm.Position = 0;
+        stm.SetEOS();
+        stm.WriteText(paths[k]);
+        stm.Position = 0;
+        stm.Type = 1; // binary
+        stm.Position = 3; // Advance past 3-byte UTF-8 BOM (0xEF, 0xBB, 0xBF)!
+        el.nodeTypedValue = stm.Read();
+        stm.Position = 0;
+        stm.Type = 2; // text
+        WScript.Echo(el.text.replace(/\r?\n/g, ''));
+    }
+    stm.Close();
+} catch(err) {
+    for (var m = 0; m < paths.length; m++) {
+        WScript.Echo(paths[m]);
+    }
+}
+"#;
+    // Always write to ensure latest fixes (e.g. BOM stripping) are active
+    let _ = std::fs::write(&temp_file, script_content);
+    temp_file
+}
+
 // 13. Auto-detect currently selected files in Windows Explorer & Desktop
 #[cfg_attr(not(test), tauri::command)]
 pub fn get_selected_explorer_files() -> Result<Vec<String>, String> {
@@ -1690,15 +1996,73 @@ pub fn get_selected_explorer_files() -> Result<Vec<String>, String> {
         const CREATE_NO_WINDOW: u32 = 0x08000000;
 
         let target_hwnd = PREV_FOREGROUND_HWND.load(std::sync::atomic::Ordering::SeqCst);
+        let is_desktop = IS_DESKTOP_FOREGROUND.load(std::sync::atomic::Ordering::SeqCst);
+        let desktop_flag = if is_desktop { "1" } else { "0" };
+        let script_path = get_selection_script_path();
 
-        let script = format!(
-            r#"
+        // 1. Try blazing fast cscript (typically 30-50ms)
+        let output = Command::new("cscript")
+            .args(&[
+                "//nologo",
+                script_path.to_str().unwrap_or(""),
+                &target_hwnd.to_string(),
+                desktop_flag,
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output();
+
+        let mut files = Vec::new();
+        let mut cscript_succeeded = false;
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                cscript_succeeded = true;
+                let text = String::from_utf8_lossy(&out.stdout);
+                for line in text.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.is_empty() {
+                        continue;
+                    }
+                    if let Some(decoded) = decode_b64(trimmed) {
+                        let trimmed_decoded = decoded
+                            .trim_start_matches('\u{feff}')
+                            .trim()
+                            .to_string();
+                        if !trimmed_decoded.is_empty() && std::path::Path::new(&trimmed_decoded).exists() {
+                            files.push(trimmed_decoded);
+                            continue;
+                        }
+                    }
+                    let direct = trimmed.trim_start_matches('\u{feff}').trim().to_string();
+                    if !direct.is_empty() && std::path::Path::new(&direct).exists() {
+                        files.push(direct);
+                    }
+                }
+            }
+        }
+
+        // 2. Fallback to PowerShell if cscript failed to execute
+        if !cscript_succeeded {
+            let script = format!(
+                r#"
 $targetHwnd = {target_hwnd}
+$isDesktop = {desktop_val}
 $shell = New-Object -ComObject Shell.Application
 $paths = [System.Collections.Generic.List[string]]::new()
 
-# 1. If target HWND matches an open Explorer window, check it first
-if ($targetHwnd -ne 0) {{
+if ($isDesktop) {{
+    try {{
+        $dw = $shell.Windows().FindWindowSW(0, 0, 8, 0, 1)
+        if ($dw -and $dw.Document) {{
+            $sel = $dw.Document.SelectedItems()
+            if ($sel -and $sel.Count -gt 0) {{
+                foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
+            }}
+        }}
+    }} catch {{}}
+}}
+
+if ($paths.Count -eq 0 -and $targetHwnd -ne 0) {{
     try {{
         foreach ($w in $shell.Windows()) {{
             try {{
@@ -1714,20 +2078,6 @@ if ($targetHwnd -ne 0) {{
     }} catch {{}}
 }}
 
-# 2. Check Desktop selection if target was desktop or no window matched yet
-if ($paths.Count -eq 0) {{
-    try {{
-        $dw = $shell.Windows().FindWindowSW(0, 0, 8, 0, 1)
-        if ($dw -and $dw.Document) {{
-            $sel = $dw.Document.SelectedItems()
-            if ($sel -and $sel.Count -gt 0) {{
-                foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
-            }}
-        }}
-    }} catch {{}}
-}}
-
-# 3. Fallback: Check any open Explorer folder window with selection
 if ($paths.Count -eq 0) {{
     try {{
         foreach ($w in $shell.Windows()) {{
@@ -1742,33 +2092,49 @@ if ($paths.Count -eq 0) {{
     }} catch {{}}
 }}
 
-# 4. Base64 output guarantees UTF-8 and Turkish character integrity across all consoles
+if ($paths.Count -eq 0 -and -not $isDesktop) {{
+    try {{
+        $dw = $shell.Windows().FindWindowSW(0, 0, 8, 0, 1)
+        if ($dw -and $dw.Document) {{
+            $sel = $dw.Document.SelectedItems()
+            if ($sel -and $sel.Count -gt 0) {{
+                foreach ($it in $sel) {{ if ($it.Path) {{ $paths.Add($it.Path) }} }}
+            }}
+        }}
+    }} catch {{}}
+}}
+
 foreach ($p in $paths) {{
     if ($p) {{
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($p)
         [Console]::WriteLine([Convert]::ToBase64String($bytes))
     }}
 }}
-"#
-        );
+"#,
+                target_hwnd = target_hwnd,
+                desktop_val = if is_desktop { "$true" } else { "$false" }
+            );
 
-        let output = Command::new("powershell")
-            .args(&["-NoProfile", "-NonInteractive", "-Command", &script])
-            .creation_flags(CREATE_NO_WINDOW)
-            .output()
-            .map_err(|e| format!("Seçili dosyalar okunamadı: {}", e))?;
-
-        let text = String::from_utf8_lossy(&output.stdout);
-        let mut files = Vec::new();
-        for line in text.lines() {
-            let trimmed = line.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            if let Some(decoded) = decode_b64(trimmed) {
-                let trimmed_decoded = decoded.trim().to_string();
-                if !trimmed_decoded.is_empty() && std::path::Path::new(&trimmed_decoded).exists() {
-                    files.push(trimmed_decoded);
+            if let Ok(ps_output) = Command::new("powershell")
+                .args(&["-NoProfile", "-NonInteractive", "-Command", &script])
+                .creation_flags(CREATE_NO_WINDOW)
+                .output()
+            {
+                let text = String::from_utf8_lossy(&ps_output.stdout);
+                for line in text.lines() {
+                    let trimmed = line.trim();
+                    if trimmed.is_empty() {
+                        continue;
+                    }
+                    if let Some(decoded) = decode_b64(trimmed) {
+                        let trimmed_decoded = decoded
+                            .trim_start_matches('\u{feff}')
+                            .trim()
+                            .to_string();
+                        if !trimmed_decoded.is_empty() && std::path::Path::new(&trimmed_decoded).exists() {
+                            files.push(trimmed_decoded);
+                        }
+                    }
                 }
             }
         }
@@ -1779,6 +2145,19 @@ foreach ($p in $paths) {{
     {
         Ok(Vec::new())
     }
+}
+
+// 13b. Fast single-pass file detection with full FileInfo metadata (eliminates frontend waterfall)
+#[cfg_attr(not(test), tauri::command)]
+pub fn get_selected_explorer_files_info() -> Result<Vec<FileInfo>, String> {
+    let paths = get_selected_explorer_files()?;
+    let mut files = Vec::new();
+    for p in paths {
+        if let Ok(info) = get_file_info(p) {
+            files.push(info);
+        }
+    }
+    Ok(files)
 }
 
 // -------------------------------------------------------------
@@ -1900,7 +2279,7 @@ mod tests {
         let in_path = dir.join("to_crop.png");
         create_dummy_png(&in_path, 100, 100);
 
-        let res = crop_image(in_path.to_string_lossy().to_string(), 10, 20, 50, 40).unwrap();
+        let res = crop_image(in_path.to_string_lossy().to_string(), 10, 20, 50, 40, None).unwrap();
         assert!(Path::new(&res.path).exists());
         assert_eq!(res.width, Some(50));
         assert_eq!(res.height, Some(40));
@@ -1914,10 +2293,10 @@ mod tests {
         let in_path = dir.join("bounds.png");
         create_dummy_png(&in_path, 50, 50);
 
-        let err = crop_image(in_path.to_string_lossy().to_string(), 60, 60, 10, 10);
+        let err = crop_image(in_path.to_string_lossy().to_string(), 60, 60, 10, 10, None);
         assert!(err.is_err());
 
-        let err_zero = crop_image(in_path.to_string_lossy().to_string(), 0, 0, 0, 10);
+        let err_zero = crop_image(in_path.to_string_lossy().to_string(), 0, 0, 0, 10, None);
         assert!(err_zero.is_err());
 
         let _ = std::fs::remove_dir_all(dir);

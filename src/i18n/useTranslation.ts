@@ -11,11 +11,11 @@ export interface LanguageOption {
 }
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
-  { code: "es", label: "Español", flag: "🇪🇸" },
-  { code: "de", label: "Deutsch", flag: "🇩🇪" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "en", label: "English", flag: "EN" },
+  { code: "tr", label: "Türkçe", flag: "TR" },
+  { code: "es", label: "Español", flag: "ES" },
+  { code: "de", label: "Deutsch", flag: "DE" },
+  { code: "fr", label: "Français", flag: "FR" },
 ];
 
 function detectInitialLanguage(): SupportedLanguage {

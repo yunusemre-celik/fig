@@ -86,6 +86,8 @@ export interface TranslationDictionary {
   slicePdfDocx: string;
   slicePdfTxt: string;
   slicePdfImages: string;
+  slicePdfPng: string;
+  slicePdfJpg: string;
 
   sliceCopyPath: string;
   sliceReveal: string;
@@ -247,6 +249,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     slicePdfDocx: "PDF → Word",
     slicePdfTxt: "PDF → Text",
     slicePdfImages: "Extract Images",
+    slicePdfPng: "PDF → PNG Image",
+    slicePdfJpg: "PDF → JPG Photo",
 
     sliceCopyPath: "Copy Path",
     sliceReveal: "Show in Explorer",
@@ -403,6 +407,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     slicePdfDocx: "PDF → Word",
     slicePdfTxt: "PDF → Metin",
     slicePdfImages: "Görsellere Ayır",
+    slicePdfPng: "PDF → PNG Görsel",
+    slicePdfJpg: "PDF → JPG Fotoğraf",
 
     sliceCopyPath: "Yolu Kopyala",
     sliceReveal: "Explorer'da Aç",
@@ -559,6 +565,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     slicePdfDocx: "PDF → Word",
     slicePdfTxt: "PDF → Texto",
     slicePdfImages: "Extraer imágenes",
+    slicePdfPng: "PDF → Imagen PNG",
+    slicePdfJpg: "PDF → Foto JPG",
 
     sliceCopyPath: "Copiar ruta",
     sliceReveal: "Mostrar en explorador",
@@ -715,6 +723,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     slicePdfDocx: "PDF → Word",
     slicePdfTxt: "PDF → Text",
     slicePdfImages: "Bilder extrahieren",
+    slicePdfPng: "PDF → PNG Bild",
+    slicePdfJpg: "PDF → JPG Foto",
 
     sliceCopyPath: "Pfad kopieren",
     sliceReveal: "Im Explorer anzeigen",
@@ -871,6 +881,8 @@ export const translations: Record<SupportedLanguage, TranslationDictionary> = {
     slicePdfDocx: "PDF → Word",
     slicePdfTxt: "PDF → Texte",
     slicePdfImages: "Extraire les images",
+    slicePdfPng: "PDF → Image PNG",
+    slicePdfJpg: "PDF → Photo JPG",
 
     sliceCopyPath: "Copier le chemin",
     sliceReveal: "Afficher dans l'Explorateur",

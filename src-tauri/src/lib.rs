@@ -11,6 +11,13 @@ use tauri::{
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             // Check if launched with --minimized
@@ -104,15 +111,12 @@ pub fn run() {
                 });
             }
 
-            // Apply native Windows 11 Mica / Acrylic vibrancy
+            // Apply native Windows 11 Mica vibrancy safely if supported
             #[cfg(target_os = "windows")]
             {
-                use window_vibrancy::{apply_acrylic, apply_mica};
+                use window_vibrancy::apply_mica;
                 if let Some(main_win) = app.get_webview_window("main") {
-                    // Try Mica (Windows 11 22H2+); fall back to Acrylic with low alpha so wallpaper shows through
-                    if apply_mica(&main_win, None).is_err() {
-                        let _ = apply_acrylic(&main_win, Some((8, 10, 18, 60)));
-                    }
+                    let _ = apply_mica(&main_win, None);
                 }
             }
 
@@ -139,9 +143,14 @@ pub fn run() {
             commands::expand_wheel_window,
             commands::restore_wheel_window,
             commands::show_main_window,
+            commands::window_minimize,
+            commands::window_toggle_maximize,
+            commands::window_close,
+            commands::app_exit,
             commands::set_window_vibrancy,
             commands::pick_file_dialog,
             commands::get_selected_explorer_files,
+            commands::get_selected_explorer_files_info,
             commands::get_file_info,
             commands::convert_image,
             commands::read_image_data_url,

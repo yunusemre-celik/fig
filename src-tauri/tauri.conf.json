@@ -19,8 +19,8 @@
         "minWidth": 780,
         "minHeight": 580,
         "center": true,
-        "decorations": true,
-        "transparent": true
+        "decorations": false,
+        "transparent": false
       },
       {
         "label": "wheel",

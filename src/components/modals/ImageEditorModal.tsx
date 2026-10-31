@@ -374,8 +374,8 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                 <div
                   className={`absolute pointer-events-none transition-all duration-75 ${
                     mode === "crop"
-                      ? "border-2 border-[var(--apple-accent)] bg-[var(--apple-accent-light)] shadow-[0_0_0_9999px_rgba(0,0,0,0.60)]"
-                      : "border-2 border-indigo-400 bg-indigo-500/20 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.4)]"
+                      ? "border-2 border-white bg-white/15 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)]"
+                      : "border-2 border-white/80 bg-white/10 backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.25)]"
                   }`}
                   style={{
                     left: `${box.x}%`,
@@ -386,18 +386,18 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
                 >
                   {/* Mode Tag on the box */}
                   <span
-                    className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-bold text-white uppercase tracking-wider ${
-                      mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-500"
+                    className={`absolute -top-6 left-0 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase tracking-wider ${
+                      mode === "crop" ? "bg-white text-black" : "bg-white text-black"
                     }`}
                   >
                     {mode === "crop" ? t("cropBoxTag") : t("censorBoxTag")}
                   </span>
 
                   {/* Corner Handles */}
-                  <div className={`absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
-                  <div className={`absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
-                  <div className={`absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
-                  <div className={`absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full border border-black ${mode === "crop" ? "bg-[var(--apple-accent)]" : "bg-indigo-400"}`} />
+                  <div className="absolute -top-1.5 -left-1.5 w-3 h-3 rounded-full border border-black/50 bg-white" />
+                  <div className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full border border-black/50 bg-white" />
+                  <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 rounded-full border border-black/50 bg-white" />
+                  <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 rounded-full border border-black/50 bg-white" />
                 </div>
               ) : (
                 /* Full Image Blur Highlight */

@@ -360,3 +360,51 @@ export async function getSelectedExplorerFiles(): Promise<string[]> {
   }
   return [];
 }
+
+export async function getSelectedExplorerFilesInfo(): Promise<FileInfo[]> {
+  if (isTauri) {
+    return await invoke<FileInfo[]>("get_selected_explorer_files_info");
+  }
+  return [];
+}
+
+export async function windowMinimize(): Promise<void> {
+  if (isTauri) {
+    try {
+      await invoke("window_minimize");
+    } catch (e) {
+      console.warn("window_minimize failed:", e);
+    }
+  }
+}
+
+export async function windowToggleMaximize(): Promise<boolean> {
+  if (isTauri) {
+    try {
+      return await invoke<boolean>("window_toggle_maximize");
+    } catch (e) {
+      console.warn("window_toggle_maximize failed:", e);
+    }
+  }
+  return false;
+}
+
+export async function windowClose(): Promise<void> {
+  if (isTauri) {
+    try {
+      await invoke("window_close");
+    } catch (e) {
+      console.warn("window_close failed:", e);
+    }
+  }
+}
+
+export async function appExit(): Promise<void> {
+  if (isTauri) {
+    try {
+      await invoke("app_exit");
+    } catch (e) {
+      console.warn("app_exit failed:", e);
+    }
+  }
+}

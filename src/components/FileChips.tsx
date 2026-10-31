@@ -51,14 +51,14 @@ export const FileChips: React.FC<FileChipsProps> = ({
 
   return (
     <>
-      <div className="w-full mt-4 p-4 rounded-2xl apple-card animate-in fade-in duration-200">
+      <div className="w-full mt-4 p-4 rounded-2xl glass-card animate-in fade-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-[var(--apple-border)]">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-[var(--apple-text-primary)] tracking-wide">
               {language === "tr" ? "Seçilen Dosyalar" : "Selected Files"}
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--apple-accent-light)] text-[var(--apple-accent)] border border-[var(--apple-accent)]/20">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white border border-white/15">
               {files.length}
             </span>
           </div>
@@ -67,7 +67,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
             <button
               type="button"
               onClick={onOpenWheel}
-              className="apple-button-accent flex items-center gap-1.5 px-3 py-1 text-xs shadow-sm"
+              className="glass-btn-accent flex items-center gap-1.5 px-3 py-1 text-xs shadow-sm cursor-pointer"
               title="Ctrl + Space"
             >
               <Sparkles size={13} />
@@ -76,7 +76,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
             <button
               type="button"
               onClick={onClearAll}
-              className="p-1.5 rounded-xl hover:bg-rose-500/10 text-[var(--apple-text-tertiary)] hover:text-rose-500 transition-colors"
+              className="p-1.5 rounded-xl hover:bg-rose-500/10 text-[var(--apple-text-tertiary)] hover:text-rose-500 transition-colors cursor-pointer"
               title={language === "tr" ? "Tümünü Temizle" : "Clear All"}
             >
               <Trash2 size={13} />
@@ -85,12 +85,12 @@ export const FileChips: React.FC<FileChipsProps> = ({
         </div>
 
         {/* Direct Action 1-Click Convert Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 p-2.5 rounded-xl bg-[var(--apple-bg-secondary)] border border-[var(--apple-border)]">
-          <div className="flex items-center gap-1.5 text-xs text-[var(--apple-text-secondary)] font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 p-2.5 rounded-xl bg-white/[0.025] border border-white/[0.08]">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-300 font-semibold">
             {isConverting ? (
-              <RefreshCw size={13} className="text-[var(--apple-accent)] animate-spin" />
+              <RefreshCw size={13} className="text-white animate-spin" />
             ) : (
-              <Zap size={14} className="text-[var(--apple-accent)]" />
+              <Zap size={14} className="text-white" />
             )}
             <span>
               {isConverting
@@ -104,7 +104,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
               type="button"
               onClick={() => onDirectConvert?.("webp")}
               disabled={isConverting}
-              className="apple-button px-2.5 py-1 text-xs font-semibold text-emerald-500 hover:border-emerald-500/40"
+              className="glass-btn px-2.5 py-1 text-xs font-semibold text-emerald-400 hover:border-emerald-500/40 cursor-pointer"
             >
               WebP
             </button>
@@ -112,7 +112,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
               type="button"
               onClick={() => onDirectConvert?.("png")}
               disabled={isConverting}
-              className="apple-button px-2.5 py-1 text-xs font-semibold text-blue-500 hover:border-blue-500/40"
+              className="glass-btn px-2.5 py-1 text-xs font-semibold text-zinc-200 hover:text-white cursor-pointer"
             >
               PNG
             </button>
@@ -120,7 +120,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
               type="button"
               onClick={() => onDirectConvert?.("pdf")}
               disabled={isConverting}
-              className="apple-button px-2.5 py-1 text-xs font-semibold text-rose-500 hover:border-rose-500/40"
+              className="glass-btn px-2.5 py-1 text-xs font-semibold text-rose-400 hover:border-rose-500/40 cursor-pointer"
             >
               PDF
             </button>
@@ -141,7 +141,7 @@ export const FileChips: React.FC<FileChipsProps> = ({
             return (
               <div
                 key={`${file.path}-${idx}`}
-                className="group relative flex items-center gap-3 p-2 rounded-xl apple-card hover:bg-[var(--apple-bg-card-hover)] transition-all"
+                className="group relative flex items-center gap-3 p-2 rounded-xl glass-card transition-all"
               >
                 {/* Visual Thumbnail or Document Icon */}
                 {isImg && imgSrc ? (

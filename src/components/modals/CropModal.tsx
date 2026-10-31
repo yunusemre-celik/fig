@@ -77,51 +77,51 @@ export const CropModal: React.FC<CropModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md animate-in fade-in">
-      <div className="relative w-[760px] max-w-[92vw] h-[580px] max-h-[90vh] bg-[#141A24] border border-white/[0.1] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative w-[760px] max-w-[92vw] h-[580px] max-h-[90vh] bg-[#0A0C10]/95 backdrop-blur-2xl border border-white/[0.12] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <div className="w-7 h-7 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center text-white">
               <Crop size={16} />
             </div>
             <div>
               <h3 className="font-semibold text-sm text-neutral-100">Görseli Kırp</h3>
-              <p className="text-[11px] text-neutral-400">{file.name} ({imageSize.width} × {imageSize.height} px)</p>
+              <p className="text-[11px] text-zinc-400">{file.name} ({imageSize.width} × {imageSize.height} px)</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Aspect Ratio Toolbar */}
-        <div className="flex items-center justify-between px-5 py-2.5 bg-[#0F141D] border-b border-white/[0.06] text-xs">
+        <div className="flex items-center justify-between px-5 py-2.5 bg-white/[0.02] border-b border-white/[0.06] text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="text-neutral-400 font-medium mr-2">Oran:</span>
+            <span className="text-zinc-400 font-medium mr-2">Oran:</span>
             {(["free", "1:1", "16:9", "4:3", "9:16"] as AspectPreset[]).map((preset) => (
               <button
                 key={preset}
                 onClick={() => handleAspectChange(preset)}
-                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                   aspect === preset
-                    ? "bg-amber-500 text-black shadow-sm font-semibold"
-                    : "text-neutral-300 hover:bg-white/[0.08]"
+                    ? "bg-white text-black shadow-sm font-semibold"
+                    : "text-zinc-300 hover:bg-white/[0.08]"
                 }`}
               >
                 {preset === "free" ? "Serbest" : preset}
               </button>
             ))}
           </div>
-          <div className="text-neutral-400 text-[11px] font-mono">
+          <div className="text-zinc-400 text-[11px] font-mono">
             {Math.round((cropBox.width / 100) * imageSize.width)} × {Math.round((cropBox.height / 100) * imageSize.height)} px
           </div>
         </div>
 
         {/* Image Preview & Crop Canvas */}
-        <div ref={containerRef} className="flex-1 relative flex items-center justify-center p-6 bg-[#0B0E14] overflow-hidden select-none">
+        <div ref={containerRef} className="flex-1 relative flex items-center justify-center p-6 bg-black/40 overflow-hidden select-none">
           <div className="relative max-h-full max-w-full inline-block shadow-xl rounded-lg overflow-hidden border border-white/[0.08]">
             <img
               ref={imageRef}
@@ -133,7 +133,7 @@ export const CropModal: React.FC<CropModalProps> = ({
 
             {/* Crop Overlay Mask */}
             <div
-              className="absolute border-2 border-amber-400 bg-amber-400/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none transition-all duration-75"
+              className="absolute border-2 border-white bg-white/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.65)] pointer-events-none transition-all duration-75"
               style={{
                 left: `${cropBox.x}%`,
                 top: `${cropBox.y}%`,
@@ -142,29 +142,29 @@ export const CropModal: React.FC<CropModalProps> = ({
               }}
             >
               {/* Corner Handles */}
-              <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-amber-400 border border-black rounded-sm" />
-              <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-amber-400 border border-black rounded-sm" />
-              <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-amber-400 border border-black rounded-sm" />
-              <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-amber-400 border border-black rounded-sm" />
+              <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-black/50 rounded-sm" />
+              <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-black/50 rounded-sm" />
+              <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-black/50 rounded-sm" />
+              <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-black/50 rounded-sm" />
             </div>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.08] bg-[#141A24]">
-          <span className="text-[11px] text-neutral-400">
-            Kırpılan görsel aynı klasöre <span className="text-amber-400">_cropped</span> sonekiyle kaydedilir.
+        <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.08] bg-white/[0.02]">
+          <span className="text-[11px] text-zinc-400">
+            Kırpılan görsel aynı klasöre <span className="text-white font-mono">_cropped</span> sonekiyle kaydedilir.
           </span>
           <div className="flex items-center gap-2.5">
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl text-xs font-medium text-neutral-300 hover:bg-white/[0.08] transition-colors"
+              className="px-4 py-1.5 rounded-xl text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
             >
               İptal
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-zinc-200 text-black shadow-md transition-all active:scale-95 cursor-pointer"
             >
               <Check size={14} />
               Kırp & Kaydet

@@ -24,16 +24,16 @@ export const Navigation: React.FC<NavigationProps> = ({
   return (
     <aside className="settings-sidebar select-none">
       {/* Account / Workspace Brand Header */}
-      <div className="account-block">
-        <FigLogo size={28} />
+      <div className="flex items-center gap-2.5 px-2 py-1.5 mb-2 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+        <FigLogo size={26} glow={false} />
         <div>
-          <strong className="text-white text-xs font-semibold">Fig Portable</strong>
-          <span className="text-[10px] text-[#8E95A8] font-mono">100% local workspace</span>
+          <strong className="text-white text-xs font-semibold block leading-tight">Fig Portable</strong>
+          <span className="text-[9px] text-zinc-400 font-mono">100% local workspace</span>
         </div>
       </div>
 
       {/* Workspace Menu */}
-      <div className="menu-label text-[9px] font-mono tracking-widest text-[#4E5668] mt-5 mb-2 px-2 uppercase">
+      <div className="menu-label text-[9px] font-mono tracking-widest text-zinc-500 mt-4 mb-2 px-2 uppercase">
         WORKSPACE
       </div>
 
@@ -43,20 +43,20 @@ export const Navigation: React.FC<NavigationProps> = ({
           <button
             type="button"
             onClick={() => onTabChange("home")}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all cursor-pointer ${
               activeTab === "home"
-                ? "bg-[#252A51] text-[#C9CCFF] font-semibold border border-[#6F75E8]/30 shadow-sm"
-                : "text-[#8E95A8] hover:text-white hover:bg-white/[0.04]"
+                ? "bg-white/[0.1] text-white font-medium border border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] backdrop-blur-md"
+                : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
-            <Folder size={15} className={activeTab === "home" ? "text-[#8493FF]" : "text-[#646C7E]"} />
+            <Folder size={15} className={activeTab === "home" ? "text-white" : "text-zinc-500"} />
             <span>{t("tabHome") || "Quick Convert"}</span>
             {libraryCount > 0 ? (
-              <span className="ml-auto px-1.5 py-0.2 rounded-full text-[9px] font-mono bg-[#8493FF]/20 text-[#8493FF]">
+              <span className="ml-auto px-1.5 py-0.2 rounded-full text-[9px] font-mono bg-white/10 text-zinc-200 border border-white/10">
                 {libraryCount}
               </span>
             ) : (
-              <span className="ml-auto font-mono text-[9px] text-[#5E6678]">⌘</span>
+              <span className="ml-auto font-mono text-[9px] text-zinc-600">⌘1</span>
             )}
           </button>
           <div className="tooltip-bubble">Ctrl + 1</div>
@@ -67,14 +67,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           <button
             type="button"
             onClick={() => onTabChange("studio")}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all cursor-pointer ${
               activeTab === "studio"
-                ? "bg-[#252A51] text-[#C9CCFF] font-semibold border border-[#6F75E8]/30 shadow-sm"
-                : "text-[#8E95A8] hover:text-white hover:bg-white/[0.04]"
+                ? "bg-white/[0.1] text-white font-medium border border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] backdrop-blur-md"
+                : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
-            <Sliders size={15} className={activeTab === "studio" ? "text-[#8493FF]" : "text-[#646C7E]"} />
+            <Sliders size={15} className={activeTab === "studio" ? "text-white" : "text-zinc-500"} />
             <span>{t("tabStudio") || "Wheel Studio"}</span>
+            <span className="ml-auto font-mono text-[9px] text-zinc-600">⌘2</span>
           </button>
           <div className="tooltip-bubble">Ctrl + 2</div>
         </div>
@@ -84,14 +85,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           <button
             type="button"
             onClick={() => onTabChange("documents")}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all cursor-pointer ${
               activeTab === "documents"
-                ? "bg-[#252A51] text-[#C9CCFF] font-semibold border border-[#6F75E8]/30 shadow-sm"
-                : "text-[#8E95A8] hover:text-white hover:bg-white/[0.04]"
+                ? "bg-white/[0.1] text-white font-medium border border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] backdrop-blur-md"
+                : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
-            <FileText size={15} className={activeTab === "documents" ? "text-[#8493FF]" : "text-[#646C7E]"} />
+            <FileText size={15} className={activeTab === "documents" ? "text-white" : "text-zinc-500"} />
             <span>{t("tabDocuments") || "Documents & PDF"}</span>
+            <span className="ml-auto font-mono text-[9px] text-zinc-600">⌘3</span>
           </button>
           <div className="tooltip-bubble">Ctrl + 3</div>
         </div>
@@ -101,9 +103,9 @@ export const Navigation: React.FC<NavigationProps> = ({
           <button
             type="button"
             onClick={onOpenImageStudio}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#8E95A8] hover:text-white hover:bg-white/[0.04] transition-all"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer"
           >
-            <ImageIcon size={15} className="text-[#646C7E]" />
+            <ImageIcon size={15} className="text-zinc-500" />
             <span>Image Studio</span>
           </button>
           <div className="tooltip-bubble">Crop & Blur</div>
@@ -111,7 +113,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       </nav>
 
       {/* Preferences Menu */}
-      <div className="menu-label text-[9px] font-mono tracking-widest text-[#4E5668] mt-6 mb-2 px-2 uppercase">
+      <div className="menu-label text-[9px] font-mono tracking-widest text-zinc-500 mt-5 mb-2 px-2 uppercase">
         PREFERENCES
       </div>
 
@@ -121,14 +123,15 @@ export const Navigation: React.FC<NavigationProps> = ({
           <button
             type="button"
             onClick={() => onTabChange("settings")}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all cursor-pointer ${
               activeTab === "settings"
-                ? "bg-[#252A51] text-[#C9CCFF] font-semibold border border-[#6F75E8]/30 shadow-sm"
-                : "text-[#8E95A8] hover:text-white hover:bg-white/[0.04]"
+                ? "bg-white/[0.1] text-white font-medium border border-white/20 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] backdrop-blur-md"
+                : "text-zinc-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
-            <Settings size={15} className={activeTab === "settings" ? "text-[#8493FF]" : "text-[#646C7E]"} />
+            <Settings size={15} className={activeTab === "settings" ? "text-white" : "text-zinc-500"} />
             <span>{t("tabSettings") || "Settings"}</span>
+            <span className="ml-auto font-mono text-[9px] text-zinc-600">⌘,</span>
           </button>
           <div className="tooltip-bubble">Ctrl + ,</div>
         </div>
@@ -139,7 +142,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <button
           type="button"
           onClick={onOpenWheel}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-gradient-to-r from-[#2A315C] to-[#1E2344] text-[#C9CCFF] hover:from-[#353D74] hover:to-[#282F5C] border border-[#6F75E8]/25 shadow-sm transition-all"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/15 hover:border-white/25 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all cursor-pointer"
         >
           <FigLogo size={16} glow={false} />
           <span>{t("openWheelBtn") || "Trigger Wheel"}</span>
@@ -148,11 +151,11 @@ export const Navigation: React.FC<NavigationProps> = ({
       </div>
 
       {/* Sidebar Footer Pill */}
-      <div className="sidebar-footer mt-auto flex items-center gap-2 text-[10px] text-[#6EE7A8] bg-[#6EE7A8]/[0.05] border border-[#6EE7A8]/15 rounded-lg p-2.5">
-        <ShieldCheck size={16} className="text-[#6EE7A8] shrink-0" />
+      <div className="sidebar-footer mt-auto flex items-center gap-2 text-[10px] text-zinc-300 bg-white/[0.02] border border-white/[0.06] rounded-xl p-2.5">
+        <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
         <div className="flex flex-col">
-          <span className="font-medium text-[#A3B899]">All processing is local</span>
-          <small className="text-[8px] text-[#4E7058] font-mono">Offline mode active</small>
+          <span className="font-medium text-zinc-300">All processing is local</span>
+          <small className="text-[8px] text-zinc-500 font-mono">Offline mode active</small>
         </div>
       </div>
     </aside>

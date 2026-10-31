@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Fig — Promotional Video</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --ground: #080a11;
+        --surface: rgba(18, 22, 36, 0.82);
+        --surface-border: rgba(255, 255, 255, 0.16);
+        --ink: #ffffff;
+        --ink-muted: #94a3b8;
+        --accent-violet: #8b5cf6;
+        --accent-cyan: #06b6d4;
+        --accent-green: #10b981;
+        --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ground);
+        font-family: var(--font-display);
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+
+      .clip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .ambient-glow {
+        position: absolute;
+        width: 750px;
+        height: 750px;
+        border-radius: 50%;
+        filter: blur(140px);
+        pointer-events: none;
+        opacity: 0.5;
+      }
+      .glow-purple {
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.75) 0%, transparent 70%);
+      }
+      .glow-cyan {
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.65) 0%, transparent 70%);
+      }
+
+      .glass-card {
+        background: var(--surface);
+        backdrop-filter: blur(36px);
+        -webkit-backdrop-filter: blur(36px);
+        border: 1.5px solid var(--surface-border);
+        border-radius: 30px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 28px;
+        border-radius: 9999px;
+        background: rgba(139, 92, 246, 0.22);
+        border: 1.5px solid rgba(139, 92, 246, 0.45);
+        color: #c4b5fd;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-title {
+        font-size: 72px;
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        text-align: center;
+        background: linear-gradient(180deg, #FFFFFF 20%, #CBD5E1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-subtitle {
+        font-size: 34px;
+        font-weight: 500;
+        color: var(--ink-muted);
+        text-align: center;
+        margin-top: 22px;
+        letter-spacing: -0.01em;
+      }
+
+      /* Scene 1 Elements */
+      #s1-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        padding: 0 60px;
+      }
+      .logo-box {
+        width: 240px;
+        height: 240px;
+        border-radius: 64px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 30px 70px rgba(139, 92, 246, 0.45);
+        margin-bottom: 48px;
+        position: relative;
+      }
+      .logo-box img {
+        width: 155px;
+        height: 155px;
+        filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5));
+      }
+
+      /* Scene 2 Desktop Bliss */
+      #s2-desktop-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #s2-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(8, 10, 17, 0.88) 0%, rgba(8, 10, 17, 0.4) 40%, rgba(8, 10, 17, 0.88) 100%);
+      }
+      #s2-content {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 140px 60px 160px;
+      }
+      .key-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 34px;
+        border-radius: 16px;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.65), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+        font-family: monospace;
+        font-size: 32px;
+        font-weight: 700;
+        color: #FFFFFF;
+      }
+      .wheel-center-wrap {
+        position: relative;
+        width: 660px;
+        height: 660px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .wheel-glow-disc {
+        position: absolute;
+        width: 630px;
+        height: 630px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(6, 182, 212, 0.15) 70%, transparent 100%);
+        border: 2px solid rgba(139, 92, 246, 0.4);
+        box-shadow: 0 0 80px rgba(139, 92, 246, 0.5);
+      }
+      .wheel-img {
+        width: 620px;
+        height: 620px;
+        object-fit: cover;
+        clip-path: circle(48% at center);
+        border-radius: 50%;
+        box-shadow: 0 0 60px rgba(139, 92, 246, 0.6), 0 20px 40px rgba(0,0,0,0.8);
+      }
+      .mouse-cursor {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        pointer-events: none;
+        z-index: 25;
+        filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7));
+      }
+
+      /* Scene 3: Fast File Convergence */
+      #scene3 {
+        background: radial-gradient(circle at center, #141b2e 0%, #080A11 100%);
+      }
+      #s3-content {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 48px;
+      }
+      .file-card-flash {
+        position: absolute;
+        width: 520px;
+        height: 300px;
+        border-radius: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        box-shadow: 0 35px 80px rgba(0, 0, 0, 0.75);
+        border: 2px solid rgba(255, 255, 255, 0.28);
+      }
+      .file-name {
+        font-size: 46px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+      }
+      .file-action-badge {
+        font-size: 28px;
+        font-weight: 600;
+        padding: 8px 24px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Bento grid for final stop in Scene 3 */
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+        width: 100%;
+        max-width: 980px;
+        margin-top: 30px;
+      }
+      .bento-item {
+        background: var(--surface);
+        backdrop-filter: blur(28px);
+        border: 1.5px solid var(--surface-border);
+        border-radius: 28px;
+        padding: 34px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .bento-icon-box {
+        width: 76px;
+        height: 76px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 28px;
+      }
+      .bento-full {
+        grid-column: span 2;
+      }
+
+      /* Scene 4: Windows & Open Source */
+      #s4-content {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 120px 48px;
+      }
+      .preview-stack {
+        position: relative;
+        width: 960px;
+        height: 520px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 1200px;
+      }
+      .preview-img {
+        position: absolute;
+        width: 860px;
+        border-radius: 22px;
+        border: 1.5px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 35px 90px rgba(0, 0, 0, 0.85);
+      }
+      .feature-row {
+        width: 100%;
+        max-width: 980px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .feature-card {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        padding: 26px 36px;
+        background: var(--surface);
+        border: 1.5px solid var(--surface-border);
+        border-radius: 26px;
+        backdrop-filter: blur(24px);
+      }
+      .feature-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: rgba(139, 92, 246, 0.22);
+        border: 1.5px solid rgba(139, 92, 246, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c4b5fd;
+      }
+      .feature-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .feature-desc {
+        font-size: 26px;
+        color: var(--ink-muted);
+        margin-top: 6px;
+      }
+
+      /* Scene 5: Outro & Socials */
+      #s5-content {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 120px 48px;
+      }
+      .github-box {
+        width: 100%;
+        max-width: 980px;
+        padding: 38px 44px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.98));
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        border-radius: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
+      }
+      .socials-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+        width: 100%;
+        max-width: 980px;
+      }
+      .social-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 24px 32px;
+        background: var(--surface);
+        border: 1.5px solid var(--surface-border);
+        border-radius: 24px;
+        font-size: 26px;
+        font-weight: 600;
+        color: #e2e8f0;
+        backdrop-filter: blur(24px);
+      }
+      .social-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="22"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Audio Tracks with exact clip duration -->
+      <audio id="bgm" src="assets/bgm.wav" class="clip" data-start="0" data-duration="22" data-volume="0.85"></audio>
+      <audio id="sfx-whoosh1" src="assets/whoosh.wav" class="clip" data-start="0.1" data-duration="0.5" data-volume="0.7"></audio>
+      <audio id="sfx-click" src="assets/click.wav" class="clip" data-start="4.3" data-duration="0.12" data-volume="0.9"></audio>
+      <audio id="sfx-whoosh2" src="assets/whoosh.wav" class="clip" data-start="4.5" data-duration="0.5" data-volume="0.8"></audio>
+      <audio id="sfx-click2" src="assets/click.wav" class="clip" data-start="9.5" data-duration="0.12" data-volume="0.9"></audio>
+      <audio id="sfx-whoosh3" src="assets/whoosh.wav" class="clip" data-start="12.2" data-duration="0.5" data-volume="0.7"></audio>
+      <audio id="sfx-whoosh4" src="assets/whoosh.wav" class="clip" data-start="16.8" data-duration="0.5" data-volume="0.8"></audio>
+
+      <!-- Background Ambient Glows -->
+      <div id="ambient1" class="ambient-glow glow-purple" data-layout-allow-overflow style="top: 0px; left: 0px;"></div>
+      <div id="ambient2" class="ambient-glow glow-cyan" data-layout-allow-overflow style="bottom: 100px; right: 0px;"></div>
+
+      <!-- ==============================================
+           SCENE 1: THE HOOK (0.0s – 3.8s)
+           ============================================== -->
+      <div id="scene1" class="clip" data-start="0" data-duration="3.8" data-track-index="0">
+        <div id="s1-content">
+          <!-- Windows Platform Badge -->
+          <div id="s1-badge" class="badge-pill" style="margin-bottom: 40px;">
+            <svg viewBox="0 0 88 88" width="28" height="28" fill="currentColor">
+              <path d="M0 12.5L35.8 7.6V42.3H0V12.5ZM0 46.1H35.8V80.8L0 75.9V46.1ZM39.6 7.1L88 0V42.3H39.6V7.1ZM39.6 46.1H88V88.4L39.6 81.3V46.1Z"/>
+            </svg>
+            <span>Windows 11 / 10 Native</span>
+          </div>
+
+          <!-- Authentic Fig SVG Logo Box -->
+          <div id="s1-logo" class="logo-box">
+            <img src="assets/figlogo.svg" alt="Fig Logo" />
+          </div>
+
+          <h1 id="s1-title" class="hero-title">
+            TIRED OF SLOW<br />FILE CONVERTERS?
+          </h1>
+
+          <p id="s1-subtitle" class="hero-subtitle">
+            Meet Fig. Your files, simply effortless.
+          </p>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           SCENE 2: SHORTCUT & RADIAL WHEEL (3.5s – 7.8s)
+           ============================================== -->
+      <div id="scene2" class="clip" data-start="3.5" data-duration="4.3" data-track-index="1">
+        <!-- High-res Windows Bliss Desktop Wallpaper -->
+        <img id="s2-desktop-bg" data-layout-allow-overflow src="assets/bliss_desktop.jpg" alt="Windows Desktop" />
+        <div id="s2-overlay"></div>
+
+        <div id="s2-content">
+          <!-- Top Header -->
+          <div id="s2-header" style="text-align: center;">
+            <div class="badge-pill" style="margin-bottom: 20px;">
+              <span>Instant Cursor Action</span>
+            </div>
+            <h2 class="hero-title" style="font-size: 60px;">ONE SHORTCUT.<br />ANYWHERE.</h2>
+          </div>
+
+          <!-- Wheel Centerpiece -->
+          <div class="wheel-center-wrap">
+            <div class="wheel-glow-disc"></div>
+            <img id="s2-wheel" class="wheel-img" src="assets/wheel_cropped.png" alt="Fig Radial Wheel" />
+            <!-- SVG Cursor -->
+            <svg id="s2-cursor" class="mouse-cursor" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#080A11" stroke-width="1.5">
+              <path d="M4 2l16 11.5-7.5 1.5 4.5 7.5-3 1.5-4.5-7.5-5.5 5.5z"/>
+            </svg>
+          </div>
+
+          <!-- Bottom Shortcut Bar -->
+          <div id="s2-shortcut-card" class="glass-card" style="padding: 26px 48px; display: flex; align-items: center; gap: 24px;">
+            <div style="font-size: 30px; font-weight: 600; color: var(--ink-muted);">Trigger with</div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div id="key-ctrl" class="key-pill">Ctrl</div>
+              <span style="font-size: 32px; color: var(--ink-muted);">+</span>
+              <div id="key-space" class="key-pill">Space</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           SCENE 3: FAST FILE CYCLE & BENTO SNAP (7.6s – 12.3s)
+           ============================================== -->
+      <div id="scene3" class="clip" data-start="7.6" data-duration="4.7" data-track-index="2">
+        <div id="s3-content">
+          <!-- Rapid Flash Cards Container -->
+          <div id="s3-flasher" data-layout-allow-overlap style="position: relative; width: 520px; height: 300px;">
+            <!-- 1. PNG -->
+            <div id="card-png" class="file-card-flash" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="4"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <div class="file-name">fig.png</div>
+              <div class="file-action-badge">Crop • WebP • Censor</div>
+            </div>
+
+            <!-- 2. PDF -->
+            <div id="card-pdf" class="file-card-flash" style="background: linear-gradient(135deg, #dc2626, #b91c1c); opacity: 0;">
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <div class="file-name">fig.pdf</div>
+              <div class="file-action-badge">To Word • Excel • Extract</div>
+            </div>
+
+            <!-- 3. MP4 -->
+            <div id="card-mp4" class="file-card-flash" style="background: linear-gradient(135deg, #7c3aed, #6d28d9); opacity: 0;">
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <rect x="2" y="4" width="20" height="16" rx="4"/>
+                <polygon points="10 8 16 12 10 16 10 8" fill="#FFFFFF"/>
+              </svg>
+              <div class="file-name">fig.mp4</div>
+              <div class="file-action-badge">Extract Audio • High-Q GIF</div>
+            </div>
+
+            <!-- 4. DOCX -->
+            <div id="card-docx" class="file-card-flash" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); opacity: 0;">
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <path d="M4 4h16v16H4z"/>
+                <line x1="8" y1="8" x2="16" y2="8"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+                <line x1="8" y1="16" x2="12" y2="16"/>
+              </svg>
+              <div class="file-name">fig.docx</div>
+              <div class="file-action-badge">1-Click PDF Conversion</div>
+            </div>
+
+            <!-- 5. WEBP -->
+            <div id="card-webp" class="file-card-flash" style="background: linear-gradient(135deg, #059669, #047857); opacity: 0;">
+              <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              <div class="file-name">fig.webp</div>
+              <div class="file-action-badge">Ultra-Fast Optimization</div>
+            </div>
+          </div>
+
+          <!-- Final Bento Convergence Layout -->
+          <div id="s3-bento" class="bento-grid" style="opacity: 0;">
+            <div class="bento-item">
+              <div class="bento-icon-box" style="background: rgba(2, 132, 199, 0.2); color: #38bdf8;">PNG</div>
+              <div>
+                <div style="font-weight: 700; font-size: 32px;">Images</div>
+                <div style="font-size: 26px; color: var(--ink-muted);">WebP, Crop, Censor</div>
+              </div>
+            </div>
+            <div class="bento-item">
+              <div class="bento-icon-box" style="background: rgba(220, 38, 38, 0.2); color: #f87171;">PDF</div>
+              <div>
+                <div style="font-weight: 700; font-size: 32px;">Documents</div>
+                <div style="font-size: 26px; color: var(--ink-muted);">Word, Excel, Extract</div>
+              </div>
+            </div>
+            <div class="bento-item">
+              <div class="bento-icon-box" style="background: rgba(124, 58, 237, 0.2); color: #c084fc;">MP4</div>
+              <div>
+                <div style="font-weight: 700; font-size: 32px;">Media</div>
+                <div style="font-size: 26px; color: var(--ink-muted);">Audio, GIF export</div>
+              </div>
+            </div>
+            <div class="bento-item">
+              <div class="bento-icon-box" style="background: rgba(37, 99, 235, 0.2); color: #60a5fa;">DOC</div>
+              <div>
+                <div style="font-weight: 700; font-size: 32px;">Office</div>
+                <div style="font-size: 26px; color: var(--ink-muted);">1-Click to PDF</div>
+              </div>
+            </div>
+            <div class="bento-item bento-full" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.24), rgba(6, 182, 212, 0.18)); border-color: rgba(139, 92, 246, 0.45); padding: 36px 40px;">
+              <div>
+                <div style="font-size: 36px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">
+                  EVERY FORMAT. ONE INSTANT TOUCH.
+                </div>
+                <div style="font-size: 28px; color: #cbd5e1; margin-top: 8px;">
+                  Convert, crop, extract, and censor in seconds.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           SCENE 4: WINDOWS NATIVE & OPEN SOURCE (12.1s – 16.8s)
+           ============================================== -->
+      <div id="scene4" class="clip" data-start="12.1" data-duration="4.7" data-track-index="3">
+        <div id="s4-content">
+          <div style="text-align: center;">
+            <div class="badge-pill" style="margin-bottom: 20px;">
+              <span>Architecture</span>
+            </div>
+            <h2 class="hero-title" style="font-size: 60px;">BUILT FOR WINDOWS</h2>
+          </div>
+
+          <!-- UI Screenshot Stacks -->
+          <div id="s4-preview-stack" class="preview-stack">
+            <img class="preview-img" src="assets/workspace.png" alt="Fig Workspace" style="transform: rotate(-3deg) translateY(-20px);" />
+            <img class="preview-img" src="assets/crop_studio.png" alt="Crop Studio" style="transform: rotate(3deg) translateY(40px);" />
+          </div>
+
+          <!-- 3 Value Cards -->
+          <div id="s4-features" class="feature-row">
+            <!-- 1. Open Source & Free -->
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Open Source & Free</div>
+                <div class="feature-desc">MIT Licensed. Community driven, zero paywalls.</div>
+              </div>
+            </div>
+
+            <!-- 2. Portable Executable -->
+            <div class="feature-card">
+              <div class="feature-icon" style="background: rgba(6, 182, 212, 0.2); border-color: rgba(6, 182, 212, 0.4); color: #67e8f9;">
+                <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Portable Executable</div>
+                <div class="feature-desc">Single standalone binary. Zero installation needed.</div>
+              </div>
+            </div>
+
+            <!-- 3. 100% Offline & Private -->
+            <div class="feature-card">
+              <div class="feature-icon" style="background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7;">
+                <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">100% Offline & Private</div>
+                <div class="feature-desc">Local engine. No cloud uploads, zero telemetry.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           SCENE 5: OUTRO & SOCIAL LINKS (16.6s – 22.0s)
+           ============================================== -->
+      <div id="scene5" class="clip" data-start="16.6" data-duration="5.4" data-track-index="4">
+        <div id="s5-content">
+          <!-- Top Fig Branding -->
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div id="s5-logo" class="logo-box" style="width: 170px; height: 170px; border-radius: 44px; margin-bottom: 24px;">
+              <img src="assets/figlogo.svg" alt="Fig Logo" style="width: 110px; height: 110px;" />
+            </div>
+            <h2 class="hero-title" style="font-size: 56px; letter-spacing: -0.02em;">
+              YOUR FILES,<br />SIMPLY EFFORTLESS.
+            </h2>
+            <div style="font-size: 28px; color: var(--accent-violet); font-weight: 700; margin-top: 12px; letter-spacing: 0.08em; text-transform: uppercase;">
+              Windows 11 / 10 • Portable & Free
+            </div>
+          </div>
+
+          <!-- Primary GitHub Download Box -->
+          <div id="s5-github" class="github-box">
+            <div style="display: flex; align-items: center; gap: 24px;">
+              <div style="width: 72px; height: 72px; border-radius: 20px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="44" height="44" fill="#FFFFFF">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </div>
+              <div>
+                <div data-layout-ignore style="font-size: 22px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Get it on GitHub</div>
+                <div style="font-size: 32px; font-weight: 800; color: #ffffff;">github.com/yunusemre-celik/fig</div>
+              </div>
+            </div>
+            <div style="padding: 18px 34px; border-radius: 999px; background: #38bdf8; color: #080a11; font-weight: 800; font-size: 26px;">
+              Download
+            </div>
+          </div>
+
+          <!-- Socials Grid -->
+          <div id="s5-socials" class="socials-grid">
+            <!-- X (Twitter) -->
+            <div class="social-card">
+              <div class="social-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </div>
+              <div>@hirtzirt</div>
+            </div>
+
+            <!-- LinkedIn -->
+            <div class="social-card">
+              <div class="social-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+              </div>
+              <div>in/yunusemrecelik00</div>
+            </div>
+
+            <!-- Instagram -->
+            <div class="social-card">
+              <div class="social-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                </svg>
+              </div>
+              <div>@yunusemrecelik.dev</div>
+            </div>
+
+            <!-- Website -->
+            <div class="social-card">
+              <div class="social-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <div>yunusemrecelik.dev</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GSAP Seekable Timeline Script -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // ============================================
+      // SCENE 1: HOOK (0.0s – 3.8s)
+      // ============================================
+      tl.set("#s1-badge", { opacity: 1, y: 0 });
+      tl.set("#s1-logo", { scale: 1.0, opacity: 1, rotation: 0 });
+      tl.fromTo("#s1-title", 
+        { opacity: 0, y: 30 }, 
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 
+        0.3
+      );
+      tl.fromTo("#s1-subtitle", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 
+        0.6
+      );
+      tl.to("#s1-content", 
+        { opacity: 0, scale: 0.95, duration: 0.4, ease: "power2.in" }, 
+        3.4
+      );
+
+      // ============================================
+      // SCENE 2: SHORTCUT & BLISS DESKTOP (3.5s – 7.8s)
+      // ============================================
+      tl.fromTo("#s2-desktop-bg", 
+        { scale: 1.08, opacity: 0 }, 
+        { scale: 1.0, opacity: 1, duration: 0.7, ease: "power2.out" }, 
+        3.5
+      );
+      tl.fromTo("#s2-header", 
+        { opacity: 0, y: -30 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 
+        3.7
+      );
+      // Mouse cursor moves in
+      tl.fromTo("#s2-cursor", 
+        { x: -300, y: 250, opacity: 0 }, 
+        { x: -20, y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, 
+        3.8
+      );
+      // Key press down effect
+      tl.fromTo("#s2-shortcut-card", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 
+        4.0
+      );
+      tl.to("#key-ctrl", { scale: 0.92, duration: 0.12, yoyo: true, repeat: 1 }, 4.3);
+      tl.to("#key-space", { scale: 0.92, duration: 0.12, yoyo: true, repeat: 1 }, 4.3);
+
+      // Radial wheel expands at cursor!
+      tl.fromTo("#s2-wheel", 
+        { scale: 0.1, opacity: 0, rotation: -45 }, 
+        { scale: 1.0, opacity: 1, rotation: 0, duration: 0.7, ease: "back.out(1.5)" }, 
+        4.4
+      );
+      tl.to("#s2-wheel", 
+        { rotation: 15, duration: 2.2, ease: "power1.inOut" }, 
+        5.1
+      );
+      tl.to("#s2-content", 
+        { opacity: 0, scale: 1.05, duration: 0.4, ease: "power2.in" }, 
+        7.4
+      );
+
+      // ============================================
+      // SCENE 3: FAST FILE CYCLE & BENTO (7.6s – 12.3s)
+      // ============================================
+      // 1. PNG (7.8s)
+      tl.fromTo("#card-png", { scale: 0.7, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.2 }, 7.8);
+      tl.to("#card-png", { opacity: 0, scale: 1.1, duration: 0.1 }, 8.1);
+
+      // 2. PDF (8.1s)
+      tl.fromTo("#card-pdf", { scale: 0.7, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.2 }, 8.1);
+      tl.to("#card-pdf", { opacity: 0, scale: 1.1, duration: 0.1 }, 8.4);
+
+      // 3. MP4 (8.4s)
+      tl.fromTo("#card-mp4", { scale: 0.7, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.2 }, 8.4);
+      tl.to("#card-mp4", { opacity: 0, scale: 1.1, duration: 0.1 }, 8.7);
+
+      // 4. DOCX (8.7s)
+      tl.fromTo("#card-docx", { scale: 0.7, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.2 }, 8.7);
+      tl.to("#card-docx", { opacity: 0, scale: 1.1, duration: 0.1 }, 9.0);
+
+      // 5. WEBP (9.0s)
+      tl.fromTo("#card-webp", { scale: 0.7, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.2 }, 9.0);
+      tl.to("#card-webp", { opacity: 0, scale: 1.1, duration: 0.15 }, 9.35);
+
+      // Bento grid snaps in!
+      tl.to("#s3-flasher", { display: "none", duration: 0.01 }, 9.4);
+      tl.fromTo("#s3-bento", 
+        { opacity: 0, scale: 0.85, y: 30 }, 
+        { opacity: 1, scale: 1.0, y: 0, duration: 0.6, ease: "back.out(1.4)" }, 
+        9.45
+      );
+      tl.to("#s3-content", 
+        { opacity: 0, scale: 0.95, duration: 0.35, ease: "power2.in" }, 
+        11.9
+      );
+
+      // ============================================
+      // SCENE 4: WINDOWS NATIVE & OPEN SOURCE (12.1s – 16.8s)
+      // ============================================
+      tl.fromTo("#s4-content", 
+        { opacity: 0 }, 
+        { opacity: 1, duration: 0.4 }, 
+        12.1
+      );
+      tl.fromTo("#s4-preview-stack", 
+        { opacity: 0, y: 60, scale: 0.9 }, 
+        { opacity: 1, y: 0, scale: 1.0, duration: 0.7, ease: "power3.out" }, 
+        12.3
+      );
+      tl.fromTo(".feature-card", 
+        { opacity: 0, x: -40 }, 
+        { opacity: 1, x: 0, duration: 0.4, stagger: 0.12, ease: "power2.out" }, 
+        12.8
+      );
+      tl.to("#s4-content", 
+        { opacity: 0, scale: 0.95, duration: 0.35, ease: "power2.in" }, 
+        16.4
+      );
+
+      // ============================================
+      // SCENE 5: OUTRO & SOCIALS (16.6s – 22.0s)
+      // ============================================
+      tl.fromTo("#s5-logo", 
+        { scale: 0.7, opacity: 0 }, 
+        { scale: 1.0, opacity: 1, duration: 0.6, ease: "back.out(1.6)" }, 
+        16.6
+      );
+      tl.fromTo("#scene5 .hero-title", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 
+        16.9
+      );
+      tl.fromTo("#s5-github", 
+        { opacity: 0, scale: 0.9, y: 30 }, 
+        { opacity: 1, scale: 1.0, y: 0, duration: 0.6, ease: "back.out(1.4)" }, 
+        17.3
+      );
+      tl.fromTo(".social-card", 
+        { opacity: 0, y: 20 }, 
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" }, 
+        17.7
+      );
+
+      // Gentle floating pulse till end
+      tl.to("#s5-logo", { y: -8, duration: 1.5, yoyo: true, repeat: 1, ease: "sine.inOut" }, 18.5);
+
+      // Register timeline on window.__timelines
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
