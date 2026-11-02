@@ -9,8 +9,19 @@ Herhangi bir klasore cikarip hemen kullanmaya baslayabilirsiniz.
 ------------------------------------------------------------------
 HIZLI BASLATMA:
 ------------------------------------------------------------------
-1. ZIP icindeki dosyalari istediginiz bir klasore cikarin (orn: Masaustu veya Belgeler).
+1. ZIP icindeki dosyalari (Fig.exe ve WebView2Loader.dll) istediginiz bir klasore cikarin.
+   (ONEMLI: Fig.exe ve WebView2Loader.dll ayni klasor icinde bulunmalidir).
 2. "Fig.exe" dosyasina cift tiklayarak uygulamayi baslatin.
+
+------------------------------------------------------------------
+WINDOWS 10 & WINDOWS 11 UYUMLULUGU (WEBVIEW2):
+------------------------------------------------------------------
+- Windows 11: Sisteminizde WebView2 Runtime yerlesik olarak bulunur, Fig dogrudan calisir.
+- Windows 10: Eger sisteminizde Microsoft Edge WebView2 Runtime kurulu degilse,
+  Fig ilk acilista size resmi Microsoft indirme sayfasini acar.
+  Ucretsiz ve tek seferlik Microsoft WebView2 yukleyicisini calistirarak
+  Fig'i sorunsuz kullanabilirsiniz (Microsoft resmi indirme linki:
+  https://go.microsoft.com/fwlink/p/?LinkId=2124703).
 
 ------------------------------------------------------------------
 WINDOWS SMARTSCREEN BILGILENDIRMESI:

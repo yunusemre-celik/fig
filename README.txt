@@ -9,8 +9,17 @@ No installation required. Extract anywhere and launch immediately.
 ------------------------------------------------------------------
 QUICK START:
 ------------------------------------------------------------------
-1. Extract the contents of this ZIP to any folder (e.g., Desktop or Documents).
+1. Extract ALL contents of this ZIP (Fig.exe and WebView2Loader.dll) to any folder.
+   (IMPORTANT: WebView2Loader.dll must stay in the same folder as Fig.exe).
 2. Double-click "Fig.exe" to launch.
+
+------------------------------------------------------------------
+WINDOWS 10 & 11 COMPATIBILITY (WEBVIEW2):
+------------------------------------------------------------------
+- Windows 11: Includes Microsoft Edge WebView2 Runtime by default. Fig runs out of the box.
+- Windows 10: If your system lacks Microsoft Edge WebView2 Runtime,
+  Fig will detect this on launch and prompt you to install it from Microsoft's official site:
+  https://go.microsoft.com/fwlink/p/?LinkId=2124703
 
 ------------------------------------------------------------------
 WINDOWS SMARTSCREEN NOTE:
