@@ -10,9 +10,30 @@ $exePath = "$baseDir\Fig.exe"
 $zipPath = "$baseDir\Fig-Windows-x64.zip"
 
 if (-not (Test-Path $exePath)) {
-    Write-Error "Fig.exe bulunamadı!"
-    exit 1
+    if (Test-Path "$baseDir\docs\Fig.exe") {
+        $exePath = "$baseDir\docs\Fig.exe"
+    } elseif (Test-Path "$baseDir\src-tauri\target\x86_64-pc-windows-msvc\release\fig.exe") {
+        $exePath = "$baseDir\src-tauri\target\x86_64-pc-windows-msvc\release\fig.exe"
+    } elseif (Test-Path "$baseDir\src-tauri\target\release\fig.exe") {
+        $exePath = "$baseDir\src-tauri\target\release\fig.exe"
+    } else {
+        Write-Error "Fig.exe bulunamadı!"
+        exit 1
+    }
 }
+
+if (-not (Test-Path $zipPath)) {
+    if (Test-Path "$baseDir\docs\Fig-Windows-x64.zip") {
+        $zipPath = "$baseDir\docs\Fig-Windows-x64.zip"
+    } elseif (Test-Path "$baseDir\landing\public\Fig-Windows-x64.zip") {
+        $zipPath = "$baseDir\landing\public\Fig-Windows-x64.zip"
+    } else {
+        Write-Error "Fig-Windows-x64.zip bulunamadı!"
+        exit 1
+    }
+}
+
+Write-Host "Doğrulanan Dosyalar: EXE = $exePath, ZIP = $zipPath" -ForegroundColor Gray
 
 # 1. ZIP İçerik Denetimi
 Write-Host "`n[1/4] ZIP Paket Bütünlüğü Denetleniyor..." -ForegroundColor Yellow
